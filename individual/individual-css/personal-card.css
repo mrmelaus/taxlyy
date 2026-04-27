@@ -1,0 +1,73 @@
+/* Tax residency main container (like .health-intro) */
+.tax-residency-group {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+/* Each card becomes a clean list item */
+.tax-residency-card {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--glass-border);
+    padding: var(--space-3) 0;
+    cursor: pointer;
+    transition: var(--transition);
+    display: block;
+}
+
+.tax-residency-card:last-child {
+    border-bottom: none;
+}
+
+.tax-residency-card:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.tax-residency-card.selected {
+    background: transparent;
+    box-shadow: none;
+}
+
+/* Radio input styling */
+.tax-residency-card input[type="radio"] {
+    accent-color: var(--accent);
+    transform: scale(1.1);
+    margin-right: var(--space-2);
+    vertical-align: middle;
+}
+
+/* Title (Yes/No) – subtle blue */
+.tax-residency-title {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--accent);
+    display: inline-block;
+    margin-left: var(--space-1);
+}
+
+/* Description – bilingual, muted secondary */
+.tax-residency-desc {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-top: var(--space-1);
+    padding-left: calc(1.5rem + var(--space-1));
+}
+
+/* English text inside description – even more muted */
+.tax-residency-desc .en {
+    display: block;
+    color: var(--text-muted);
+    font-size: var(--font-xs);
+    margin-top: 0.25rem;
+}
+
+/* Chinese text inside description */
+.tax-residency-desc .zh {
+    display: block;
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+}

@@ -1,0 +1,193 @@
+/* ========================================
+   WELCOME CARD
+   ======================================== */
+
+/* Welcome label (replaces ESTIMATED RETURN on welcome card) */
+.welcome-label {
+    display: none;
+    font-size: var(--font-sm);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: color-mix(in srgb, var(--text-primary), transparent 20%);
+    margin-bottom: var(--space-2);
+    max-height: 50px;
+    overflow: hidden;
+    transition: opacity 0.25s ease, max-height 0.35s ease;
+}
+
+.welcome-prefix {
+    display: block;
+    font-size: var(--font-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-2);
+    letter-spacing: 0.5px;
+}
+
+/* Toggle visibility by mode */
+.estimate-bar.welcome-mode .estimate-label  { display: none; }
+.estimate-bar.welcome-mode .welcome-label   { display: block; }
+.estimate-bar.welcome-mode .estimate-hint   { display: none; }
+.estimate-bar.welcome-mode .estimate-breakdown { display: none; }
+
+/* Running number update animation */
+.estimate-amount.updating {
+    transform: scale(1.02);
+    transition: transform 0.2s ease-out;
+}
+
+/* Welcome mode border glow */
+.estimate-bar.welcome-mode {
+    border-color: var(--border-glow);
+}
+
+/* ── Disclaimer Bar ── */
+.disclaimer-bar {
+    background: rgb(from var(--warning) r g b / 0.2);
+    color: var(--warning);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-5);
+    margin-bottom: var(--space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--font-sm);
+    border: 1px solid color-mix(in srgb, var(--warning) 20%, transparent);
+}
+
+.disclaimer-icon {
+    font-size: var(--font-base);
+    flex-shrink: 0;
+}
+.welcome-wrap           { display: flex; flex-direction: column; gap: var(--space-6); }
+
+.welcome-tagline {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.3;
+}
+/* Add to welcome-card.css */
+.welcome-tagline .en {
+    -webkit-text-fill-color: initial;
+    color: var(--text-secondary);
+    opacity: 0.75;
+}
+
+.welcome-trust-row      { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.trust-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    background: var(--primary-gradient-subtle);
+    border: 1px solid var(--border-glow);
+    border-radius: var(--radius-full);
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--font-sm);
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.welcome-section-title {
+    font-size: var(--font-sm);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--space-3);
+    margin-top: var(--space-3);
+}
+
+.welcome-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.welcome-checklist li {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    padding: var(--space-2) var(--space-3);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+}
+
+.welcome-deadline-box {
+    display: flex;
+    flex-direction: column;  /* ← stack vertically */
+    align-items: flex-start; /* ← left align */
+    gap: var(--space-3);
+    background: color-mix(in srgb, var(--warning) 8%, transparent);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-sm);
+    color: var(--warning);
+    font-weight: 600;
+}
+
+.disclaimer-payg {
+    margin-top: 0;
+    font-size: var(--font-sm);
+    color: var(--warning);
+    border-top: 1px solid var(--glass-border);
+    padding-top: var(--space-2);
+    font-weight: 600;
+}
+
+.welcome-fee-row        { display: flex; gap: var(--space-4); }
+
+.fee-card {
+    flex: 1;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.fee-label  { font-size: var(--font-xs); font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.fee-amount { font-size: var(--font-xl); font-weight: 600; color: var(--accent-dark); }
+.fee-desc   { font-size: var(--font-xs); color: var(--text-muted); }
+.fee-note   { display: block; margin-top: var(--space-2); font-size: var(--font-xs); color: var(--text-muted); }
+
+.welcome-consent {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.welcome-time {
+    text-align: center;
+    font-size: var(--font-sm);
+    color: var(--text-muted);
+}
+.welcome-consent .zh,
+.welcome-consent .en {
+    display: inline;
+}
+
+.welcome-consent .zh::after {
+    content: ' ';
+}
+

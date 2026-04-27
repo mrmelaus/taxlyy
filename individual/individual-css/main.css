@@ -1,0 +1,19 @@
+/* ========================================
+   TAXLYY INDIVIDUAL - MAIN CSS
+   Imports all modular CSS files
+   ======================================== */
+
+@import 'variables.css';
+@import 'base.css';
+@import 'layout.css';
+@import 'components.css';
+@import 'welcome-card.css';
+@import 'personal-card.css';
+@import 'income-card.css';
+@import 'deductions-card.css';
+@import 'health-card.css';
+@import 'review-card.css';
+@import 'declaration-card.css';
+@import 'payment-card.css';
+@import 'animations.css';
+@import 'responsive.css';

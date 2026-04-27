@@ -1,0 +1,171 @@
+/* ========================================
+   LEGAL PAGES – High‑Tech Dark Theme
+   Shared by terms.html and privacy.html
+   ======================================== */
+
+:root {
+    /* Brand colors */
+    --primary: #4361ee;
+    --primary-dark: #3a0ca3;
+    --accent: #4cc9f0;
+    --bg-dark: #0a0818;
+    --bg-mid: #11102a;
+    --text-primary: #f0f3ff;
+    --text-secondary: #c9d2f0;
+    --text-muted: #8a96c2;
+    --border-glass: rgba(76,201,240,0.2);
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --font-family: 'Inter', -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    --gradient-text: linear-gradient(135deg, var(--accent), var(--primary));
+    --glass-bg: rgba(15, 20, 40, 0.65);
+    --glass-blur: blur(12px);
+    --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: 1.05rem;
+    line-height: 1.65;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    padding: 2rem 1.5rem 4rem;
+    position: relative;
+}
+
+/* Background layers same as landing */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 30%, rgba(67,97,238,0.15), transparent 70%);
+    z-index: -2;
+}
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: var(--noise);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.5;
+}
+
+/* Container */
+.legal-container {
+    max-width: 860px;
+    margin: 0 auto;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border-radius: var(--radius-xl);
+    border: 0.5px solid var(--border-glass);
+    padding: 2.5rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+/* Typography */
+h1 {
+    font-size: 2.2rem;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+.legal-sub {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(76,201,240,0.2);
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+h2 {
+    font-size: 1.2rem;
+    margin: 1.8rem 0 0.8rem;
+    color: var(--accent);
+    font-weight: 500;
+}
+h3 {
+    font-size: 1.1rem;
+    margin: 1.1rem 0 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+p, li {
+    color: var(--text-secondary);
+    margin-bottom: 0.7rem;
+}
+strong {
+    color: var(--accent);
+    font-weight: 500;
+}
+ul, ol {
+    margin: 0.5rem 0 1rem 1.8rem;
+}
+li {
+    margin-bottom: 0.3rem;
+}
+a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 0.5px dotted var(--accent-dim);
+}
+a:hover {
+    color: var(--primary);
+    border-bottom-style: solid;
+}
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 0.6rem 1.2rem;
+    background: rgba(255,255,255,0.03);
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+.back-link:hover {
+    background: var(--border-glass);
+    color: var(--text-primary);
+}
+hr {
+    margin: 2rem 0;
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+.footer-note {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    body {
+        padding: 1rem;
+    }
+    .legal-container {
+        padding: 1.5rem;
+    }
+    h1 {
+        font-size: 1.8rem;
+    }
+    h2 {
+        font-size: 1.3rem;
+    }
+}

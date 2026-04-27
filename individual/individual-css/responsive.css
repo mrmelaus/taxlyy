@@ -1,0 +1,133 @@
+/* ========================================
+   RESPONSIVE - All breakpoints
+   Order: largest → smallest
+   ======================================== */
+
+/* ── Large screens ≥1200px ── */
+@media (min-width: 1200px) {
+    .app-container {
+        max-width: 72rem;
+        padding: var(--space-8) var(--space-12) var(--space-12);
+    }
+}
+
+/* ── Medium-large: ≤1024px ── */
+@media (max-width: 1024px) {
+    .app-container {
+        width: 85%;
+    }
+}
+
+/* ── Tablet: ≤768px ── */
+@media (max-width: 768px) {
+    :root {
+        --font-3xl: 2rem;
+        --font-4xl: 2.25rem;
+    }
+
+    .app-container {
+        width: 95%;
+        padding: var(--space-4);
+    }
+
+    .card {
+        padding: var(--space-6);
+    }
+
+    /* Header stacks on tablet */
+    .app-header {
+        flex-direction: column;
+        gap: var(--space-4);
+        text-align: center;
+    }
+
+    /* Estimate bar offset adjusts for taller stacked header */
+    .estimate-bar {
+        top: calc(var(--header-height-default) + 40px + var(--space-2));
+    }
+
+    .estimate-bar.scrolled {
+        top: calc(var(--header-height-scrolled) + var(--space-1));
+    }
+
+    .estimate-amount {
+        font-size: var(--font-3xl);
+    }
+
+    .welcome-mode .estimate-amount {
+        font-size: var(--font-2xl);
+    }
+
+    .welcome-prefix {
+        font-size: var(--font-xs);
+    }
+
+    .nav-buttons {
+        flex-direction: column;
+    }
+
+    .nav-btn {
+        width: 100%;
+        padding: var(--space-3) var(--space-6);
+    }
+
+    .income-two-col {
+        flex-direction: column;
+    }
+
+    .tax-residency-desc {
+        padding-left: var(--space-1);
+    }
+}
+
+/* ── Mobile: ≤480px ── */
+@media (max-width: 480px) {
+    .app-container {
+        padding: var(--space-3) var(--space-3) var(--space-6);
+    }
+
+    .income-card {
+        padding: var(--space-4);
+    }
+
+    .search-row {
+        flex-direction: column;
+    }
+
+    .search-row .nav-btn {
+        width: 100%;
+    }
+
+    .other-income-amount,
+    .other-income-specify {
+        width: 100%;
+        margin-top: var(--space-1);
+    }
+
+    .checkbox-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .fee-card {
+        min-width: 100%;
+    }
+
+    .welcome-fee-row {
+        flex-direction: column;
+    }
+
+    /* Estimate bar collapses to simpler layout on small screens */
+    .estimate-bar:not(.welcome-mode) {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--space-1);
+    }
+
+    /* On scroll, still go compact row */
+    .estimate-bar.scrolled {
+        flex-direction: row;
+        align-items: center;
+    }
+}

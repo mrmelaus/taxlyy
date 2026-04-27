@@ -1,0 +1,366 @@
+/* ========================================
+   LAYOUT - Container, Header, Estimate Bar, Disclaimer
+   ======================================== */
+
+/* ── App Container ── */
+.app-container {
+    position: relative;
+    z-index: 1;
+    width: 70%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-6) var(--space-8);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    /* No overflow:hidden — allows sticky children to escape */
+}
+
+/* ── Header ── */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: var(--space-4) var(--space-6);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-2xl);
+    margin-bottom: var(--space-6);
+    position: sticky;
+    top: var(--space-4);
+    z-index: 100;
+    transition:
+        width         0.35s ease,
+        margin-left   0.35s ease,
+        padding       0.35s ease,
+        border-radius 0.35s ease,
+        background    0.35s ease,
+        box-shadow    0.35s ease,
+        top           0.35s ease;
+}
+
+/* Header — scrolled: breaks out to full viewport width */
+.app-header.scrolled {
+    width: 100vw;
+    margin-left: calc(-1 * ((100vw - 100%) / 2));
+    background: var(--bg-card-solid);
+    backdrop-filter: none;
+    padding: var(--space-2) var(--space-6);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    box-shadow: var(--shadow-md);
+    top: 0;
+}
+/* Expanded header style – for non‑welcome cards (always on) */
+.app-header.expanded {
+    width: 100vw;
+    margin-left: calc(-1 * ((100vw - 100%) / 2));
+    margin-top: calc(-1 * var(--space-6));
+    background: var(--bg-card-solid);
+    backdrop-filter: none;
+    padding: var(--space-2) var(--space-6);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    box-shadow: var(--shadow-md);
+    top: 0;
+    transition: none;   /* ADD THIS – removes all transitions */
+}
+/* Logo */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.logo-mark {
+    font-size: var(--font-2xl);
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.logo-text {
+    font-size: var(--font-xl);
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    letter-spacing: 0.5px;
+}
+
+/* Language Selector */
+.language-selector {
+    display: flex;
+    gap: var(--space-2);
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--space-1);
+    border-radius: var(--radius-full);
+}
+
+.lang-btn {
+    padding: var(--space-2) var(--space-5);
+    font-size: var(--font-sm);
+    font-family: inherit;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.lang-btn.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.lang-btn:hover:not(.active) {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Bilingual text display */
+.zh {
+    display: block;
+    font-size: 1em;
+}
+
+.en {
+    display: block;
+    font-size: 0.85em;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+.zh { display: block; }
+.en { 
+    display: block; 
+    font-size: 0.85em; 
+    opacity: 0.75;
+    -webkit-text-fill-color: initial;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Trust badges — keep inline */
+.trust-badge .zh,
+.trust-badge .en {
+    display: inline;
+}
+.trust-badge .zh::after { content: ' '; }
+
+/* Fee cards — keep inline */
+.fee-label .zh,
+.fee-label .en {
+    display: inline;
+}
+.fee-label .zh::after { content: ' / '; }
+
+/* For inline contexts like trust badges where block doesn't suit */
+.trust-badge .zh,
+.trust-badge .en {
+    display: inline;
+}
+
+.trust-badge .zh::after {
+    content: ' ';
+}
+/* ========================================
+   ESTIMATE BAR - Final behaviour
+   ======================================== */
+
+/* CSS variables for header heights (adjust as needed) */
+:root {
+    --header-height-default: 80px;
+    --header-height-scrolled: 60px;
+}
+
+/* Base estimate bar – sticky for non‑welcome cards */
+.estimate-bar {
+    position: sticky;
+    top: calc(var(--header-height-default) + var(--space-2));
+    z-index: 99;
+    background: var(--bg-card);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md), var(--shadow-glow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-4) var(--space-6);
+    margin-bottom: var(--space-5);
+    transition: padding 0.35s ease, border-radius 0.35s ease, box-shadow 0.35s ease, top 0.35s ease, gap 0.35s ease;
+}
+
+/* Welcome card: estimate bar scrolls away (already has welcome-mode) */
+.estimate-bar.welcome-mode {
+    position: static;
+}
+
+/* Personal card: scroll away (added via JS class) */
+.estimate-bar.scroll-away {
+    position: static;
+}
+
+/* Non‑welcome cards (default) – stacked layout */
+.estimate-bar:not(.welcome-mode):not(.scroll-away) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-1);
+}
+
+/* Compact (scrolled) state for sticky cards */
+.estimate-bar.scrolled {
+    top: calc(var(--header-height-scrolled) + var(--space-1));
+    padding: var(--space-2) var(--space-6);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-1);
+}
+
+/* First line: label and amount side by side */
+.estimate-bar.scrolled .estimate-label,
+.estimate-bar.scrolled .estimate-amount {
+    display: inline-block;
+    margin: 0;
+}
+
+.estimate-bar.scrolled .estimate-label {
+    font-size: var(--font-xs);
+    opacity: 0.6;
+    letter-spacing: 1px;
+    margin-right: var(--space-2);
+}
+
+.estimate-bar.scrolled .estimate-amount {
+    font-size: var(--font-xl);
+    animation: none;
+}
+
+/* Second line: hint */
+.estimate-bar.scrolled .estimate-hint {
+    display: block;
+    font-size: var(--font-sm);
+    margin-top: var(--space-1);
+    opacity: 1;
+    max-height: none;
+}
+
+/* Default hint font size (non‑scrolled) */
+.estimate-bar:not(.welcome-mode):not(.scroll-away) .estimate-hint {
+    font-size: var(--font-sm);
+}
+
+/* Child elements */
+.estimate-label {
+    font-size: var(--font-sm);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: var(--space-1);
+    transition: font-size 0.35s ease, opacity 0.35s ease;
+}
+
+.estimate-amount {
+    font-weight: 700;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1.2;
+    transition: font-size 0.35s ease;
+}
+
+/* Welcome mode amount (large, pulsing) */
+.estimate-bar.welcome-mode .estimate-amount {
+    font-size: var(--font-3xl);
+    animation: pulse 2s ease-in-out infinite;
+}
+/* Personal card (scroll‑away) – amount size same as other non‑scrolled cards */
+.estimate-bar.scroll-away .estimate-amount {
+    font-size: var(--font-2xl);
+}
+
+/* Non‑welcome, non‑scrolled amount */
+.estimate-bar:not(.welcome-mode):not(.scroll-away):not(.scrolled) .estimate-amount {
+    font-size: var(--font-2xl);
+}
+
+.estimate-hint {
+    font-size: var(--font-xs); /* will be overridden by above rules */
+    color: var(--text-muted);
+    display: inline-block;
+    margin: 0;
+    max-height: 50px;
+    overflow: hidden;
+    transition: opacity 0.25s ease, max-height 0.35s ease;
+}
+
+
+
+
+/* Force header to stay horizontal on all screens */
+.app-header {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 768px) {
+    .app-header {
+        padding: var(--space-2) var(--space-3);
+    }
+    .logo {
+        gap: var(--space-1);
+        flex-shrink: 1;
+    }
+    .logo-mark {
+        font-size: var(--font-lg);
+        display: inline-block;
+    }
+    .logo-text {
+        font-size: var(--font-sm);
+        white-space: nowrap;
+    }
+    .language-selector {
+        gap: var(--space-1);
+        flex-shrink: 0;
+    }
+    .lang-btn {
+        padding: var(--space-1) var(--space-2);
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        padding: var(--space-1) var(--space-2);
+    }
+    .logo-text {
+        font-size: 1.1rem;
+    }
+    .lang-btn {
+        font-size: 0.7rem;
+        padding: var(--space-1) var(--space-1);
+    }
+}

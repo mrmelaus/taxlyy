@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Taxlyy Individual | AI-Powered Tax Return</title>
+   
+    <link rel="stylesheet" href="individual-css/main.css">
+
+</head>
+<body>
+    <div class="app-container">
+        <!-- Loading overlay (visible only while loading) -->
+        <div id="loadingContainer" class="loading-container">
+            <div class="loading-text">Taxlyy is generating your tax session...</div>
+            <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        <!-- Header with Language Selector -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-mark">✦</span>
+                <span class="logo-text">Taxlyy Individual</span>
+            </div>
+            <div class="language-selector">
+                <button id="lang-en" class="lang-btn active">English</button>
+                <button id="lang-zh" class="lang-btn">中英文 (双语)</button>
+            </div>
+        </header>
+
+        <!-- Sticky Estimate Bar -->
+        <div class="estimate-bar" id="estimateBar">
+            <div class="estimate-label" id="estimateLabel"></div>
+            <div class="welcome-label" id="welcomeLabel"></div>
+            <div class="estimate-amount" id="estimateAmount">$0</div>
+            <div class="estimate-hint" id="estimateHint"></div>
+        </div>
+
+         <div class="disclaimer-bar" id="disclaimerBar">
+            <span class="disclaimer-icon">⚠️</span>
+            <span class="disclaimer-text"></span>
+        </div>
+
+        <!-- Main Card Container - Dynamically populated ONLY by JavaScript -->
+        <main class="card-container" id="cardContainer">
+            <!-- Cards are dynamically injected by JavaScript - NO hardcoded forms -->
+        </main>
+
+        <!-- Progress Footer -->
+        <footer class="progress-footer">
+            <div class="progress-text" id="progressText">Card 1 of 8</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
+            <div class="nav-buttons">
+                <button id="prevBtn" class="nav-btn secondary">← Back</button>
+                <button id="nextBtn" class="nav-btn primary">Next →</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Locale fallbacks -->
+    <script src="js/locales/en.js"></script>
+    <script src="js/locales/zh.js"></script>
+
+    <!-- Core utilities -->
+    <script src="js/utils.js"></script>
+
+    <!-- Supabase library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Config and client -->
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
+
+    <!-- Tracking & Analytics -->
+    <script src="js/tracking.js"></script>  
+
+    <!-- Supabase data loaders -->
+    <script src="js/supabase-config.js"></script>
+
+    <!-- Navigation -->
+    <script src="js/navigation.js"></script>
+
+    <!-- Calculator and helpers -->
+    <script src="js/calculator.js"></script>
+    <script src="js/ocr-extract.js"></script>
+    <script src="js/abn-lookup-individual.js"></script>
+    <script src="js/running-number.js"></script>
+
+    <!-- jsPDF + AutoTable — BOTH required for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+ 
+    <script src="js/fonts/NotoSansSC.js"></script>
+    <!-- PDF generator -->
+    <script src="js/pdf-generator.js"></script>
+
+    <!-- Stripe CDN library — MUST come before stripe-payment.js -->
+    <script src="https://js.stripe.com/v3/"></script> 
+    <!-- Stripe -->
+    <script src="js/stripe-payment.js"></script>
+
+    <!-- Card rendering and events -->
+    <script src="js/render-cards.js"></script>
+    <script src="js/card-events.js"></script>
+
+    <!-- Main orchestrator — must be last -->
+    <script src="js/app.js"></script>
+
+</body>
+</html>

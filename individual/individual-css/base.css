@@ -1,0 +1,164 @@
+/* ========================================
+   BASE - Reset, Body, Typography
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-size: var(--font-base);
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: var(--bg-dark);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Animated radial background */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(67, 97, 238, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(114, 9, 183, 0.15) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Subtle grid pattern */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Global utility: all content above pseudo layers */
+.app-container,
+.app-header {
+    position: relative;
+    z-index: 1;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar        { width: 8px; height: 8px; }
+::-webkit-scrollbar-track  { background: rgba(255,255,255,0.05); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.2);  border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+/* Selection */
+::selection {
+    background: rgba(67, 97, 238, 0.4);
+    color: white;
+}
+
+/* Bilingual label helper */
+.form-label-bilingual .zh {
+    display: block;
+    font-size: var(--font-base);
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+}
+.form-label-bilingual .en {
+    display: block;
+    font-size: var(--font-sm);
+    color: var(--english-secondary);
+    font-weight: normal;
+}
+
+/* ========== LOADING CONTAINER ========== */
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-6);
+    background: var(--bg-dark);
+    z-index: 1000;
+}
+
+/* Loading text – gradient + centered */
+.loading-text {
+    font-size: var(--font-xl);
+    font-weight: 600;
+    background: var(--accent-gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-align: center;
+    letter-spacing: -0.01em;
+    opacity: 0.9;
+}
+
+/* Animated dots */
+.loading-dots {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    animation: pulse 1.4s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes pulse {
+    0%, 60%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    30% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* Hide main UI until ready */
+body:not(.app-loaded) .app-header,
+body:not(.app-loaded) .estimate-bar,
+body:not(.app-loaded) .disclaimer-bar,
+body:not(.app-loaded) .card-container,
+body:not(.app-loaded) .progress-footer {
+    display: none;
+}
+
+body:not(.app-loaded) .loading-container {
+    display: flex;
+}
+
+body.app-loaded .loading-container {
+    display: none;
+}
+
+body.app-loaded .card-container {
+    display: block;
+}

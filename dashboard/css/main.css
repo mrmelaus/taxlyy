@@ -1,0 +1,25 @@
+/* ─────────────────────────────────────────
+   main.css — Taxlyy style entry point
+   Imports all CSS in correct order
+   (overrides cascade naturally)
+───────────────────────────────────────── */
+
+/* 1. Core variables and reset (lowest specificity) */
+@import url('variables.css');
+@import url('base.css');
+
+/* 2. Layout structure */
+@import url('layout.css');
+
+/* 3. Reusable components */
+@import url('components.css');
+
+/* 4. Screen-specific styles (higher specificity when needed) */
+@import url('screens.css');
+@import url('invoice-preview.css');
+@import url('dashboard.css');
+@import url('clients.css');
+@import url('expenses.css');
+@import url('bas.css');
+@import url('documents.css');
+@import url('depreciation.css');

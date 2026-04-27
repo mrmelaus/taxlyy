@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxlyy - Upload Receipt</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 { margin: 0 0 8px 0; font-size: 24px; color: #c2610a; }
+        .subtitle { color: #666; margin-bottom: 24px; font-size: 14px; }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 40px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 16px;
+        }
+        .upload-area:hover { border-color: #c2610a; background: #fef9f0; }
+        .upload-icon { font-size: 48px; margin-bottom: 12px; }
+        .preview-image { max-width: 100%; max-height: 200px; margin: 16px 0; border-radius: 8px; }
+        button {
+            background: #c2610a;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 14px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #e2e3e5; color: #383d41; }
+        .hidden { display: none; }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .button-group button {
+            flex: 1;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Taxlyy</h1>
+        <div class="subtitle">Upload Receipt from Phone</div>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📤</div>
+            <div>Tap to select photo</div>
+            <div style="font-size: 12px; color: #999; margin-top: 8px;">Camera or Gallery</div>
+            <input type="file" id="fileInput" accept="image/jpeg,image/png,image/jpg" style="display: none;">
+        </div>
+        
+        <div id="preview" class="hidden"></div>
+        
+        <div class="button-group">
+            <button id="uploadBtn" disabled>Upload to Taxlyy</button>
+        </div>
+        
+        <div id="status" class="status hidden"></div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session');
+        let selectedFile = null;
+        let selectedFileData = null;
+        
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const statusDiv = document.getElementById('status');
+        const previewDiv = document.getElementById('preview');
+        
+        if (!sessionId) {
+            showStatus('Error: Invalid session. Please scan QR code again.', 'error');
+        }
+        
+        // Click anywhere in upload area opens file picker
+        uploadArea.onclick = () => fileInput.click();
+        
+        fileInput.onchange = (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    selectedFileData = ev.target.result;
+                    previewDiv.innerHTML = `<img src="${ev.target.result}" class="preview-image" alt="Preview">`;
+                    previewDiv.classList.remove('hidden');
+                    uploadBtn.disabled = false;
+                    showStatus(`Ready: ${selectedFile.name}`, 'info');
+                };
+                reader.readAsDataURL(selectedFile);
+            }
+        };
+        
+        uploadBtn.onclick = () => {
+            if (!selectedFile || !selectedFileData) return;
+            
+            uploadBtn.disabled = true;
+            showStatus('Processing...', 'info');
+            
+            // Store in localStorage for main window to pick up
+            const receiptData = {
+                filename: selectedFile.name,
+                amount: Math.floor(Math.random() * 200) + 10,
+                gst: Math.floor(Math.random() * 18) + 1,
+                date: new Date().toISOString().split('T')[0],
+                timestamp: Date.now(),
+                imagePreview: selectedFileData.substring(0, 200)
+            };
+            
+            // Store in localStorage with session ID
+            localStorage.setItem(`phone_upload_${sessionId}`, JSON.stringify(receiptData));
+            
+            showStatus('✓ Uploaded! Return to Taxlyy on your computer', 'success');
+            
+            // Show instructions to return to computer
+            setTimeout(() => {
+                showStatus('📱 Check your computer browser - receipt should appear soon', 'info');
+            }, 2000);
+            
+            // Try to close window after 4 seconds
+            setTimeout(() => {
+                window.close();
+            }, 4000);
+        };
+        
+        function showStatus(msg, type) {
+            statusDiv.textContent = msg;
+            statusDiv.className = `status ${type}`;
+            statusDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+/* ========================================
+   ANIMATIONS - Keyframes & Scroll States
+   ======================================== */
+
+@keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+    0%   { transform: translateY(0px); }
+    50%  { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes pulse {
+    0%   { opacity: 0.6; transform: scale(1); }
+    50%  { opacity: 1;   transform: scale(1.02); }
+    100% { opacity: 0.6; transform: scale(1); }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes glowPulse {
+    0%   { box-shadow: 0 0 0 0   rgba(67, 97, 238, 0.4); }
+    70%  { box-shadow: 0 0 0 10px rgba(67, 97, 238, 0); }
+    100% { box-shadow: 0 0 0 0   rgba(67, 97, 238, 0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+    0%   { transform: translateX(-60px); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Applied animation classes ── */
+.logo-mark {
+    animation: float 3s ease-in-out infinite;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 60px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+/* ── Scroll-state transitions ──
+   Applied by JS via .scrolled class.
+   All transitioning properties must be listed on the BASE rule
+   so the reverse (scroll up) animates back too.
+   ======================================== */
+
+/* Logo text/mark smooth shrink */
+.logo-text,
+.logo-mark {
+    transition: font-size 0.35s ease;
+}
+
+.app-header.scrolled .logo-text { font-size: var(--font-lg); }
+.app-header.scrolled .logo-mark { font-size: var(--font-xl); }
+
+/* Lang buttons compact text */
+.lang-btn {
+    transition: font-size 0.35s ease, padding 0.35s ease, color var(--transition), background var(--transition);
+}

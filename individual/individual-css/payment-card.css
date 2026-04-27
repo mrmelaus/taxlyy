@@ -1,0 +1,373 @@
+/* ========================================
+   PAYMENT CARD STYLES
+   ======================================== */
+
+.payment-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+/* Order Summary */
+.order-summary {
+    background: var(--glass-bg);
+    border: 1px solid var(--border-glow);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+}
+
+.order-summary-title {
+    font-size: var(--font-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.order-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-2) 0;
+    font-size: var(--font-base);
+    color: var(--text-secondary);
+}
+
+.order-summary-row.total-row {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: var(--font-base);
+}
+
+.order-summary-divider {
+    height: 1px;
+    background: var(--glass-border);
+    margin: var(--space-2) 0;
+}
+
+.order-summary-promo {
+    margin: var(--space-2) 0;
+}
+
+.promo-input-group {
+    display: flex;
+    gap: var(--space-2);
+    max-width: 280px;  /* limits width, keeps it compact */
+    margin-bottom: var(--space-2);
+}
+
+/* Make promo input group more compact */
+.promo-input-group .form-input {
+    padding: var(--space-2) var(--space-3);   /* reduces vertical padding */
+    font-size: var(--font-sm);                /* smaller text for promo code */
+    height: auto;
+    color: var(--text-muted);
+}
+
+.promo-input-group .nav-btn.secondary {
+    padding: var(--space-2) var(--space-4);   /* matches input height */
+    font-size: var(--font-sm);                /* smaller button text */
+    line-height: 1.2;
+}
+
+.promo-message {
+    font-size: var(--font-sm);       /* larger than xs */
+    margin-top: var(--space-1);
+    padding: var(--space-1) 0;
+}
+.promo-message.success {
+    color: var(--accent);
+}
+.promo-message.error {
+    color: var(--error);
+}
+.promo-message.info {
+    color: var(--warning);
+}
+
+.promo-toggle-link {
+    color: var(--accent) !important;   /* or var(--text-primary) for white */
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: var(--font-sm);
+    text-decoration: underline;
+    text-align: left;
+}
+
+.discount-row {
+    color: var(--accent);
+}
+
+/* Two-column layout */
+.payment-two-col {
+    display: flex;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.payment-col {
+    flex: 1;
+    min-width: 250px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.payment-method-title {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+/* Wallet buttons (brand colours allowed) */
+.wallet-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--font-base);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.apple-pay-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+}
+
+.apple-pay-btn:hover {
+    background: #1a1a1a;
+    transform: translateY(-1px);
+}
+
+.google-pay-btn {
+    background: #fff;
+    color: #3c4043;
+    border: 1px solid #dadce0;
+}
+
+.google-pay-btn:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.wallet-note {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: var(--space-2);
+}
+
+/* Stripe Card Element */
+.stripe-card-element {
+    padding: var(--space-3) var(--space-4);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.stripe-card-element:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+.card-errors {
+    color: var(--error);
+    font-size: var(--font-xs);
+    margin-top: var(--space-2);
+    padding: var(--space-2);
+    background: rgba(255, 77, 109, 0.1);
+    border-radius: var(--radius-sm);
+}
+
+/* Pay Button */
+.pay-button {
+    width: 100%;
+    padding: var(--space-4);
+    background: var(--accent-gradient);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--bg-dark);
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: var(--space-2);
+}
+
+.pay-button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.pay-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Payment Message */
+.payment-message {
+    margin-top: var(--space-3);
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    font-size: var(--font-sm);
+    display: none;
+}
+
+.payment-message.error {
+    background: rgba(255, 77, 109, 0.1);
+    color: var(--error);
+    display: block;
+}
+
+/* Success Modal */
+.payment-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.payment-modal-content {
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-glow);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+}
+
+.payment-modal-icon {
+    font-size: 48px;
+    margin-bottom: var(--space-4);
+}
+
+.payment-modal-title {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-3);
+}
+
+.payment-modal-message {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+    line-height: 1.5;
+}
+
+/* Fallback section (combined) */
+.payment-modal-fallback {
+    margin-top: var(--space-4);
+    padding: var(--space-4);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-lg);
+}
+
+.fallback-divider {
+    height: 1px;
+    background: var(--glass-border);
+    margin: var(--space-4) 0;
+}
+
+.fallback-title {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-3);
+}
+
+.fallback-buttons {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    margin: var(--space-3) 0;
+    flex-wrap: wrap;
+}
+
+.fallback-buttons .nav-btn {
+    min-width: 140px;
+}
+
+.fallback-note {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: var(--space-2);
+}
+
+.close-modal-btn {
+    margin-top: var(--space-6);
+    width: 100%;
+}
+
+/* Wallet button containers */
+#applePayButton,
+#googlePayButton {
+    margin: 8px 0;
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: transparent;
+    transition: opacity 0.2s ease;
+}
+
+/* Ensure the Stripe‑rendered button fills the container nicely */
+#applePayButton > iframe,
+#googlePayButton > iframe,
+#applePayButton .stripe-payment-request-button,
+#googlePayButton .stripe-payment-request-button {
+    width: 100% !important;
+    border-radius: 8px !important;
+    min-height: 48px;
+}
+
+/* Optional: add a subtle shadow on hover */
+#applePayButton:hover,
+#googlePayButton:hover {
+    opacity: 0.95;
+}
+
+ 
+.payment-trust-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.trust-badge-payment {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+}

@@ -1,0 +1,90 @@
+/* ========================================
+   VARIABLES - Design Tokens
+   All CSS custom properties in one place
+   ======================================== */
+:root {
+    /* Primary Colors */
+    --primary: #4361ee;
+    --primary-dark: #3a0ca3;
+    --primary-light: #7209b7;
+    --primary-gradient: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+    --primary-gradient-subtle: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(114, 9, 183, 0.1) 100%);
+
+    /* Accent / Status Colors */
+    --accent: #4cc9f0;
+    --accent-dark: #3ab5db;
+    --accent-gradient: linear-gradient(135deg, #4361ee 0%, #4cc9f0 100%);
+    --warning: #ff9f1c;
+    --warning-dark: #e88a00;
+    --error: #ff4d6d;
+    --error-dark: #e63946;
+    --info: #4cc9f0;
+
+    /* Backgrounds & Surfaces */
+    --bg-dark: #12102e;
+    --bg-card: rgba(15, 20, 40, 0.8);
+    --bg-card-solid: #0f1428;
+    --bg-elevated: rgba(25, 32, 60, 0.9);
+
+    /* Text */
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-muted: rgba(255, 255, 255, 0.4);
+    --english-secondary: rgba(255, 255, 255, 0.5);
+
+    /* Borders */
+    --border: rgba(255, 255, 255, 0.1);
+    --border-glow: rgba(67, 97, 238, 0.5);
+
+    /* Shadows & Glows */
+    --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 15px 40px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(67, 97, 238, 0.3);
+    --shadow-glow-accent: 0 0 20px rgba(76, 201, 240, 0.2);
+
+    /* Typography Scale */
+    --font-xs:   0.75rem;    /* 12px */
+    --font-sm:   0.875rem;   /* 14px */
+    --font-base: 1rem;       /* 16px */
+    --font-md:   1.125rem;   /* 18px */
+    --font-lg:   1.25rem;    /* 20px */
+    --font-xl:   1.5rem;     /* 24px */
+    --font-2xl:  2rem;       /* 32px */
+    --font-3xl:  2.5rem;     /* 40px */
+    --font-4xl:  3rem;       /* 48px */
+
+    /* Spacing Scale */
+    --space-1:  0.25rem;
+    --space-2:  0.5rem;
+    --space-3:  0.75rem;
+    --space-4:  1rem;
+    --space-5:  1.25rem;
+    --space-6:  1.5rem;
+    --space-8:  2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+
+    /* Border Radius */
+    --radius-sm:   0.5rem;
+    --radius-md:   0.75rem;
+    --radius-lg:   1rem;
+    --radius-xl:   1.5rem;
+    --radius-2xl:  2rem;
+    --radius-full: 9999px;
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition:      0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    /* Glassmorphism */
+    --glass-bg:     rgba(15, 20, 40, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur:   blur(12px);
+
+    /* Header height tokens - used by estimate-bar top offset */
+    --header-height-default:  82px;   /* approx height at rest */
+    --header-height-scrolled: 56px;   /* approx height when compact */
+}
