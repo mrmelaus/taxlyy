@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Didn't receive your Taxlyy tax report? Enter your email and we'll resend the download link.">
+    <title>Taxlyy — Missing Your Report?</title>
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/frontend/variables.css">
+    <link rel="stylesheet" href="/frontend/styles.css">
+    <link rel="stylesheet" href="/frontend/missing-report/missing-report.css">
+    <!-- Supabase library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="missing-report-page">
+
+    <!-- Simple Back Arrow + Logo -->
+    <div class="missing-header">
+        <a href="/frontend/index.html" class="back-arrow">←</a>
+        
+    </div>
+
+    <!-- Main Content -->
+    <main class="missing-main">
+        <div class="container">
+            <div class="missing-card">
+                <div class="missing-icon">🔍</div>
+                <h1>Missing your tax report?</h1>
+                <p class="missing-sub">Enter the email you used at checkout and we'll send you a download link.</p>
+
+                <form id="missingReportForm" class="missing-form">
+                    <div class="form-group">
+                        <label for="missingEmail">Email address</label>
+                        <input type="email" id="missingEmail" class="form-input" 
+                               placeholder="name@example.com" autocomplete="off">
+                        <div id="emailError" class="form-error" style="display: none;"></div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="submit" id="submitBtn" class="btn-primary">
+                            Check my email →
+                        </button>
+                    </div>
+                </form>
+
+                <div id="statusMessage" class="status-message"></div>
+
+                <div class="missing-card-footer">
+                    <p>For other questions, visit our <a href="/#faq">FAQ</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="missing-page-footer">
+        <div class="container">
+            <p>© 2026 Hepta Care Pty Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+   <!-- 1. Config first (defines SUPABASE_URL and SUPABASE_ANON_KEY) -->
+    <script src="/individual/js/config.js"></script>
+
+    <!-- 2. Supabase CDN (creates global 'supabase' object) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 3. Supabase client (uses both above to create window.supabaseClient) -->
+    <script src="/individual/js/supabase-client.js"></script>
+
+    <!-- 4. Supabase config (loads translations, rates, etc.) -->
+    <script src="/individual/js/supabase-config.js"></script>
+
+    <!-- 5. Your missing report logic -->
+    <script src="/frontend/missing-report/missing-report.js"></script>
+    </body>
+</html>

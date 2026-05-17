@@ -1,0 +1,508 @@
+/* ─────────────────────────────────────────
+   annual.css
+   Annual tax report screen — FY 2024-25
+   Uses CSS variables from variables.css
+   Font sizes use --text-* scale only
+   No hardcoded px/rem values
+───────────────────────────────────────── */
+
+/* ════════════════════════════════════════
+   HEADER
+════════════════════════════════════════ */
+.annual-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.annual-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.annual-subtitle {
+  font-size: var(--text-xs);
+  color: var(--text3);
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.annual-days-badge {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--gold-dim);
+  color: var(--gold);
+  border: 1px solid rgba(240, 192, 64, 0.2);
+}
+
+.annual-days-badge.urgent {
+  background: var(--coral-dim);
+  color: var(--coral);
+  border-color: rgba(255, 107, 107, 0.2);
+}
+
+.annual-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ════════════════════════════════════════
+   NOTICE BANNERS
+════════════════════════════════════════ */
+.annual-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.annual-notice-icon {
+  flex-shrink: 0;
+  font-size: var(--text-base);
+  margin-top: 1px;
+}
+
+.annual-notice--warning {
+  background: var(--gold-dim);
+  border: 1px solid var(--gold);
+  color: var(--text);
+}
+
+.annual-notice--info {
+  background: var(--alert-bg);
+  border: 1px solid var(--alert-border);
+  color: var(--alert-text);
+}
+
+.annual-notice--tip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: var(--text-xs);
+}
+
+/* ════════════════════════════════════════
+   STAT CARDS — override grid for 4 col
+════════════════════════════════════════ */
+.annual-stats {
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 1.5rem;
+}
+
+/* ════════════════════════════════════════
+   TWO-COLUMN LAYOUT
+════════════════════════════════════════ */
+.annual-two-col {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.annual-left,
+.annual-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ════════════════════════════════════════
+   CARD WRAPPER
+════════════════════════════════════════ */
+.annual-card {
+  /* inherits .card from components.css */
+}
+
+/* ════════════════════════════════════════
+   PROFIT & LOSS
+════════════════════════════════════════ */
+.annual-pl-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+.annual-pl-section-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.annual-pl-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.375rem 0;
+  font-size: var(--text-sm);
+  color: var(--text2);
+}
+
+.annual-pl-row--total {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text);
+  padding: 0.625rem 0 0.375rem;
+}
+
+.annual-pl-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.annual-ato-badge {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--brand-glow);
+  color: var(--brand);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.annual-pl-amount {
+ 
+  font-size: var(--text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.annual-pl-amount--income { color: var(--green); }
+.annual-pl-amount--deduct { color: var(--coral); }
+.annual-pl-amount--net    { color: var(--brand);  font-size: var(--text-base); font-weight: 600; }
+.annual-pl-amount--loss   { color: var(--coral);  font-size: var(--text-base); font-weight: 600; }
+
+.annual-pl-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.375rem 0;
+}
+
+.annual-empty-deductions {
+  font-size: var(--text-sm);
+  color: var(--text3);
+  padding: 0.75rem 0;
+  text-align: center;
+}
+
+.annual-empty-deductions a {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+/* ════════════════════════════════════════
+   PAYG EMPLOYMENT SECTION
+════════════════════════════════════════ */
+.annual-toggle-wrap {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.annual-payg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.annual-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.annual-input-prefix {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text3);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  padding: 9px 10px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.annual-money-input {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+  border-left: none !important;
+  flex: 1;
+}
+
+.annual-field-hint {
+  font-size: var(--text-xs);
+  color: var(--text3);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* ════════════════════════════════════════
+   OTHER ADJUSTMENTS
+════════════════════════════════════════ */
+.annual-adj-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.875rem 0;
+}
+
+.annual-adj-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.annual-adj-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.annual-adj-input {
+  width: 100px;
+  text-align: right;
+}
+
+.annual-adj-unit {
+  font-size: var(--text-xs);
+  color: var(--text3);
+  white-space: nowrap;
+}
+
+.annual-adj-divider {
+  height: 1px;
+  background: var(--border);
+}
+
+/* ════════════════════════════════════════
+   TAX BREAKDOWN
+════════════════════════════════════════ */
+.annual-tax-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.annual-tax-section-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.annual-tax-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.375rem 0;
+  font-size: var(--text-sm);
+  color: var(--text2);
+}
+
+.annual-tax-row--subtotal {
+  font-weight: 600;
+  color: var(--text);
+  font-size: var(--text-sm);
+  border-top: 1px solid var(--border);
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.annual-tax-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.5rem 0;
+}
+
+.annual-tax-val            { font-size: var(--text-sm); }
+.annual-tax-val--debit     { color: var(--coral); }
+.annual-tax-val--credit    { color: var(--green); }
+
+.annual-tax-result {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.annual-tax-result--owing {
+  background: var(--coral-dim);
+  border: 1px solid rgba(255, 107, 107, 0.25);
+}
+
+.annual-tax-result--refund {
+  background: var(--green-dim);
+  border: 1px solid rgba(45, 212, 160, 0.25);
+}
+
+.annual-tax-result-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.375rem;
+}
+
+.annual-tax-result-amount {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 0.375rem;
+}
+
+.annual-tax-result--owing  .annual-tax-result-amount { color: var(--coral); }
+.annual-tax-result--refund .annual-tax-result-amount { color: var(--green); }
+
+.annual-tax-result-note {
+  font-size: var(--text-xs);
+  color: var(--text3);
+}
+
+/* ════════════════════════════════════════
+   myTAX FIELD GUIDE
+════════════════════════════════════════ */
+.annual-mytax-body {
+  padding: 1.25rem;
+}
+
+.annual-mytax-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+  counter-reset: step;
+}
+
+.annual-mytax-step {
+  font-size: var(--text-xs);
+  color: var(--text2);
+  padding-left: 1.25rem;
+  position: relative;
+  line-height: 1.5;
+}
+
+.annual-mytax-step::before {
+  content: counter(step);
+  counter-increment: step;
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.annual-mytax-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.annual-mytax-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.875rem;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.annual-mytax-field-label {
+  font-size: var(--text-xs);
+  color: var(--text3);
+}
+
+.annual-mytax-field-val {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.annual-mytax-field-val--primary {
+  color: var(--brand);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+/* ════════════════════════════════════════
+   DECLARATION
+════════════════════════════════════════ */
+.annual-declaration {
+  /* inherits .declaration-box from components.css */
+}
+
+.annual-decl-btn {
+  /* inherits .btn .btn-primary */
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 64rem) {
+  .annual-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .annual-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .annual-payg-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .annual-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 40rem) {
+  .annual-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .annual-adj-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .annual-adj-input-wrap {
+    width: 100%;
+  }
+
+  .annual-adj-input {
+    width: 100%;
+  }
+}

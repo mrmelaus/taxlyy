@@ -25,6 +25,9 @@ let userData = {
     tfn: '',
     dob: '',
     email: '',
+
+
+    taxableIncome: 0,
     
     // Tax residency flags (new)
     isAustralianTaxResident: undefined,   // true/false
@@ -59,13 +62,25 @@ let userData = {
     capitalLosses: 0,
     priorYearCapitalLosses: 0,
     cgtDiscountApplies: false,
+
+    // After frankingCredits: 0,
+    governmentPayments: 0,
+    govTaxWithheld: 0,        // NEW — tax withheld on govt payments
+    targetForeignIncome: 0,
+
+    // After capitalGains section:
+    abnIncome: 0,             // NEW — gross ABN income
+    abnExpenses: 0,           // NEW — ABN business expenses
+    abnTaxWithheld: 0,        // NEW — tax withheld on ABN income
     
     // ATI adjustments
     fringeBenefits: 0,
     reportableSuper: 0,
     taxFreeGovPayments: 0,
     financialInvestmentLoss: 0,
-    childSupportPaid: 0,
+    childSupportPaid: 0, 
+    hasHecsLoan: undefined,
+    hecsManualRepaymentIncome: 0,
     
     // Medicare Levy Surcharge
     hasPrivateHospitalCover: undefined,
@@ -80,6 +95,75 @@ let userData = {
     finalTotal: 0,
     promoCode: null
 };
+
+// ========== WARNING ON REFRESH ==========
+// Add this RIGHT HERE, after userData is defined
+function hasAnyUserData() {
+    return userData.tfn || 
+           userData.fullName || 
+           (userData.employers && userData.employers.length > 0);
+}
+
+window.addEventListener('beforeunload', (e) => {
+    if (hasAnyUserData()) {
+        e.preventDefault();
+        e.returnValue = 'Your data will be lost if you refresh. Please complete your return in one session.';
+    }
+});
+
+function resetUserData() {
+    // Fresh copy of the initial userData
+    userData = {
+        fullName: '',
+        tfn: '',
+        dob: '',
+        email: '',
+        taxableIncome: 0,
+        isAustralianTaxResident: undefined,
+        isTemporaryVisaHolder: undefined,
+        hasMedicareExemptionCertificate: undefined,
+        isWHMVisaHolder: undefined,
+        employers: [],
+        otherIncome: { interest: 0, dividends: 0, otherAmount: 0 },
+        frankingCredits: 0,
+        governmentPayments: 0,
+        targetForeignIncome: 0,
+        homeOffice: 0,
+        travelExpenses: 0,
+        equipment: 0,
+        selfEducation: 0,
+        otherDeductions: 0,
+        rentalIncome: 0,
+        rentalExpenses: 0,
+        capitalGains: 0,
+        capitalLosses: 0,
+        priorYearCapitalLosses: 0,
+        cgtDiscountApplies: false,
+        govTaxWithheld: 0,
+        abnIncome: 0,
+        abnExpenses: 0,
+        abnTaxWithheld: 0,
+        fringeBenefits: 0,
+        reportableSuper: 0,
+        taxFreeGovPayments: 0,
+        financialInvestmentLoss: 0,
+        childSupportPaid: 0,
+        hasHecsLoan: false,
+        hecsManualRepaymentIncome: 0,
+        hasPrivateHospitalCover: undefined,
+        isSingle: undefined,
+        daysWithoutCover: undefined,
+        dependentChildren: 0,
+        appliedPromo: null,
+        discountAmount: 0,
+        originalTotal: 0,
+        finalTotal: 0,
+        promoCode: null
+    };
+    // Clear localStorage
+    localStorage.removeItem('taxlyy_userData');
+}
+
 
 // ========================================
 // Header scroll animation & language button short forms
@@ -145,42 +229,7 @@ window.addEventListener('scroll', () => {
 // ========================================
 // Data persistence
 // ========================================
-function loadSavedData() {
-    try {
-        const saved = localStorage.getItem('taxlyy_userData');
-        if (saved) {
-            const parsed = JSON.parse(saved);
 
-            // Migration shim: convert old taxResidencyStatus string to new boolean flags.
-            // Safe to leave permanently — no-ops when new flags already present.
-            if (parsed.taxResidencyStatus && parsed.isAustralianTaxResident === undefined) {
-                const map = {
-                    australian: { isAustralianTaxResident: true,  isTemporaryVisaHolder: false, isWHMVisaHolder: false },
-                    temporary:  { isAustralianTaxResident: true,  isTemporaryVisaHolder: true,  isWHMVisaHolder: false },
-                    whm:        { isAustralianTaxResident: false, isTemporaryVisaHolder: false, isWHMVisaHolder: true  },
-                    foreign:    { isAustralianTaxResident: false, isTemporaryVisaHolder: false, isWHMVisaHolder: false }
-                };
-                const flags = map[parsed.taxResidencyStatus];
-                if (flags) Object.assign(parsed, flags);
-                delete parsed.taxResidencyStatus;
-                // hasMedicareExemptionCertificate: no equivalent in old data,
-                // left as undefined so the user is prompted to answer it.
-            }
-
-            userData = { ...userData, ...parsed };
-        }
-    } catch(e) {
-        console.warn('loadSavedData failed:', e);
-    }
-}
-
-function saveCurrentData() {
-    try {
-        localStorage.setItem('taxlyy_userData', JSON.stringify(userData));
-    } catch(e) {
-        console.warn('saveCurrentData failed:', e);
-    }
-}
 
 // ========================================
 // Update totals and estimate bar
@@ -189,11 +238,14 @@ function updateTotals() {
     // Employment income
     if (userData.employers && userData.employers.length > 0) {
         userData.totalIncome = userData.employers.reduce((sum, emp) => sum + (emp.grossIncome || 0), 0);
-        userData.totalTaxWithheld = userData.employers.reduce((sum, emp) => sum + (emp.taxWithheld || 0), 0);
     } else {
         userData.totalIncome = 0;
-        userData.totalTaxWithheld = 0;
     }
+
+    // Always use calculateTotalWithheld to include PAYG + gov + ABN withheld
+    userData.totalTaxWithheld = typeof calculateTotalWithheld === 'function'
+        ? calculateTotalWithheld(userData)
+        : (userData.employers || []).reduce((sum, emp) => sum + (emp.taxWithheld || 0), 0);
 
     // Other income
     if (userData.otherIncome) {
@@ -250,7 +302,7 @@ function updateTotals() {
         updateEstimateAndDisplay(userData);
     }
 
-    saveCurrentData();
+    //saveCurrentData();
 }
 
 // ========================================
@@ -336,10 +388,12 @@ function renderCard() {
 function nextCard() {
     if (sessionStorage.getItem('returnToReview') === 'true') {
         sessionStorage.removeItem('returnToReview');
+      
         const reviewIndex = cards.findIndex(c => c.id === 'review');
         if (reviewIndex !== -1) {
             currentCardIndex = reviewIndex;
             renderCard();
+            updateNextButtonLabel();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
@@ -400,11 +454,25 @@ function nextCard() {
             if (dobEl) dobEl.style.borderColor = 'var(--accent)';
             if (dobError) dobError.style.display = 'none';
         }
+        // Email validation
+        const email = (userData.email || '').trim();
+        const emailEl = document.getElementById('email');
+        const emailError = document.getElementById('emailError');
+
+        if (!email || !validateEmail(email)) {
+            if (emailEl) emailEl.style.borderColor = 'var(--error)';
+            if (emailError) emailError.style.display = 'block';
+            hasError = true;
+        } else {
+            if (emailEl) emailEl.style.borderColor = 'var(--accent)';
+            if (emailError) emailError.style.display = 'none';
+        }
 
         if (hasError) {
             document.querySelector('.form-error[style*="block"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
+        
 
         // NEW: Tax residency questions validation
         if (userData.isAustralianTaxResident === undefined) {
@@ -448,7 +516,13 @@ function nextCard() {
     if (cards[currentCardIndex].id === 'review') {
         sessionStorage.removeItem('returnToReview');
     }
-
+    // Adjustments card validation (HELP/HECS loan question)
+    if (cards[currentCardIndex].id === 'adjustments') {
+        if (userData.hasHecsLoan === undefined) {
+            alert('Please indicate whether you have a HELP/HECS student loan.');
+            return;
+        }
+    }
     // Health card validation
     if (cards[currentCardIndex].id === 'health') {
         const missing = [];
@@ -480,13 +554,13 @@ function nextCard() {
                 alert('Please enter a valid email address.');
                 return;
             }
-            userData.userEmail = email;
+            userData.email = email;
         }
         const bilingualCheckbox = document.getElementById('bilingualReportCheckbox');
         if (bilingualCheckbox) {
             userData.bilingualReport = bilingualCheckbox.checked;
         }
-        saveCurrentData();
+        //saveCurrentData();
     }
 
     // Navigation
@@ -499,14 +573,43 @@ function nextCard() {
     }
 }
 
-function prevCard() {
-    if (currentCardIndex >= 2) {
-        currentCardIndex--;
-        renderCard();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+function updateNextButtonLabel() {
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    if (!nextBtn) return;
+    const lang = window.currentLang || 'en';
+    const isLastCard = currentCardIndex === cards.length - 1;
+    const returnToReview = sessionStorage.getItem('returnToReview') === 'true';
+            
+    if (prevBtn) {
+    prevBtn.style.visibility = returnToReview ? 'hidden' : '';
+    }
+
+    if (sessionStorage.getItem('returnToReview') === 'true') {
+        nextBtn.innerHTML = lang === 'zh'
+            ? '返回审核 →'
+            : 'Return to Review →';
+    } else if (isLastCard) {
+        nextBtn.innerHTML = lang === 'zh'
+            ? '<span class="zh">支付并获取报告</span><span class="en">Pay & Get Report</span>'
+            : 'Pay & Get Report';
+    } else {
+        nextBtn.innerHTML = lang === 'zh'
+            ? '继续 →'
+            : 'Next →';
     }
 }
 
+function prevCard() {
+    if (sessionStorage.getItem('returnToReview') === 'true') return;
+
+    if (currentCardIndex >= 2) {
+        currentCardIndex--;
+        renderCard();
+        updateNextButtonLabel();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
 function updateProgress() {
     const lang = window.currentLang || 'en';
     const progress = ((currentCardIndex + 1) / cards.length) * 100;
@@ -723,30 +826,48 @@ async function processPayment() {
 // Language switching
 // ========================================
 function setLanguage(lang) {
-    window.currentLang = lang; // FIX: always set on window, not a local variable
+    window.currentLang = lang;
 
     document.getElementById('lang-en')?.classList.toggle('active', lang === 'en');
     document.getElementById('lang-zh')?.classList.toggle('active', lang === 'zh');
 
+    const logoZh = document.getElementById('logoZh');
+    if (logoZh) logoZh.textContent = lang === 'zh' ? '税易(个人版)' : '';
+
     const label = document.getElementById('estimateLabel');
-    // FIX: use t() + innerHTML so bilingual mode works correctly
     if (label) label.innerHTML = t('estimatedReturn');
 
     const disclaimerText = document.querySelector('.disclaimer-text');
-    // FIX: use innerHTML for disclaimer too (may contain bilingual spans)
     if (disclaimerText) disclaimerText.innerHTML = t('disclaimerText');
 
-    const isLastCard = currentCardIndex === cards.length - 1;
     const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
     if (prevBtn) prevBtn.textContent = lang === 'zh' ? '← 返回' : '← Back';
-    if (nextBtn) {
-        nextBtn.textContent = lang === 'zh'
-            ? (isLastCard ? '支付并获取报告' : '继续 →')
-            : (isLastCard ? 'Pay & Get Report' : 'Next →');
-    }
 
     renderCard();
+
+    // Re-initialize Stripe if on payment page
+    if (cards[currentCardIndex]?.id === 'payment') {
+        setTimeout(() => {
+            const employerCount = (userData.employers || []).length;
+            const hasAbn = (userData.abnIncome || 0) > 0;
+            let currentTotal;
+
+            if (hasAbn) {
+                currentTotal = window.pricing?.abn_fee || 89.99;
+            } else if (employerCount > 1) {
+                currentTotal = window.pricing?.multiple_jobs_fee || 79.99;
+            } else {
+                currentTotal = window.pricing?.standard_fee || 69.99;
+            }
+
+            if (userData.discountAmount && userData.finalTotal) {
+                currentTotal = userData.finalTotal;
+            }
+
+            if (typeof destroyStripePayment === 'function') destroyStripePayment();
+            if (typeof initStripePayment === 'function' && currentTotal > 0) initStripePayment(currentTotal);
+        }, 50);
+    }
 
     if (cards[currentCardIndex]?.id === 'welcome' && typeof refreshRunningNumberDisplay === 'function') {
         refreshRunningNumberDisplay();
@@ -755,8 +876,10 @@ function setLanguage(lang) {
     if (typeof updateEstimateAndDisplay === 'function') {
         updateEstimateAndDisplay(userData);
     }
-}
 
+    // Always set correct button label last — respects returnToReview flag
+    updateNextButtonLabel();
+}
 // ========================================
 // Expose globals
 // ========================================
@@ -767,8 +890,7 @@ window.renderCard = renderCard;
 window.nextCard = nextCard;
 window.prevCard = prevCard;
 window.updateTotals = updateTotals;
-window.saveCurrentData = saveCurrentData;
-window.loadSavedData = loadSavedData;
+//window.saveCurrentData = saveCurrentData;
 window.setLanguage = setLanguage;
 window.processPayment = processPayment;
 window.updateHeaderOnScroll = updateHeaderOnScroll;
@@ -778,3 +900,5 @@ window.handleUpload = handleUpload;
 window.resetUploadZone = resetUploadZone;
 window.isFinalPayslip = isFinalPayslip;
 window.addEmployerManually = addEmployerManually;
+window.updateNextButtonLabel = updateNextButtonLabel; 
+window.resetUserData = resetUserData;

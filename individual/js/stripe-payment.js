@@ -20,6 +20,25 @@ let currentPaymentMethod = 'card';
 function initStripePayment(totalAmount) {
     currentTotalAmount = totalAmount;
 
+    // If already initialized with same amount, reuse
+    if (stripe && cardElement && lastWalletAmount === totalAmount) {
+        // But ensure it's still mounted
+        const mountTarget = document.getElementById('cardElement');
+        if (mountTarget && mountTarget.children.length === 0) {
+            cardElement.mount('#cardElement');
+        }
+        return;
+    }
+
+    // Clean up existing
+    if (cardElement) {
+        cardElement.destroy();
+        cardElement = null;
+    }
+    if (applePayElement) { applePayElement.destroy(); applePayElement = null; }
+    if (googlePayElement) { googlePayElement.destroy(); googlePayElement = null; }
+    if (paymentRequest) paymentRequest = null;
+
     if (!stripe) {
         if (typeof Stripe === 'undefined') {
             console.warn('Stripe.js not loaded yet');
@@ -31,7 +50,6 @@ function initStripePayment(totalAmount) {
     initCardElement();
     initDigitalWallets(totalAmount);
 }
-
 // ========================================
 // Card Element
 // ========================================
@@ -218,6 +236,30 @@ async function createPaymentIntent(amount, userData) {
         showPaymentError('Payment setup failed. Please try again.');
         return null;
     }
+}
+
+// ========================================
+// Destroy Stripe Elements (for language switch)
+// ========================================
+function destroyStripePayment() {
+    if (cardElement) {
+        cardElement.destroy();
+        cardElement = null;
+    }
+    if (applePayElement) {
+        applePayElement.destroy();
+        applePayElement = null;
+    }
+    if (googlePayElement) {
+        googlePayElement.destroy();
+        googlePayElement = null;
+    }
+    if (paymentRequest) {
+        paymentRequest = null;
+    }
+    stripe = null;
+    lastWalletAmount = null;
+    currentTotalAmount = 0;
 }
 
 // ========================================

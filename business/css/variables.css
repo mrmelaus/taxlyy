@@ -1,0 +1,478 @@
+/* ─────────────────────────────────────────
+   variables.css
+   Taxlyy — dual theme system
+   Default: auto (follows OS)
+   Themes: dark (teal) | light (amber/warm-gray)
+   Font scale: --text-* rem tokens
+───────────────────────────────────────── */
+
+/* ════════════════════════════════════════
+   FONT SIZE SCALE
+   Use these everywhere — never hardcode px/rem
+════════════════════════════════════════ */
+:root {
+  color-scheme: light dark;
+
+  --text-xs:   0.75rem;    /* 12px */
+  --text-sm:   0.875rem;   /* 14px */
+  --text-base: 1rem;       /* 16px — default body */
+  --text-md:   1rem;       /* alias */
+  --text-lg:   1.125rem;   /* 18px */
+  --text-xl:   1.25rem;    /* 20px */
+  --text-2xl:  1.5rem;     /* 24px */
+  --text-3xl:  1.875rem;   /* 30px */
+  --text-4xl:  2.25rem;    /* 36px */
+  --text-5xl:  3rem;       /* 48px */
+  --text-6xl:  3.75rem;    /* 60px */
+}
+
+/* ════════════════════════════════════════
+   AUTO — system is DARK
+════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="dark"]):not([data-theme="light"]) {
+    --brand:        #0fa6a6;
+    --accent:       #0fa6a6;
+    --brand-light:  #1ac6c6;
+    --brand-dark:   #0a7a7a;
+    --brand-dim:    #0a5c5c;
+    --brand-glow:   rgba(15,166,166,0.20);
+    --brand-glow2:  rgba(15,166,166,0.12);
+    --aqua:         #1ac6c6;
+
+    --teal:         #0fa6a6;
+    --teal-light:   #1ac6c6;
+    --teal-dark:    #0a7a7a;
+    --teal-dim:     #0a5c5c;
+    --teal-glow:    rgba(15,166,166,0.12);
+    --teal-glow2:   rgba(15,166,166,0.08);
+
+    --gold:         #f0c040;
+    --gold-dim:     rgba(240,192,64,0.15);
+    --coral:        #ff6b6b;
+    --coral-dim:    rgba(255,107,107,0.12);
+    --green:        #2dd4a0;
+    --green-dim:    rgba(45,212,160,0.12);
+
+    --alert-bg:         rgba(255,152,0,0.15);
+    --alert-border:     #ff9800;
+    --alert-text:       #ffb74d;
+    --alert-badge-bg:   #ff9800;
+    --alert-badge-text: #1a1a1a;
+
+    --bg:      #0a1515;
+    --bg2:     #0e1c1c;
+    --bg3:     #142424;
+    --surface:  #182a2a;
+    --surface2: #1e3535;
+    --surface3: #284242;
+
+    --border:  rgba(15,166,166,0.25);
+    --border2: rgba(15,166,166,0.15);
+
+    --text:  #e8f8f8;
+    --text2: #a8d4d4;
+    --text3: #6a9e9e;
+
+    --font:   -apple-system,'SF Pro Text','SF Pro Display','Helvetica Neue','Helvetica','Arial',sans-serif;
+    --mono:   'SF Mono','Menlo','Monaco','Cascadia Code','Courier New',monospace;
+    --radius:    12px;
+    --radius-sm:  8px;
+    --sidebar-w: 240px;
+    --header-h:   60px;
+
+    --control-active:      #0fa6a6;
+    --control-active-text: #ffffff;
+
+    color-scheme: dark;
+  }
+}
+
+/* ════════════════════════════════════════
+   AUTO — system is LIGHT
+════════════════════════════════════════ */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]):not([data-theme="light"]) {
+    --brand:        #c2610a;
+    --accent:       #c2610a;
+    --brand-light:  #e07520;
+    --brand-dark:   #8f420a;
+    --brand-dim:    rgba(194,97,10,0.10);
+    --brand-glow:   rgba(194,97,10,0.12);
+    --brand-glow2:  rgba(224,117,32,0.08);
+    --aqua:         #9a4500;
+
+    --teal:         #c2610a;
+    --teal-light:   #e07520;
+    --teal-dark:    #8f420a;
+    --teal-dim:     rgba(194,97,10,0.10);
+    --teal-glow:    rgba(194,97,10,0.12);
+    --teal-glow2:   rgba(224,117,32,0.08);
+
+    --gold:         #b07d1a;
+    --gold-dim:     rgba(176,125,26,0.12);
+    --coral:        #c0392b;
+    --coral-dim:    rgba(192,57,43,0.10);
+    --green:        #2a7a4b;
+    --green-dim:    rgba(42,122,75,0.10);
+
+    --alert-bg:         #fff3e0;
+    --alert-border:     #e65100;
+    --alert-text:       #bf360c;
+    --alert-badge-bg:   #e65100;
+    --alert-badge-text: #ffffff;
+
+    --bg:      #faf9f7;
+    --bg2:     #ffffff;
+    --bg3:     #f3f1ee;
+    --surface:  #ffffff;
+    --surface2: #f7f5f2;
+    --surface3: #edeae5;
+
+    --border:  rgba(194,97,10,0.15);
+    --border2: rgba(194,97,10,0.25);
+
+    --text:  #1c1a17;
+    --text2: #4a4742;
+    --text3: #8a8680;
+
+    --font:   -apple-system,'SF Pro Text','SF Pro Display','Helvetica Neue','Helvetica','Arial',sans-serif;
+    --mono:   'SF Mono','Menlo','Monaco','Cascadia Code','Courier New',monospace;
+    --radius:    12px;
+    --radius-sm:  8px;
+    --sidebar-w: 240px;
+    --header-h:   60px;
+
+    --control-active:      #c2610a;
+    --control-active-text: #ffffff;
+
+    color-scheme: light;
+  }
+}
+
+/* ════════════════════════════════════════
+   EXPLICIT DARK
+════════════════════════════════════════ */
+[data-theme="dark"] {
+  --brand:        #0fa6a6;
+  --accent:       #0fa6a6;
+  --brand-light:  #1ac6c6;
+  --brand-dark:   #0a7a7a;
+  --brand-dim:    #0a5c5c;
+  --brand-glow:   rgba(15,166,166,0.20);
+  --brand-glow2:  rgba(15,166,166,0.12);
+  --aqua:         #1ac6c6;
+
+  --teal:         #0fa6a6;
+  --teal-light:   #1ac6c6;
+  --teal-dark:    #0a7a7a;
+  --teal-dim:     #0a5c5c;
+  --teal-glow:    rgba(15,166,166,0.12);
+  --teal-glow2:   rgba(15,166,166,0.08);
+
+  --gold:         #f0c040;
+  --gold-dim:     rgba(240,192,64,0.15);
+  --coral:        #ff6b6b;
+  --coral-dim:    rgba(255,107,107,0.12);
+  --green:        #2dd4a0;
+  --green-dim:    rgba(45,212,160,0.12);
+
+  --alert-bg:         rgba(255,152,0,0.15);
+  --alert-border:     #ff9800;
+  --alert-text:       #ffb74d;
+  --alert-badge-bg:   #ff9800;
+  --alert-badge-text: #1a1a1a;
+
+  --bg:      #0a1515;
+  --bg2:     #0e1c1c;
+  --bg3:     #142424;
+  --surface:  #182a2a;
+  --surface2: #1e3535;
+  --surface3: #284242;
+
+  --border:  rgba(15,166,166,0.25);
+  --border2: rgba(15,166,166,0.15);
+
+  --text:  #e8f8f8;
+  --text2: #a8d4d4;
+  --text3: #6a9e9e;
+
+  --font:   -apple-system,'SF Pro Text','SF Pro Display','Helvetica Neue','Helvetica','Arial',sans-serif;
+  --mono:   'SF Mono','Menlo','Monaco','Cascadia Code','Courier New',monospace;
+  --radius:    12px;
+  --radius-sm:  8px;
+  --sidebar-w: 240px;
+  --header-h:   60px;
+
+  --control-active:      #0fa6a6;
+  --control-active-text: #ffffff;
+
+  color-scheme: dark;
+}
+
+/* ════════════════════════════════════════
+   EXPLICIT LIGHT
+════════════════════════════════════════ */
+[data-theme="light"] {
+  --brand:        #c2610a;
+  --accent:       #c2610a;
+  --brand-light:  #e07520;
+  --brand-dark:   #8f420a;
+  --brand-dim:    rgba(194,97,10,0.10);
+  --brand-glow:   rgba(194,97,10,0.12);
+  --brand-glow2:  rgba(224,117,32,0.08);
+  --aqua:         #9a4500;
+
+  --teal:         #c2610a;
+  --teal-light:   #e07520;
+  --teal-dark:    #8f420a;
+  --teal-dim:     rgba(194,97,10,0.10);
+  --teal-glow:    rgba(194,97,10,0.12);
+  --teal-glow2:   rgba(224,117,32,0.08);
+
+  --gold:         #b07d1a;
+  --gold-dim:     rgba(176,125,26,0.12);
+  --coral:        #c0392b;
+  --coral-dim:    rgba(192,57,43,0.10);
+  --green:        #2a7a4b;
+  --green-dim:    rgba(42,122,75,0.10);
+
+  --alert-bg:         #fff3e0;
+  --alert-border:     #e65100;
+  --alert-text:       #bf360c;
+  --alert-badge-bg:   #e65100;
+  --alert-badge-text: #ffffff;
+
+  --bg:      #faf9f7;
+  --bg2:     #ffffff;
+  --bg3:     #f3f1ee;
+  --surface:  #ffffff;
+  --surface2: #f7f5f2;
+  --surface3: #edeae5;
+
+  --border:  rgba(194,97,10,0.15);
+  --border2: rgba(194,97,10,0.25);
+
+  --text:  #1c1a17;
+  --text2: #4a4742;
+  --text3: #8a8680;
+
+  --font:   -apple-system,'SF Pro Text','SF Pro Display','Helvetica Neue','Helvetica','Arial',sans-serif;
+  --mono:   'SF Mono','Menlo','Monaco','Cascadia Code','Courier New',monospace;
+  --radius:    12px;
+  --radius-sm:  8px;
+  --sidebar-w: 240px;
+  --header-h:   60px;
+
+  --control-active:      #c2610a;
+  --control-active-text: #ffffff;
+
+  color-scheme: light;
+}
+
+/* ════════════════════════════════════════
+   LIGHT THEME — contextual overrides
+════════════════════════════════════════ */
+[data-theme="light"] .stat-card.positive::after,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .stat-card.positive::after {
+  background: radial-gradient(circle, rgba(42,122,75,0.08), transparent);
+}
+[data-theme="light"] .stat-card.warning::after,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .stat-card.warning::after {
+  background: radial-gradient(circle, rgba(176,125,26,0.10), transparent);
+}
+[data-theme="light"] .stat-card.alert::after,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .stat-card.alert::after {
+  background: radial-gradient(circle, rgba(192,57,43,0.08), transparent);
+}
+[data-theme="light"] .sidebar,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .sidebar {
+  background: linear-gradient(180deg, #ffffff 0%, #f7f5f2 100%);
+  border-right-color: rgba(194,97,10,0.15);
+}
+[data-theme="light"] .nav-item.active,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .nav-item.active {
+  background: linear-gradient(90deg, rgba(194,97,10,0.10), rgba(224,117,32,0.05));
+  color: #8f420a;
+  border-color: rgba(194,97,10,0.20);
+}
+[data-theme="light"] .header,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .header {
+  background: #ffffff;
+  border-bottom-color: rgba(194,97,10,0.12);
+}
+[data-theme="light"] .btn-primary,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .btn-primary {
+  background: linear-gradient(135deg, #c2610a, #e07520);
+  box-shadow: 0 1px 4px rgba(194,97,10,0.20);
+}
+[data-theme="light"] .stat-card,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .stat-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f7f5f2 100%);
+}
+[data-theme="light"] .logo-text span,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .logo-text span {
+  color: #c2610a;
+}
+[data-theme="light"] .logo-mark,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .logo-mark {
+  background: linear-gradient(135deg, #c2610a, #e07520);
+  box-shadow: 0 2px 8px rgba(194,97,10,0.25);
+}
+[data-theme="light"] .avatar,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .avatar {
+  background: linear-gradient(135deg, #8f420a, #c2610a);
+}
+[data-theme="light"] .declaration-box,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .declaration-box {
+  background: rgba(194,97,10,0.05);
+  border-color: rgba(194,97,10,0.30);
+}
+[data-theme="light"] .upload-zone,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .upload-zone {
+  background: #f7f5f2;
+  border-color: rgba(194,97,10,0.20);
+}
+[data-theme="light"] .upload-zone:hover,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .upload-zone:hover {
+  background: rgba(194,97,10,0.05);
+  border-color: #c2610a;
+}
+[data-theme="light"] .table th,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .table th {
+  background: #f3f1ee;
+  color: #8a8680;
+}
+[data-theme="light"] .plan-card.current,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .plan-card.current {
+  border-color: #c2610a;
+  box-shadow: 0 0 0 3px rgba(194,97,10,0.08);
+}
+[data-theme="light"] .ring-bar-fill,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .ring-bar-fill {
+  background: linear-gradient(90deg, #c2610a, #e07520);
+}
+[data-theme="light"] .nav-badge,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .nav-badge {
+  background: rgba(194,97,10,0.10);
+  color: #8f420a;
+  border-color: rgba(194,97,10,0.20);
+}
+[data-theme="light"] .form-input,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .form-input {
+  background: #ffffff;
+  border-color: rgba(194,97,10,0.18);
+  color: #1c1a17;
+}
+[data-theme="light"] .form-input:focus,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .form-input:focus {
+  border-color: #c2610a;
+  box-shadow: 0 0 0 3px rgba(194,97,10,0.10);
+}
+[data-theme="light"] .toggle.on,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .toggle.on {
+  background: #c2610a;
+  border-color: #c2610a;
+  box-shadow: none;
+}
+[data-theme="light"] .sidebar::after,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .sidebar::after {
+  background: linear-gradient(180deg, transparent, var(--brand), transparent);
+  opacity: 0.3;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb,
+:root:not([data-theme="dark"]):not([data-theme="light"]) ::-webkit-scrollbar-thumb {
+  background: #dddad4;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover,
+:root:not([data-theme="dark"]):not([data-theme="light"]) ::-webkit-scrollbar-thumb:hover {
+  background: #c4c0b8;
+}
+
+/* ════════════════════════════════════════
+   A4 PREVIEW WRAPPER BACKGROUNDS
+════════════════════════════════════════ */
+[data-theme="dark"] .a4-preview-wrapper {
+  background: #1a1a2e;
+}
+[data-theme="light"] .a4-preview-wrapper,
+:root:not([data-theme="dark"]):not([data-theme="light"]) .a4-preview-wrapper {
+  background: #e5e7eb;
+}
+
+/* ════════════════════════════════════════
+   THEME TOGGLE BUTTONS
+════════════════════════════════════════ */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 2px;
+}
+
+.theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text3);
+  transition: all 0.15s;
+  font-size: var(--text-sm);
+}
+
+.theme-btn:hover {
+  color: var(--text2);
+  background: var(--surface3);
+}
+
+.theme-btn.active {
+  background: var(--control-active);
+  color: var(--control-active-text);
+}
+
+/* ════════════════════════════════════════
+   FONT SIZE TOGGLE BUTTONS
+════════════════════════════════════════ */
+.font-size-toggle {
+  display: flex;
+  align-items: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 2px;
+}
+
+.font-size-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text3);
+  transition: all 0.15s;
+  font-weight: 500;
+  font-size: var(--text-sm);
+}
+
+.font-size-btn:hover {
+  color: var(--text2);
+  background: var(--surface3);
+}
+
+.font-size-btn.active {
+  background: var(--control-active);
+  color: var(--control-active-text);
+}

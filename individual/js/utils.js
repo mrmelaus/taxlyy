@@ -84,11 +84,6 @@ function validateTFN(tfn) {
     return sum % 11 === 0;
 }
 
-// Validate email
-function validateEmail(email) {
-    return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email);
-}
-
 // Debounce function for real-time calculations
 function debounce(func, wait) {
     let timeout;
@@ -198,6 +193,57 @@ function validateDOB(dateStr) {
     return true;
 }
 
+function formatDateInput(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length > 8) value = value.slice(0, 8);
+    if (value.length >= 3) value = value.slice(0, 2) + '/' + value.slice(2);
+    if (value.length >= 6) value = value.slice(0, 5) + '/' + value.slice(5);
+    input.value = value;
+}
+
+// Validate Email
+function validateEmail(email) {
+    if (!email) return false;
+    const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
+    return emailRegex.test(email);
+}
+
+// Normalise ABN (remove spaces)
+function normaliseAbn(abn) {
+    return (abn || '').replace(/[\s\u00A0\u2009\u202F]/g, '');
+}
+
+// Find existing employer by ABN
+function findEmployerByAbn(abn) {
+    const norm = normaliseAbn(abn);
+    return userData.employers.find(emp => normaliseAbn(emp.employerAbn) === norm);
+}
+
+// Add or update employer – called from ABN lookup, OCR, manual add
+window.addOrUpdateEmployer = function(employer) {
+    const existing = findEmployerByAbn(employer.employerAbn);
+    if (existing) {
+        const msg = `An employer with ABN ${employer.employerAbn} (${existing.employerName}) already exists.\nDo you want to update the existing entry with the new figures?`;
+        if (confirm(msg)) {
+            existing.grossIncome = employer.grossIncome;
+            existing.taxWithheld = employer.taxWithheld;
+            if (employer.employerName) existing.employerName = employer.employerName;
+            existing._editing = true; // open edit form for verification
+            if (typeof renderEmployerList === 'function') renderEmployerList();
+            if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
+            //saveCurrentData();
+            return { action: 'updated' };
+        }
+        return { action: 'cancelled' };
+    }
+    // No duplicate – add new
+    userData.employers.push({ ...employer, _editing: true });
+    if (typeof renderEmployerList === 'function') renderEmployerList();
+    if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
+    //saveCurrentData();
+    return { action: 'added' };
+};
+
 // Strip HTML tags — use for input values and placeholders
 function stripHtml(str) {
     return (str || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -223,6 +269,7 @@ window.getRawTfn = getRawTfn;
 window.formatDateForATO = formatDateForATO;
 window.getCurrentFinancialYear = getCurrentFinancialYear;
 window.validateDOB = validateDOB;
+window.formatDateInput = formatDateInput;
 window.stripHtml = stripHtml;
 
 window.utils = {

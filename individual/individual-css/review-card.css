@@ -10,6 +10,7 @@
 .review-employer-name {
     font-weight: 600;
     color: var(--text-primary);
+    text-transform: uppercase;
 }
 
 .review-employer-abn {
@@ -47,7 +48,10 @@
 .review-section-title {
     font-size: var(--font-base);
     font-weight: 600;
-    color: var(--text-primary);
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .review-edit-btn {
@@ -210,4 +214,140 @@
     font-size: var(--font-xs);
     color: var(--text-secondary);
     text-align: center;
+}
+
+
+/* ========================================
+   TAX SUMMARY BLUR OVERLAY
+   ======================================== */
+
+.ts-blur-wrapper {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin: var(--space-2) 0;
+}
+
+/* Blurred background rows */
+.ts-blurred-rows {
+    filter: blur(4px);
+    opacity: 0.35;
+    pointer-events: none;
+    user-select: none;
+    padding: var(--space-2) 0;
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0,0,0,0.4) 12%,
+        rgba(0,0,0,1) 30%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0,0,0,0.4) 12%,
+        rgba(0,0,0,1) 30%
+    );
+}
+
+/* Overlay container */
+.ts-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    background: radial-gradient(
+        ellipse at center,
+        rgba(15, 20, 40, 0.15) 0%,
+        rgba(15, 20, 40, 0.45) 100%
+    );
+}
+
+/* Glass card — no button so more compact */
+.ts-overlay-card {
+    background: rgba(15, 20, 50, 0.75);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    border: 1px solid rgba(67, 97, 238, 0.4);
+    border-radius: var(--radius-xl);
+    box-shadow:
+        0 0 0 1px rgba(76, 201, 240, 0.08),
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(67, 97, 238, 0.15);
+    padding: var(--space-5) var(--space-8);
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    animation: fadeIn 0.4s ease;
+}
+
+.ts-overlay-emoji {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.ts-overlay-headline {
+    font-size: var(--font-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.ts-overlay-headline .zh {
+    display: block;
+    font-size: var(--font-base);
+    color: var(--text-primary);
+}
+
+.ts-overlay-headline .en {
+    display: block;
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: var(--space-1);
+}
+
+.ts-overlay-body {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 320px;
+}
+
+.ts-overlay-body .zh {
+    display: block;
+    color: var(--text-secondary);
+}
+
+.ts-overlay-body .en {
+    display: block;
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-top: var(--space-1);
+}
+
+.ts-overlay-meta {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+    padding-top: var(--space-1);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    width: 100%;
+    text-align: center;
+}
+
+.ts-overlay-meta .zh {
+    display: block;
+    color: var(--text-muted);
+}
+
+.ts-overlay-meta .en {
+    display: block;
+    color: var(--text-muted);
+    margin-top: 2px;
 }

@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Taxlyy Individual — your Australian tax return done in under 10 minutes. AI-powered, ATO-aligned, fixed fee. 2025–26 financial year.">
 <title>Taxlyy — Your Tax Return, Done</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="variables.css">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="/legal/legal.css">
+<link rel="stylesheet" href="/frontend/legal/legal.css">
 </head>
 <body>
 
@@ -15,10 +16,11 @@
 <nav id="navbar">
   <a href="/" class="nav-logo">Tax<span>lyy</span></a>
   <div class="nav-links">
-    <a href="#features">What's included</a>
-    <a href="#how">How it works</a>
-    <a href="#pricing">Pricing</a>
-    <a href="../individual/index.html" class="nav-cta">Start my return →</a>
+      <a href="#features">What's included</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/frontend/missing-report/missing-report.html">Missing your report?</a>
+      <a href="../individual/index.html" class="nav-cta">Get my tax report →</a>
   </div>
 </nav>
 
@@ -26,22 +28,32 @@
 <section id="hero">
   <div class="hero-grid"></div>
   <div class="hero-glow"></div>
-  <div class="hero-inner">
-    <div class="hero-badge">2025–26 financial year · Deadline 31 October 2025</div>
-    <h1>
-        Your tax return,<br>
-        done in minutes.
-    </h1>
-    <p class="hero-sub">AI-powered calculations. ATO-aligned rates. Fixed fee. No accountant, no waiting — your personalised report delivered instantly.</p>
-    <div class="hero-cta-group">
-      <a href="../individual/index.html" class="btn-primary">
-        Start my 2025–26 tax return <span class="arrow">→</span>
-      </a>
-      <div class="trust-row">
-        <span>✦ ATO 2025–26 rates</span>
-        <span>🔒 Stripe-secured payment</span>
-        <span>⚡ Under 10 minutes</span>
-        <span>🇦🇺 Made in Australia</span>
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-badge">2025–26 financial year · Next deadline 31 October 2026</div>
+      <div class="hero-two-columns">
+        <div class="hero-left">
+          <h1>
+              Your tax return,<br>
+              done in minutes.
+          </h1>
+          <p class="hero-sub">AI-powered calculations. ATO-aligned rates. Fixed fee. No accountant, no waiting — your personalised report delivered instantly.</p>
+          <div class="hero-cta-group">
+            <a href="../individual/index.html" class="btn-primary">
+              Get my tax report<span class="arrow">→</span>
+            </a>
+            <div class="trust-row">
+              <span>✦ ATO 2025–26 rates</span>
+              <span>🔒 Stripe-secured payment</span>
+              <span>⚡ Under 10 minutes</span>
+              <span>🇦🇺 Made in Australia</span>
+              <span>🌐 Free bilingual report — 中文 & English</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-right">
+          <img src="icons/icon-celebration.svg" alt="Tax celebration" class="hero-svg animated-svg">
+        </div>
       </div>
     </div>
   </div>
@@ -50,212 +62,250 @@
 
 <!-- WHAT YOU GET -->
 <section id="features">
-  <div class="features-header reveal">
-    <div class="section-label">What's included</div>
-    <div class="section-heading">Everything you need,<br>in one report</div>
-  </div>
-  <div class="features-grid">
-    <div class="feature-card reveal reveal-delay-1">
-      <div class="feature-icon">📊</div>
-      <h3>Your estimated refund or amount owing</h3>
-      <p>Cover page with your personalised result — calculated using the latest ATO 2025–26 tax brackets and offsets.</p>
+  <div class="container">
+    <div class="features-header reveal">
+      <div class="section-label">What's included</div>
+      <div class="section-heading">Everything you need,<br>in one report</div>
     </div>
-    <div class="feature-card reveal reveal-delay-2">
-      <div class="feature-icon">💼</div>
-      <h3>Full income & deductions breakdown</h3>
-      <p>PAYG income, interest, dividends, rental property, capital gains, work-from-home, and more — itemised clearly.</p>
-    </div>
-    <div class="feature-card reveal reveal-delay-3">
-      <div class="feature-icon">📋</div>
-      <h3>Step-by-step ATO lodgement guide</h3>
-      <p>Exactly how to enter your return on myGov — from logging in to submitting. No guesswork.</p>
-    </div>
-    <div class="feature-card reveal reveal-delay-4">
-      <div class="feature-icon">🧾</div>
-      <h3>Tax invoice included</h3>
-      <p>A GST-compliant tax invoice ready for your records.</p>
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon">📊</div>
+        <h3>Your estimated refund or amount owing</h3>
+        <p>Cover page with your personalised result — calculated using the latest ATO 2025–26 tax brackets and offsets.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon">💼</div>
+        <h3>Full income & deductions breakdown</h3>
+        <p>PAYG income, interest, dividends, rental property, capital gains, work-from-home, and more — itemised clearly.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon">📋</div>
+        <h3>Step-by-step ATO lodgement guide</h3>
+        <p>Exactly how to enter your return on myGov — from logging in to submitting. No guesswork.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-4">
+        <div class="feature-icon">🧾</div>
+        <h3>Tax invoice included</h3>
+        <p>A GST-compliant tax invoice ready for your records.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- HOW IT WORKS -->
 <section id="how">
-  <div class="reveal" style="text-align:center; max-width:520px; margin:0 auto;">
-    <div class="section-label">How it works</div>
-    <div class="section-heading">Three steps to your report</div>
-    <p class="section-sub">No accountant. No appointment. No waiting.</p>
-  </div>
-  <div class="steps-grid">
-    <div class="step reveal reveal-delay-1">
-      <div class="step-num">1</div>
-      <h3>Answer a few questions</h3>
-      <p>Income, deductions, health insurance, and rental property — simple questions, plain English. Takes less than 10 minutes.</p>
+  <div class="container">
+    <div class="reveal" style="text-align:center; max-width:520px; margin:0 auto;">
+      <div class="section-label">How it works</div>
+      <div class="section-heading">Three steps to your report</div>
+      <p class="section-sub">No accountant. No appointment. No waiting.</p>
     </div>
-    <div class="step reveal reveal-delay-2">
-      <div class="step-num">2</div>
-      <h3>Taxlyy calculates everything</h3>
-      <p>Income tax, Medicare levy, Medicare Levy Surcharge, LITO, CGT discount — all applied automatically for your situation.</p>
+    <div class="steps-grid">
+      <div class="step reveal reveal-delay-1">
+        <div class="step-num">1</div>
+        <h3>Answer a few questions</h3>
+        <p>Income, deductions, health insurance, and rental property — simple questions, plain English. Takes less than 10 minutes.</p>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-num">2</div>
+        <h3>Taxlyy calculates everything</h3>
+        <p>Income tax, Medicare levy, Medicare Levy Surcharge, LITO, CGT discount — all applied automatically for your situation.</p>
+      </div>
+      <div class="step reveal reveal-delay-3">
+        <div class="step-num">3</div>
+        <h3>Get your report instantly</h3>
+        <p>Pay once. Download your PDF immediately or have it sent to your email. Your ATO lodgement guide is included.</p>
+      </div>
     </div>
-    <div class="step reveal reveal-delay-3">
-      <div class="step-num">3</div>
-      <h3>Get your report instantly</h3>
-      <p>Pay once. Download your PDF immediately or have it sent to your email. Your ATO lodgement guide is included.</p>
+    <div class="how-cta reveal">
+      <a href="../individual/index.html" class="btn-primary">
+        Get my tax report<span class="arrow">→</span>
+      </a>
     </div>
-  </div>
-  <div class="how-cta reveal">
-    <a href="../individual/index.html" class="btn-primary">
-      Start my tax return <span class="arrow">→</span>
-    </a>
   </div>
 </section>
 
 <!-- PRICING -->
 <section id="pricing" class="reveal">
+  <div class="container">
     <div class="pricing-header">
-        <div class="section-label">PRICING</div>
-        <h2 class="section-heading">One flat fee. No surprises.</h2>
-        <p class="section-sub">Fixed price based on how many employers you have. That’s it.</p>
+      <div class="section-label">PRICING</div>
+      <h2 class="section-heading">One flat fee. No surprises.</h2>
+      <p class="section-sub">Fixed price based on your situation. Simple, transparent pricing.</p>
     </div>
+    
     <div class="pricing-grid">
-        <!-- Single employer card -->
-        <div class="price-card">
-            <div class="price-title">Single employer</div>
-            <div class="price-sub">One job · One employer, one payslip</div>
-            <div class="price-amount">$69.99</div>
-            <div class="price-gst">incl. GST</div>
-            <ul class="price-features">
-                <li>Personalised PDF tax return report</li>
-                <li>Full tax calculation breakdown</li>
-                <li>ATO lodgement guide (step by step)</li>
-                <li>Tax invoice (GST receipt)</li>
-                <li>Download or email delivery</li>
-                <li>No subscription, no recurring charges</li>
-            </ul>
-        </div>
-        <!-- Multiple employers card -->
-        <div class="price-card">
-            <div class="price-title">Multiple employers</div>
-            <div class="price-sub">Two or more jobs · 2+ employers this financial year</div>
-            <div class="price-amount">$79.99</div>
-            <div class="price-gst">incl. GST</div>
-            <ul class="price-features">
-                <li>Everything in single employer</li>
-                <li>Multiple employer income summary</li>
-                <li>Combined tax withheld calculation</li>
-                <li>Full tax calculation breakdown</li>
-                <li>ATO lodgement guide (step by step)</li>
-                <li>Tax invoice (GST receipt)</li>
-            </ul>
-        </div>
+      <!-- Single employer card -->
+      <div class="price-card">
+        <div class="price-title">Single employer</div>
+        <div class="price-sub">One job · One employer, one payslip</div>
+        <div class="price-divider"></div>
+        <div class="price-amount">$69.99</div>
+        <div class="price-gst">incl. GST</div>
+        <ul class="price-features">
+          <li>✓ Personalised PDF tax return report</li>
+          <li>✓ Full tax calculation breakdown</li>
+          <li>✓ ATO lodgement guide (step by step)</li>
+          <li>✓ Tax invoice (GST receipt)</li>
+          <li>✓ Download or email delivery</li>
+          <li>✓ No subscription, no recurring charges</li>
+        </ul>
+      </div>
+      
+      <!-- Multiple employers card -->
+      <div class="price-card">
+        <div class="price-title">Multiple employers</div>
+        <div class="price-sub">Two or more jobs · 2+ employers this financial year</div>
+        <div class="price-divider"></div>
+        <div class="price-amount">$79.99</div>
+        <div class="price-gst">incl. GST</div>
+        <ul class="price-features">
+          <li>✓ Everything in single employer</li>
+          <li>✓ Multiple employer income summary</li>
+          <li>✓ Combined tax withheld calculation</li>
+          <li>✓ Full tax calculation breakdown</li>
+          <li>✓ ATO lodgement guide (step by step)</li>
+          <li>✓ Tax invoice (GST receipt)</li>
+        </ul>
+      </div>
+      
+      <!-- ABN / Sole trader card -->
+      <div class="price-card">
+        <div class="price-title">Sole trader / ABN</div>
+        <div class="price-sub">Simple ABN income · Business expenses</div>
+        <div class="price-divider"></div>
+        <div class="price-amount">$89.99</div>
+        <div class="price-gst">incl. GST</div>
+        <ul class="price-features">
+          <li>✓ Everything in multiple employers</li>
+          <li>✓ ABN income + expenses calculation</li>
+          <li>✓ Net business profit/loss included</li>
+          <li>✓ Full tax calculation breakdown</li>
+          <li>✓ ATO lodgement guide (step by step)</li>
+          <li>✓ Tax invoice (GST receipt)</li>
+        </ul>
+      </div>
     </div>
+    
+    <!-- ABN Hint - Separate section below cards -->
+    <div class="abn-hint">
+      <span class="hint-badge">Note</span>
+      <span class="hint-message">For PAYG employees and sole traders with simple ABN income. For complex business, company returns, or BAS lodgement please use Taxlyy Business(coming soon).</span>
+    </div>
+    
     <div class="promo-note">✨ Have a promo code? Enter it at checkout.</div>
     <div class="pricing-footnote">
-        <span class="lock-icon">🔒</span> Fixed pricing – no surprises. Your price is based on your employers.
+      <span class="lock-icon">🔒</span> Fixed pricing – no surprises. Your price is based on your situation.
     </div>
+  </div>
 </section>
 
 <!-- WHO IT IS FOR -->
 <section id="who">
-  <div class="reveal">
-    <div class="section-label">Who it's for</div>
-    <div class="section-heading">Built for everyday<br>Australian taxpayers</div>
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Who it's for</div>
+      <div class="section-heading">Built for everyday<br>Australian taxpayers</div>
+    </div>
+    <div class="who-grid">
+      <div class="who-card reveal reveal-delay-1">
+        <div class="who-card-icon">👩‍💼</div>
+        <h3>PAYG employees</h3>
+        <p>Salary, wages, and allowances from one or more employers — the most common tax situation in Australia.</p>
+      </div>
+      <div class="who-card reveal reveal-delay-2">
+        <div class="who-card-icon">📈</div>
+        <h3>Investors</h3>
+        <p>Interest income, dividends, franking credits, and capital gains — all handled including the 50% CGT discount.</p>
+      </div>
+      <div class="who-card reveal reveal-delay-3">
+        <div class="who-card-icon">🏠</div>
+        <h3>Rental property owners</h3>
+        <p>Rental income and expenses, negative gearing, and rental loss carry-forward notes for next year.</p>
+      </div>
+      <div class="who-card reveal reveal-delay-4">
+        <div class="who-card-icon">✈️</div>
+        <h3>Working holiday makers</h3>
+        <p>Visa subclass 417 and 462 — correct WHM tax rates (15% on first $45,000) applied automatically.</p>
+      </div>
+    </div>
+    <p class="who-note reveal">Sole trader / ABN income is also supported — see <a href="#pricing">pricing</a> for details. For complex business returns or BAS lodgement, see <a href="../business/business.html">Taxlyy Business</a> (coming soon).</p>
   </div>
-  <div class="who-grid">
-    <div class="who-card reveal reveal-delay-1">
-      <div class="who-card-icon">👩‍💼</div>
-      <h3>PAYG employees</h3>
-      <p>Salary, wages, and allowances from one or more employers — the most common tax situation in Australia.</p>
-    </div>
-    <div class="who-card reveal reveal-delay-2">
-      <div class="who-card-icon">📈</div>
-      <h3>Investors</h3>
-      <p>Interest income, dividends, franking credits, and capital gains — all handled including the 50% CGT discount.</p>
-    </div>
-    <div class="who-card reveal reveal-delay-3">
-      <div class="who-card-icon">🏠</div>
-      <h3>Rental property owners</h3>
-      <p>Rental income and expenses, negative gearing, and rental loss carry-forward notes for next year.</p>
-    </div>
-    <div class="who-card reveal reveal-delay-4">
-      <div class="who-card-icon">✈️</div>
-      <h3>Working holiday makers</h3>
-      <p>Visa subclass 417 and 462 — correct WHM tax rates (15% on first $45,000) applied automatically.</p>
-    </div>
-  </div>
-  <p class="who-note reveal">Not for sole traders or ABN income — see <a href="https://taxlyy.com.au/business">Taxlyy Business</a> (coming soon).</p>
 </section>
 
 <!-- AI POWERED -->
 <section id="ai">
-  <div class="ai-grid">
-    <div>
-      <div class="reveal">
-        <div class="section-label">AI-powered calculations</div>
-        <div class="section-heading">Smart tax calculations,<br>not guesswork</div>
-      </div>
-      <div class="ai-points">
-        <div class="ai-point reveal reveal-delay-1">
-          <div class="ai-point-num">1</div>
-          <div>
-            <h4>Correct rates for your residency status</h4>
-            <p>Australian resident, temporary visa holder, working holiday maker, or foreign resident — Taxlyy applies the right ATO 2025–26 bracket table automatically based on your answers.</p>
+  <div class="container">
+    <div class="ai-grid">
+      <div>
+        <div class="reveal">
+          <div class="section-label">AI-powered calculations</div>
+          <div class="section-heading">Smart tax calculations,<br>not guesswork</div>
+        </div>
+        <div class="ai-points">
+          <div class="ai-point reveal reveal-delay-1">
+            <div class="ai-point-num">1</div>
+            <div>
+              <h4>Correct rates for your residency status</h4>
+              <p>Australian resident, temporary visa holder, working holiday maker, or foreign resident — Taxlyy applies the right ATO 2025–26 bracket table automatically based on your answers.</p>
+            </div>
+          </div>
+          <div class="ai-point reveal reveal-delay-2">
+            <div class="ai-point-num">2</div>
+            <div>
+              <h4>Every levy and offset calculated</h4>
+              <p>Medicare levy, Medicare Levy Surcharge, Low Income Tax Offset (LITO), and CGT discount — all applied correctly where they apply to you, not applied where they don't.</p>
+            </div>
+          </div>
+          <div class="ai-point reveal reveal-delay-3">
+            <div class="ai-point-num">3</div>
+            <div>
+              <h4>Carry-forward notes for next year</h4>
+              <p>If you have an unused rental property loss or capital loss, Taxlyy highlights it in your report so you know exactly what to note for your next year's return.</p>
+            </div>
           </div>
         </div>
-        <div class="ai-point reveal reveal-delay-2">
-          <div class="ai-point-num">2</div>
-          <div>
-            <h4>Every levy and offset calculated</h4>
-            <p>Medicare levy, Medicare Levy Surcharge, Low Income Tax Offset (LITO), and CGT discount — all applied correctly where they apply to you, not applied where they don't.</p>
-          </div>
+      </div>
+      <div class="ai-visual reveal reveal-delay-2">
+        <div class="calc-header">
+          <div class="calc-title">Tax calculation</div>
+          <div class="calc-badge">2025–26</div>
         </div>
-        <div class="ai-point reveal reveal-delay-3">
-          <div class="ai-point-num">3</div>
-          <div>
-            <h4>Carry-forward notes for next year</h4>
-            <p>If you have an unused rental property loss or capital loss, Taxlyy highlights it in your report so you know exactly what to note for your next year's return.</p>
-          </div>
+        <div class="calc-row">
+          <span class="label">Total income</span>
+          <span class="value">$82,500.00</span>
         </div>
-      </div>
-    </div>
-    <div class="ai-visual reveal reveal-delay-2">
-      <div class="calc-header">
-        <div class="calc-title">Tax calculation</div>
-        <div class="calc-badge">2025–26</div>
-      </div>
-      <div class="calc-row">
-        <span class="label">Total income</span>
-        <span class="value">$82,500.00</span>
-      </div>
-      <div class="calc-row">
-        <span class="label">Total deductions</span>
-        <span class="value deduct">− $3,240.00</span>
-      </div>
-      <div class="calc-divider"></div>
-      <div class="calc-row">
-        <span class="label">Taxable income</span>
-        <span class="value">$79,260.00</span>
-      </div>
-      <div class="calc-row">
-        <span class="label">Income tax</span>
-        <span class="value deduct">$15,866.00</span>
-      </div>
-      <div class="calc-row">
-        <span class="label">Medicare levy (2%)</span>
-        <span class="value deduct">$1,585.20</span>
-      </div>
-      <div class="calc-row">
-        <span class="label">LITO offset</span>
-        <span class="value deduct">− $0.00</span>
-      </div>
-      <div class="calc-divider"></div>
-      <div class="calc-row">
-        <span class="label">Tax withheld (PAYG)</span>
-        <span class="value">$19,200.00</span>
-      </div>
-      <div class="calc-result">
-        <div class="result-label">Estimated refund</div>
-        <div class="result-amount">$1,748.80</div>
-        <div class="result-sub">Estimate only · actual ATO assessment may differ</div>
+        <div class="calc-row">
+          <span class="label">Total deductions</span>
+          <span class="value deduct">− $3,240.00</span>
+        </div>
+        <div class="calc-divider"></div>
+        <div class="calc-row">
+          <span class="label">Taxable income</span>
+          <span class="value">$79,260.00</span>
+        </div>
+        <div class="calc-row">
+          <span class="label">Income tax</span>
+          <span class="value deduct">$15,866.00</span>
+        </div>
+        <div class="calc-row">
+          <span class="label">Medicare levy (2%)</span>
+          <span class="value deduct">$1,585.20</span>
+        </div>
+        <div class="calc-row">
+          <span class="label">LITO offset</span>
+          <span class="value deduct">− $0.00</span>
+        </div>
+        <div class="calc-divider"></div>
+        <div class="calc-row">
+          <span class="label">Tax withheld (PAYG)</span>
+          <span class="value">$19,200.00</span>
+        </div>
+        <div class="calc-result">
+          <div class="result-label">Estimated refund</div>
+          <div class="result-amount">$1,748.80</div>
+          <div class="result-sub">Estimate only · actual ATO assessment may differ</div>
+        </div>
       </div>
     </div>
   </div>
@@ -263,88 +313,376 @@
 
 <!-- PRIVACY -->
 <section id="privacy">
-  <div class="reveal" style="max-width:520px;">
-    <div class="section-label">Privacy & security</div>
-    <div class="section-heading">Your data stays yours</div>
-    <p class="section-sub dark">No account required. No permanent storage. Your session is temporary and anonymous.</p>
-  </div>
-  <div class="privacy-grid">
-    <div class="privacy-card reveal reveal-delay-1">
-      <div class="privacy-card-icon">🔒</div>
-      <h3>Nothing stored permanently</h3>
-      <p>All data is held in your browser session only and cleared from our systems after your report is delivered. We do not retain your tax information.</p>
+  <div class="container">
+    <div class="reveal" style="max-width:520px;">
+      <div class="section-label">Privacy & security</div>
+      <div class="section-heading">Your data stays yours</div>
+      <p class="section-sub dark">No account required. No permanent storage. Your session is temporary and anonymous.</p>
     </div>
-    <div class="privacy-card reveal reveal-delay-2">
-      <div class="privacy-card-icon">💳</div>
-      <h3>Payments secured by Stripe</h3>
-      <p>Taxlyy never sees or stores your card details. All payment processing is handled by Stripe — PCI-DSS compliant.</p>
-    </div>
-    <div class="privacy-card reveal reveal-delay-3">
-      <div class="privacy-card-icon">🚫</div>
-      <h3>No tracking cookies</h3>
-      <p>We use session storage only to maintain your progress. No advertising data, no analytics that identify you personally.</p>
-    </div>
-    <div class="privacy-card reveal reveal-delay-4">
-      <div class="privacy-card-icon">🔏</div>
-      <h3>TFN always masked</h3>
-      <p>Your Tax File Number is masked in all outputs — only the last 3 digits are displayed in your report. Never stored in full.</p>
+    <div class="privacy-grid">
+      <div class="privacy-card reveal reveal-delay-1">
+        <div class="privacy-card-icon">🔒</div>
+        <h3>Nothing stored permanently</h3>
+        <p>All data is held in your browser session only and cleared from our systems after your report is delivered. We do not retain your tax information.</p>
+      </div>
+      <div class="privacy-card reveal reveal-delay-2">
+        <div class="privacy-card-icon">💳</div>
+        <h3>Payments secured by Stripe</h3>
+        <p>Taxlyy never sees or stores your card details. All payment processing is handled by Stripe — PCI-DSS compliant.</p>
+      </div>
+      <div class="privacy-card reveal reveal-delay-3">
+        <div class="privacy-card-icon">🚫</div>
+        <h3>No tracking cookies</h3>
+        <p>We use session storage only to maintain your progress. No advertising data, no analytics that identify you personally.</p>
+      </div>
+      <div class="privacy-card reveal reveal-delay-4">
+        <div class="privacy-card-icon">🔏</div>
+        <h3>TFN always masked</h3>
+        <p>Your Tax File Number is masked in all outputs — only the last 3 digits are displayed in your report. Never stored in full.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- BUSINESS COMING SOON -->
-<section id="business">
-  <div class="business-inner">
-    <div class="business-text">
-      <div class="coming-pill">Coming soon</div>
-      <h2>Taxlyy Business</h2>
-      <p>Invoicing, BAS preparation, expense tracking, and annual reports for sole traders and small businesses. Currently under development.</p>
+<!-- FAQ SECTION - Two column layout matching "Who It's For" -->
+<section id="faq">
+  <div class="container">
+    <div class="faq-container">
+      <div class="faq-left reveal">
+        <div class="section-label">Frequently asked questions</div>
+        <div class="section-heading">Got questions?<br>We've got answers.</div>
+        <p class="faq-sub">Everything you need to know about Taxlyy Individual.</p>
+      </div>
+      
+      <div class="faq-right">
+        <!-- FAQ Item 1 -->
+        <div class="faq-item reveal reveal-delay-1">
+          <div class="faq-question">
+            <span>Is Taxlyy a registered tax agent?</span>
+            <button class="faq-toggle" aria-label="Expand answer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="faq-answer">
+            <p>No. Taxlyy is <strong>not a registered tax agent</strong> under the Tax Agent Services Act 2009. We provide an <strong>estimate report and lodgement guide</strong> — you still need to enter the numbers into myGov yourself. Think of us as your calculation assistant, not your tax agent.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 2 - Bilingual Feature -->
+        <div class="faq-item reveal reveal-delay-2">
+          <div class="faq-question">
+            <span>🇨🇳 可以获取中文报告吗？Can I get my report in Chinese?</span>
+            <button class="faq-toggle" aria-label="Expand answer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="faq-answer">
+            <p><strong>是的！Taxlyy 提供免费的双语报告（英文 + 中文）。</strong> 您可以在结账时选择偏好语言。报告中的所有内容都将以英文和中文显示。专为普通话用户设计，让您完全理解您的税务估算。</p>
+            <p><strong>Yes! Taxlyy provides a free bilingual report in English and Chinese (中文).</strong> Select your preferred language at checkout. Everything in your report will be shown in both languages. Perfect for Mandarin-speaking users.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 3 -->
+        <div class="faq-item reveal reveal-delay-3">
+          <div class="faq-question">
+            <span>Do I get a completed tax return?</span>
+            <button class="faq-toggle" aria-label="Expand answer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="faq-answer">
+            <p>No. You get a <strong>personalised PDF report</strong> with your refund estimate and a <strong>step-by-step ATO lodgement guide</strong> showing exactly what numbers to enter into myGov. You still need to lodge through myGov yourself — but with our guide, it takes less than 5 minutes.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 4 -->
+        <div class="faq-item reveal reveal-delay-4">
+          <div class="faq-question">
+            <span>How accurate is the estimate?</span>
+            <button class="faq-toggle" aria-label="Expand answer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="faq-answer">
+            <p>As accurate as the information you provide. Taxlyy applies the <strong>official ATO 2025–26 tax brackets, Medicare levy (2%), Medicare Levy Surcharge, Low Income Tax Offset (LITO), and CGT discount</strong> based on your answers. The final assessment is always made by the ATO.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 5 -->
+        <div class="faq-item reveal reveal-delay-5">
+          <div class="faq-question">
+            <span>How long does it take?</span>
+            <button class="faq-toggle" aria-label="Expand answer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="faq-answer">
+            <p><strong>Under 10 minutes</strong> to answer all the questions. Your report is delivered <strong>instantly after payment</strong> — no waiting, no appointment needed.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 6 -->
+        <div class="faq-item reveal reveal-delay-6">
+          <div class="faq-question">
+            <span>Do I need an account?</span>
+            <button class="faq-toggle" aria-label="Expand answer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="faq-answer">
+            <p><strong>No account required.</strong> Your session is temporary and anonymous. No sign-up, no password to remember, no email verification. Just answer, pay, and download.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 7 -->
+        <div class="faq-item reveal reveal-delay-7">
+          <div class="faq-question">
+            <span>Is my data safe?</span>
+            <button class="faq-toggle" aria-label="Expand answer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="faq-answer">
+            <p><strong>No permanent storage.</strong> All data stays in your browser session and is cleared after your report is delivered. We do not retain your tax information. Your TFN is always masked — only the last 3 digits are shown. Payments are secured by Stripe.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 8 -->
+        <div class="faq-item reveal reveal-delay-8">
+            <div class="faq-question">
+                <span>What tax situations do you support?</span>
+                <button class="faq-toggle" aria-label="Expand answer">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+            <div class="faq-answer">
+                <p><strong>Supported:</strong> PAYG income (single or multiple employers), interest income, dividends & franking credits, rental property income & expenses, capital gains (with 50% CGT discount), work-from-home deductions, Medicare Levy, Medicare Levy Surcharge (MLS), Low Income Tax Offset (LITO), working holiday makers, and <strong>simple ABN sole trader income</strong> (business expenses).</p>
+                <p><strong>Not supported:</strong> Complex business structures (partnerships, trusts, companies), BAS/GST lodgement, or complex business income. For these, please use Taxlyy Business (coming soon).</p>
+            </div>
+        </div>
+
+        <!-- FAQ Item 9 -->
+        <div class="faq-item reveal reveal-delay-9">
+            <div class="faq-question">
+                <span>What are your pricing tiers?</span>
+                <button class="faq-toggle" aria-label="Expand answer">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+            <div class="faq-answer">
+                <p><strong>Three pricing tiers based on your situation:</strong></p>
+                <ul>
+                    <li><strong>$69.99</strong> – Single employer (PAYG only, one job)</li>
+                    <li><strong>$79.99</strong> – Multiple employers (PAYG only, two or more jobs)</li>
+                    <li><strong>$89.99</strong> – ABN / Sole trader (includes ABN income & business expenses)</li>
+                </ul>
+                <p>Fixed fee, no surprises, no subscription. Your price is determined by your answers during the session.</p>
+            </div>
+        </div>
+
+        <!-- FAQ Item 10 -->
+        <div class="faq-item reveal reveal-delay-10">
+          <div class="faq-question">
+            <span>Do I pay before or after?</span>
+            <button class="faq-toggle" aria-label="Expand answer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="faq-answer">
+            <p>You answer all the questions first, then <strong>pay to unlock your report</strong>. Your report is delivered instantly after payment.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal reveal-delay-11">
+            <div class="faq-question">
+                <span>I paid but didn't receive my report. What do I do?</span>
+                <button class="faq-toggle" aria-label="Expand answer">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+            <div class="faq-answer">
+                <p>Don't worry! Visit our <a href="/frontend/missing-report/missing-report.html">Missing Report page</a>, enter the email you used at checkout, and we'll resend your download link immediately.</p>
+            </div>
+        </div>
+      </div>
     </div>
-    <a href="https://taxlyy.com.au/business" class="btn-ghost">
-      Learn more →
-    </a>
+  </div>
+</section>
+
+
+<!-- TESTIMONIAL SECTION - Auto Running Marquee -->
+<section id="testimonials">
+  <div class="container">
+    <div class="testimonials-header reveal">
+      <div class="section-label">What our users say</div>
+      <div class="section-heading">Trusted by Australian<br>taxpayers like you</div>
+      <p class="testimonials-sub">⭐⭐⭐⭐⭐ Trusted by Australian taxpayers · Bilingual reports available</p>
+    </div>
+
+    <div class="marquee-wrapper">
+      <div class="marquee-track-container">
+        <div class="marquee-track" id="marqueeTrack">
+          <!-- Card 1 - Sydney -->
+          <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-quote">"Took me 8 minutes. Got my refund estimate instantly. The bilingual report helped my parents understand their tax situation too."</p>
+            <div class="testimonial-author">
+              <div class="author-name-line">
+                <span class="author-name">Jessica L.</span>
+                <span class="author-location">📍 Sydney</span>
+              </div>
+              <div class="author-verified">✓ Verified purchase</div>
+            </div>
+          </div>
+
+          <!-- Card 2 - Sydney -->
+          <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-quote">"First time doing my own tax. The step-by-step guide gave me confidence. Saved hundreds compared to my old accountant."</p>
+            <div class="testimonial-author">
+              <div class="author-name-line">
+                <span class="author-name">Emily W.</span>
+                <span class="author-location">📍 Sydney</span>
+              </div>
+              <div class="author-verified">✓ Verified purchase</div>
+            </div>
+          </div>
+
+          <!-- Card 3 - Brisbane -->
+          <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-quote">"The Medicare Levy Surcharge calculation saved me from a costly mistake. Worth every dollar. Will recommend to friends."</p>
+            <div class="testimonial-author">
+              <div class="author-name-line">
+                <span class="author-name">Shuai W.</span>
+                <span class="author-location">📍 Brisbane</span>
+              </div>
+              <div class="author-verified">✓ Verified purchase</div>
+            </div>
+          </div>
+
+          <!-- Card 4 - Perth -->
+          <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-quote">"Coming from overseas, I wasn't sure about residency tax rates. Taxlyy made it crystal clear. Easy process, instant report."</p>
+            <div class="testimonial-author">
+              <div class="author-name-line">
+                <span class="author-name">Lee H.</span>
+                <span class="author-location">📍 Perth</span>
+              </div>
+              <div class="author-verified">✓ Verified purchase</div>
+            </div>
+          </div>
+
+          <!-- Card 5 - Melbourne -->
+          <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-quote">"Saved me from paying $350 to an accountant. The lodgement guide made myGov so easy. Will definitely use again next year!"</p>
+            <div class="testimonial-author">
+              <div class="author-name-line">
+                <span class="author-name">Sarah M.</span>
+                <span class="author-location">📍 Melbourne</span>
+              </div>
+              <div class="author-verified">✓ Verified purchase</div>
+            </div>
+          </div>
+
+          <!-- Card 6 - Melbourne -->
+          <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-quote">"Had rental property income and shares. Taxlyy calculated everything perfectly including the 50% CGT discount. Spot on estimate."</p>
+            <div class="testimonial-author">
+              <div class="author-name-line">
+                <span class="author-name">Daniel K.</span>
+                <span class="author-location">📍 Melbourne</span>
+              </div>
+              <div class="author-verified">✓ Verified purchase</div>
+            </div>
+          </div>
+
+          <!-- Card 7 - Adelaide -->
+          <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-quote">"Work-from-home deductions plus multiple employers. Taxlyy handled both perfectly. The PDF report is professional and clear."</p>
+            <div class="testimonial-author">
+              <div class="author-name-line">
+                <span class="author-name">Rebecca T.</span>
+                <span class="author-location">📍 Adelaide</span>
+              </div>
+              <div class="author-verified">✓ Verified purchase</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- FINAL CTA -->
 <section id="final-cta">
-  <div class="final-cta-inner">
-    <h2>Ready to get your<br><em>tax return done?</em></h2>
-    <p>Takes less than 10 minutes. Fixed fee. Report delivered instantly.</p>
-    <a href="../individual/index.html" class="btn-primary">
-      Start my 2025–26 tax return <span class="arrow">→</span>
-    </a>
+  <div class="container">
+    <div class="final-cta-inner">
+      <h2>Ready to get your<br><em>tax return done?</em></h2>
+      <p>Takes less than 10 minutes. Fixed fee. Report delivered instantly.</p>
+      <a href="../individual/index.html" class="btn-primary">
+        Get my tax report <span class="arrow">→</span>
+      </a>
+    </div>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-top">
-    <div class="footer-brand">
-      <a href="/" class="footer-logo">Tax<span>lyy</span></a>
-      <p>Hepta Care Pty Ltd<br>ABN 73 666 661 338</p>
-    </div>
-    <div class="footer-links">
-      <div class="footer-col">
-        <h4>Products</h4>
-        <a href="../individual/index.html">Taxlyy Individual</a>
-        <a href="https://taxlyy.com.au/business">Taxlyy Business</a>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="/" class="footer-logo">Tax<span>lyy</span></a>
+        <p>Hepta Care Pty Ltd<br>ABN 73 666 661 338</p>
       </div>
-     <div class="footer-col">
-        <h4>Legal</h4>
-        <a href="../frontend/legal/privacy.html">Privacy policy</a>
-        <a href="../frontend/legal/terms.html">Terms & conditions</a>
-    </div>
-      <div class="footer-col">
-        <h4>Support</h4>
-        <a href="mailto:support@taxlyy.com.au">support@taxlyy.com.au</a>
-        <a href="https://taxlyy.com.au/contact">Contact</a>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Products</h4>
+          <a href="../individual/index.html">Taxlyy Individual</a>
+          <a href="../business/business.html">Taxlyy Business</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="/frontend/legal/privacy.html">Privacy policy</a>
+          <a href="/frontend/legal/terms.html">Terms & conditions</a>
+        </div>
+       <div class="footer-col">
+          <h4>Support</h4>
+          <a href="/frontend/missing-report/missing-report.html">Missing your report?</a>
+          <a href="/individual/index.html">Get my tax report</a>
+      </div>
       </div>
     </div>
-  </div>
-  <div class="footer-bottom">
-    <p>© 2026 Hepta Care Pty Ltd. All rights reserved.</p>
-    <p>Taxlyy is not a registered tax agent under the Tax Agent Services Act 2009. Calculations are estimates only and do not constitute tax advice.</p>
+    <div class="footer-bottom">
+      <p>© 2026 Hepta Care Pty Ltd. All rights reserved.</p>
+      <p>Taxlyy is not a registered tax agent under the Tax Agent Services Act 2009. Calculations are estimates only and do not constitute tax advice.</p>
+    </div>
   </div>
 </footer>
 

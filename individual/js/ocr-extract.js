@@ -76,6 +76,9 @@ async function processPayslip(file) {
         
         // Parse the extracted text to find payslip data
         const extractedData = parsePayslipText(fullText);
+
+        // Enrich with ABN lookup (fixes wrong employer names)
+        const enrichedData = await enrichWithAbnLookup(extractedData);
         
         // Validate extracted data
         const validation = validatePayslipData(extractedData);
@@ -84,7 +87,7 @@ async function processPayslip(file) {
             console.warn('Validation warnings:', validation.errors);
         }
         
-        return extractedData;
+        return enrichedData;
         
     } catch (error) {
         console.error('OCR.space error:', error);
@@ -246,6 +249,40 @@ function parsePayslipText(text) {
     result.employeeName = employeeName;
     
     return result;
+}
+
+/**
+ * Enrich extracted payslip data with official ABN lookup
+ * @param {Object} extractedData - Data from parsePayslipText
+ * @returns {Promise<Object>} Enriched data with official name
+ */
+async function enrichWithAbnLookup(extractedData) {
+    // If no ABN, nothing to enrich
+    if (!extractedData.employerAbn) return extractedData;
+    
+    // Check if ABNLookup is available
+    if (typeof ABNLookup === 'undefined' || typeof ABNLookup.search !== 'function') {
+        console.warn('ABNLookup not available – skipping enrichment');
+        return extractedData;
+    }
+    
+    try {
+        const lookupResult = await ABNLookup.search(extractedData.employerAbn);
+        
+        if (lookupResult.success && !lookupResult.isList) {
+            // ✅ ONLY update employer name and ABN format
+            extractedData.employerName = lookupResult.data.legalName;
+            extractedData.employerAbn = lookupResult.data.abnFormatted;
+            console.log('ABN lookup enriched - Name corrected to:', extractedData.employerName);
+        } else {
+            console.log('ABN lookup failed or returned multiple results – keeping OCR data');
+        }
+    } catch (err) {
+        console.warn('ABN lookup error – keeping OCR data:', err);
+    }
+    
+    // ✅ Return full extractedData with possibly corrected name/ABN
+    return extractedData;
 }
 
 /**

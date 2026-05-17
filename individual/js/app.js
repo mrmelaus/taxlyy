@@ -29,6 +29,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (typeof loadTranslations === 'function') await loadTranslations();
 
+    if (typeof loadDeductionRates === 'function') await loadDeductionRates();
+
+    if (typeof loadPhiRebateRates === 'function') await loadPhiRebateRates();
+
     // --- 3. Pass loaded rules into calculator ---
     if (window.currentTaxRules) {
         window.calculator?.setCurrentConfig(window.currentTaxRules);
@@ -39,10 +43,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- 4. Load saved user data ---
-    loadSavedData();
+    //loadSavedData();
 
     // --- 5. Render first card ---
     renderCard();
+    updateNextButtonLabel();  
 
     // --- 6. Attach event listeners ---
     document.getElementById('nextBtn')?.addEventListener('click', nextCard);

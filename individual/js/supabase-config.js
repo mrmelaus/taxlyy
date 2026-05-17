@@ -4,7 +4,7 @@
 // so NO 'individual.' prefix on any .from() or .rpc() call here
 // ========================================
 
-window.pricing = { standard_fee: 69.99, multiple_jobs_fee: 79.99 };
+window.pricing = { standard_fee: 69.99, multiple_jobs_fee: 79.99, abn_fee: 89.99 };
 window.currentTaxRules = null;
 
 async function loadPricing() {
@@ -22,6 +22,47 @@ async function loadPricing() {
         }
     } catch (err) {
         console.warn('Failed to load pricing, using defaults', err);
+    }
+}
+
+
+// ========================================
+// Deduction rates cache
+// ========================================
+window.deductionRates = { wfhRate: 0.70, travelRate: 0.88 }; // Default fallbacks
+
+async function loadDeductionRates() {
+    if (!window.supabaseClient) {
+        console.warn('supabaseClient not ready, using default deduction rates');
+        return window.deductionRates;
+    }
+    try {
+        // Fetch WFH rate
+        const { data: wfhData, error: wfhError } = await window.supabaseClient
+            .from('app_config')
+            .select('value')
+            .eq('key', 'wfh_home_office_rate')
+            .single();
+        
+        if (!wfhError && wfhData?.value) {
+            window.deductionRates.wfhRate = wfhData.value.rate ?? 0.70;
+        }
+        
+        // Fetch travel rate
+        const { data: travelData, error: travelError } = await window.supabaseClient
+            .from('app_config')
+            .select('value')
+            .eq('key', 'travel_car_rate')
+            .single();
+        
+        if (!travelError && travelData?.value) {
+            window.deductionRates.travelRate = travelData.value.rate ?? 0.88;
+        }
+        
+        return window.deductionRates;
+    } catch (err) {
+        console.warn('Failed to load deduction rates, using defaults', err);
+        return window.deductionRates;
     }
 }
 
@@ -132,4 +173,48 @@ async function validatePromoCode(code) {
         console.warn('Promo validation failed', err);
         return null;
     }
+}
+
+// ========================================
+// PHI Rebate rates cache
+// ========================================
+window.phiRebateRates = null;
+
+async function loadPhiRebateRates() {
+    if (!window.supabaseClient) {
+        console.warn('supabaseClient not ready, using fallback PHI rates');
+        return getPhiRebateFallback();
+    }
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('app_config')
+            .select('value')
+            .eq('key', 'phi_rebate_rates')
+            .single();
+        
+        if (!error && data?.value) {
+            window.phiRebateRates = data.value;
+            return window.phiRebateRates;
+        }
+    } catch (err) {
+        console.warn('Failed to load PHI rebate rates, using fallback', err);
+    }
+    return getPhiRebateFallback();
+}
+
+function getPhiRebateFallback() {
+    return {
+        '2025-26': {
+            julyToMarch: {
+                under65: { tier1: 0.16192, tier2: 0.08095, tier3: 0 },
+                age65to69: { tier1: 0.20240, tier2: 0.12143, tier3: 0 },
+                age70plus: { tier1: 0.24288, tier2: 0.16192, tier3: 0 }
+            },
+            aprilToJune: {
+                under65: { tier1: 0.16079, tier2: 0.08038, tier3: 0 },
+                age65to69: { tier1: 0.20098, tier2: 0.12058, tier3: 0 },
+                age70plus: { tier1: 0.24118, tier2: 0.16079, tier3: 0 }
+            }
+        }
+    };
 }

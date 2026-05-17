@@ -1,0 +1,573 @@
+/* ─────────────────────────────────────────
+   layout.css
+   Sidebar, header, main content shell
+───────────────────────────────────────── */
+
+/* ── App shell ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: linear-gradient(180deg, var(--bg2) 0%, var(--bg3) 100%);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+/* Glowing right border line */
+.sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 1px; height: 100%;
+  background: linear-gradient(180deg, transparent, var(--teal), transparent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Logo ── */
+.logo {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-light));
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);  /* 0.9375rem (15px) -> sm (14px) close */
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.5px;
+  box-shadow: 0 0 16px var(--teal-glow);
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: var(--text-lg);  /* 1.0625rem (17px) -> lg (18px) close */
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.logo-text span {
+  color: var(--teal-light);
+}
+
+/* ── Nav ── */
+.nav {
+  padding: 12px 10px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.nav-section {
+  margin-bottom: 20px;
+}
+
+.nav-label {
+  font-size: var(--text-xs);  /* 0.625rem (10px) -> xs (12px) +2px */
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text3);
+  padding: 0 10px 6px;
+  text-transform: uppercase;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text2);
+  font-size: var(--text-sm);  /* 0.8125rem (13px) -> sm (14px) +1px */
+  font-weight: 400;
+  transition: all 0.15s;
+  position: relative;
+  margin-bottom: 1px;
+  user-select: none;
+  border: 1px solid transparent;
+}
+
+.nav-item:hover {
+  background: var(--teal-glow);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: linear-gradient(90deg, var(--teal-glow), var(--teal-glow2));
+  color: var(--aqua);
+  font-weight: 500;
+  border-color: var(--border);
+}
+
+/* Active left accent bar */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--teal-light), var(--aqua));
+}
+
+.nav-icon {
+  width: 16px; height: 16px;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.nav-item.active .nav-icon {
+  opacity: 1;
+}
+
+.nav-badge {
+  margin-left: auto;
+  font-size: var(--text-xs);  /* 0.625rem (10px) -> xs (12px) +2px */
+  font-weight: 500;
+  background: var(--teal-dim);
+  color: var(--aqua);
+  padding: 1px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.nav-badge.alert {
+  background: var(--coral-dim);
+  color: var(--coral);
+  border-color: rgba(255, 107, 107, 0.2);
+  animation: pulse-badge 2s infinite;
+}
+
+/* ── Sidebar footer / user card ── */
+.sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.user-card:hover {
+  background: var(--teal-glow);
+}
+
+.avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);  /* 0.6875rem (11px) -> xs (12px) +1px */
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+  border: 1px solid var(--border2);
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: var(--text-xs);  /* 0.75rem (12px) */
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-plan {
+  font-size: var(--text-xs);  /* 0.625rem (10px) -> xs (12px) +2px */
+  color: var(--teal-light);
+}
+
+/* ── Header ── */
+.header {
+  height: var(--header-h);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.page-title {
+  font-size: var(--text-base);  /* 1rem (16px) */
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+
+.page-subtitle {
+  font-size: var(--text-xs);  /* 0.75rem (12px) */
+  color: var(--text3);
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ensure all header elements have same height */
+.header-actions .btn,
+.header-actions .theme-toggle,
+.header-actions .search-bar,
+.header-actions select {
+  height: 34px;
+}
+
+/* Adjust theme toggle to match */
+.theme-toggle {
+  height: 34px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Theme buttons inside */
+.theme-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  height: 34px;
+  color: var(--text2);
+  font-size: var(--text-xs);  /* 0.75rem (12px) */
+  cursor: text;
+  width: 220px;
+  transition: border 0.15s;
+}
+
+.search-bar:hover {
+  border-color: var(--border2);
+}
+
+/* ── Content area ── */
+/* Remove the gradient - use solid theme backgrounds instead */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--bg2);
+}
+
+/* ── Grid helpers ── */
+.grid-2   { display: grid; grid-template-columns: 1fr 1fr;      gap: 16px; margin-bottom: 16px; }
+.grid-3   { display: grid; grid-template-columns: 1fr 1fr 1fr;  gap: 16px; margin-bottom: 16px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr;      gap: 16px; margin-bottom: 16px; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+/* ── Screen transition ── */
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+  animation: fadeUp 0.2s ease;
+}
+
+/* ─────────────────────────────────────────
+   PATCH — add to bottom of layout.css
+   Sidebar collapse + header avatar
+───────────────────────────────────────── */
+
+/* ── Sidebar transition ── */
+.sidebar {
+  transition: width 0.22s ease;
+  overflow: hidden;
+}
+
+/* ── Collapsed state ── */
+.sidebar.sidebar-collapsed {
+  width: 52px;
+}
+
+/* Hide text elements when collapsed */
+.sidebar.sidebar-collapsed .sidebar-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.15s ease, width 0.22s ease;
+}
+
+/* Ensure text is visible when expanded */
+.sidebar:not(.sidebar-collapsed) .sidebar-text {
+  opacity: 1;
+  width: auto;
+  transition: opacity 0.15s ease 0.08s;
+}
+
+.sidebar.sidebar-collapsed .nav {
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar.sidebar-collapsed .nav-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar.sidebar-collapsed .nav-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 9px 0;
+  width: 44px;
+  margin: 0 auto 1px auto;
+  gap: 0;
+  border-radius: var(--radius-sm);
+}
+
+.sidebar.sidebar-collapsed .nav-icon {
+  flex-shrink: 0;
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.sidebar.sidebar-collapsed .logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0 16px;
+  width: 52px;
+}
+
+.sidebar.sidebar-collapsed .sidebar-footer {
+  padding: 12px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar.sidebar-collapsed .sidebar-collapse-control {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.sidebar.sidebar-collapsed .collapse-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 9px 0;
+  width: 36px;
+  margin: 0 auto;
+}
+
+/* ── Collapse toggle button ── */
+.collapse-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text3);
+  font-size: var(--text-xs);  /* 0.75rem (12px) */
+  font-family: var(--font);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s, color 0.15s;
+}
+
+.collapse-toggle:hover {
+  background: var(--teal-glow);
+  color: var(--text2);
+}
+
+/* Show/hide icon based on state */
+.collapse-icon-collapsed { display: none; }
+.collapse-icon-expanded  { display: block; }
+
+.sidebar.sidebar-collapsed .collapse-icon-collapsed { display: block; }
+.sidebar.sidebar-collapsed .collapse-icon-expanded  { display: none; }
+
+/* ── Collapse popup menu ── */
+.sidebar-collapse-control {
+  position: relative;
+  width: 100%;
+}
+
+.collapse-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  padding: 4px;
+  min-width: 180px;
+  z-index: 200;
+  display: none;
+}
+
+.collapse-menu.visible {
+  display: block;
+  animation: fadeUp 0.15s ease;
+}
+
+.sidebar.sidebar-collapsed .collapse-menu {
+  left: 52px;
+  bottom: 0;
+  top: auto;
+}
+
+.collapse-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: var(--text-xs);  /* 0.75rem (12px) */
+  color: var(--text2);
+  transition: background 0.1s;
+  user-select: none;
+}
+
+.collapse-menu-item:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.collapse-menu-check {
+  margin-left: auto;
+  font-size: var(--text-xs);  /* 0.5rem (8px) -> xs (12px) +4px */
+  color: var(--brand);
+}
+
+/* ── Header avatar ── */
+.header-avatar {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: opacity 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.header-avatar:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+.header-avatar .avatar {
+  width: 32px;
+  height: 32px;
+  font-size: var(--text-xs);  /* 0.6875rem (11px) -> xs (12px) +1px */
+}
+
+.sidebar.sidebar-collapsed .nav-badge {
+  display: none;
+}
+
+.sidebar.sidebar-collapsed .nav-item {
+  position: relative;
+}
+
+/* Dot for normal badges */
+.sidebar.sidebar-collapsed .nav-item:has(.nav-badge:not(.alert))::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+/* Dot for alert badges */
+.sidebar.sidebar-collapsed .nav-item:has(.nav-badge.alert)::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--coral);
+  animation: pulse-badge 2s infinite;
+}
+
+/* Hide section labels when collapsed */
+.sidebar.sidebar-collapsed .nav-label {
+  display: none;
+}
+
+/* Add divider line in place of label */
+.sidebar.sidebar-collapsed .nav-section {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
+/* Remove border from first section so no double border at top */
+.sidebar.sidebar-collapsed .nav-section:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}

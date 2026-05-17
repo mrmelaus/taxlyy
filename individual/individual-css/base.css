@@ -162,3 +162,22 @@ body.app-loaded .loading-container {
 body.app-loaded .card-container {
     display: block;
 }
+
+.form-error {
+    color: var(--error);
+    font-size: var(--font-xs);
+    margin-top: var(--space-1);
+}
+
+.logo-favicon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+}
+
+.logo-zh {
+    font-size: var(--font-xl);
+    font-weight: 800;
+    color: var(--text-muted);
+    margin-left: var(--space-1);
+}

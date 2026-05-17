@@ -26,9 +26,9 @@
 }
 
 @keyframes glowPulse {
-    0%   { box-shadow: 0 0 0 0   rgba(67, 97, 238, 0.4); }
+    0%   { box-shadow: 0 0 0 0    rgba(67, 97, 238, 0.4); }
     70%  { box-shadow: 0 0 0 10px rgba(67, 97, 238, 0); }
-    100% { box-shadow: 0 0 0 0   rgba(67, 97, 238, 0); }
+    100% { box-shadow: 0 0 0 0    rgba(67, 97, 238, 0); }
 }
 
 @keyframes fadeIn {
@@ -46,9 +46,8 @@
 }
 
 /* ── Applied animation classes ── */
-.logo-mark {
-    animation: float 3s ease-in-out infinite;
-}
+
+/* logo-mark float animation removed — replaced by favicon image */
 
 .progress-fill::after {
     content: '';
@@ -65,14 +64,27 @@
    so the reverse (scroll up) animates back too.
    ======================================== */
 
-/* Logo text/mark smooth shrink */
-.logo-text,
-.logo-mark {
+/* Header GPU layer isolation — prevents Chrome repaint flicker */
+.app-header {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Favicon GPU isolation */
+.logo-favicon {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Logo text smooth shrink on scroll */
+.logo-text {
     transition: font-size 0.35s ease;
+    transform: translateZ(0);
 }
 
 .app-header.scrolled .logo-text { font-size: var(--font-lg); }
-.app-header.scrolled .logo-mark { font-size: var(--font-xl); }
 
 /* Lang buttons compact text */
 .lang-btn {

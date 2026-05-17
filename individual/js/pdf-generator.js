@@ -43,8 +43,7 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
     const dateRangeZh = `${taxYearStart}年7月1日 - ${taxYearEnd}年6月30日`;
 
     const hasInvoice = !!transaction;
-    const totalPages = hasInvoice ? 5 : 4;
-
+   
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
         orientation: 'portrait',
@@ -131,19 +130,6 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
         doc.text(text, mL + 5.5, y);
         doc.setFont(baseFont, 'normal');
         return y + 6;
-    };
-
-    const addFooter = (pageNum, totalPages) => {
-        const fy = pageH - 10;
-        doc.setDrawColor(...C.accent);
-        doc.setLineWidth(0.3);
-        doc.line(mL, fy - 4, pageW - mR, fy - 4);
-        doc.setFontSize(7.5);
-        doc.setFont(baseFont, 'normal');
-        doc.setTextColor(...C.muted);
-        doc.text('Taxlyy Individual', mL, fy);
-        doc.text(`${pageNum} / ${totalPages}  —  ${taxYearLabel} Tax Return`, pageW / 2, fy, { align: 'center' });
-        doc.text('Confidential', pageW - mR, fy, { align: 'right' });
     };
 
     const infoRow = (label, value, y, shade = false) => {
@@ -273,13 +259,13 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
     doc.setFontSize(19);
     doc.setFont(baseFont, 'normal');
     doc.setTextColor(...C.white);
-    if (isBilingual) {
-        doc.text('TAX RETURN REPORT', pageW / 2, 26, { align: 'center' });
+        if (isBilingual) {
+        doc.text('TAX ESTIMATE REPORT', pageW / 2, 26, { align: 'center' });
         doc.setFontSize(16);
-        doc.text('税务申报报告', pageW / 2, 35, { align: 'center' });
-    } else {
-        doc.text('TAX RETURN REPORT', pageW / 2, 30, { align: 'center' });
-    }
+        doc.text('税务估算报告', pageW / 2, 35, { align: 'center' });
+        } else {
+            doc.text('TAX ESTIMATE REPORT', pageW / 2, 30, { align: 'center' });
+        }
 
     doc.setFontSize(10);
     doc.setFont(baseFont, 'normal');
@@ -430,40 +416,50 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
         doc.text(s.value, sx + (statW - 2) / 2, y + (isBilingual ? 18 : 15), { align: 'center' });
     });
 
-    addFooter(1, totalPages);
+    
     doc.addPage();
 
     // ========================================
-    // PAGE 2 - INCOME SUMMARY & LODGEMENT GUIDE
+    // PAGE 2 - INCOME SUMMARY & DEDUCTIONS
     // ========================================
-    pageTitleBand(txt('INCOME SUMMARY & LODGEMENT GUIDE', '收入摘要与申报指南'));
+    pageTitleBand(txt('INCOME SUMMARY & DEDUCTIONS', '收入摘要与抵扣项目'));
 
     y = 22;
     y = sectionHeader(txt('INCOME SUMMARY', '收入摘要'), y);
     y += 3;
 
-    const incomeRows = [
+  const incomeRows = [
         [txt('PAYG employment income', '就业收入（PAYG）'),                         money(bd.paygIncome || 0)],
-        [txt('ABN / business income (net)', 'ABN/商业收入（净额）'),                moneyAccounting(bd.abnNet || 0)],
+        [txt('ABN / business income (gross)', 'ABN/商业收入（总额）'),               money(bd.abnGross || 0)],
+        [txt('ABN business expenses', 'ABN业务费用'),                              `- ${money(bd.abnExpenses || 0)}`, true],
+        [txt('ABN / business income (net)', 'ABN/商业收入（净额）'),                 money(bd.abnNetAssessable || 0)],
         [txt('Interest income', '利息收入'),                                        money(bd.interestIncome || 0)],
-        [txt('Dividends (grossed-up incl. franking)', '股息（含股息抵免总额）'),    money(bd.grossedUpDividends || 0)],
+        [txt('Dividends (cash received)', '股息（现金收入）'),                       money(bd.dividendsCash || 0)],
+        [txt('Franking credits attached', 'Franking抵免额'),                        money(bd.frankingCredits || 0)],
+        [txt('Dividends (grossed-up total)', '股息（总额）'),                        money(bd.grossedUpDividends || 0)],
         [txt('Rental income (net)', '租金收入（净额）'),                            moneyAccounting(bd.rentalNet || 0)],
         [txt('Capital gains (after discount)', '资本利得（折扣后）'),               money(bd.assessableCapitalGains || 0)],
         [txt('Government payments', '政府补贴'),                                    money(bd.governmentPayments || 0)],
+        [txt('Government tax withheld', '政府预扣税款'),                            `- ${money(bd.govTaxWithheld || 0)}`, true],
         [txt('Foreign income', '境外收入'),                                         money(bd.foreignIncome || 0)],
         [txt('Other income', '其他收入'),                                           money(bd.otherIncome || 0)]
-    ].filter(r => r[1] && r[1] !== money(0) && r[1] !== moneyAccounting(0));
-
+    ].filter(r => {
+        const amount = r[1];
+        if (amount === money(0) || amount === moneyAccounting(0)) return false;
+        if (r[2] === true && amount === `- ${money(0)}`) return false;
+        return true;
+    });
     const incomeBody = incomeRows.map(r => {
-        const isNeg = r[1] && r[1].startsWith('(');
+        const isExpense = r[2] === true;
+        const isNeg = r[1] && (r[1].startsWith('(') || r[1].startsWith('-'));
         return [
             {
-                content: r[0] + (isNeg ? ('\n' + txt('* loss — reduces taxable income', '* 损失 - 减少应纳税收入')) : ''),
-                styles: { fontSize: isNeg ? 8 : 9, textColor: isNeg ? C.muted : C.textDark, font: baseFont }
+                content: r[0] + (isExpense ? '' : (isNeg ? ('\n' + txt('* loss — reduces taxable income', '* 损失 - 减少应纳税收入')) : '')),
+                styles: { fontSize: isExpense ? 8 : 9, textColor: isExpense ? C.muted : (isNeg ? C.error : C.textDark), font: baseFont }
             },
             {
                 content: r[1],
-                styles: { halign: 'right', textColor: isNeg ? C.error : C.textDark, font: baseFont }
+                styles: { halign: 'right', textColor: isExpense ? C.muted : (isNeg ? C.error : C.textDark), font: baseFont }
             }
         ];
     });
@@ -490,8 +486,49 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
     });
 
     y = doc.lastAutoTable.finalY + 6;
+       // ABN loss note — insert HERE before deductions header
+    if (bd.abnIsLoss) {
+        doc.setFillColor(...C.warning);
+        doc.roundedRect(mL, y, contentW, isBilingual ? 22 : 14, 1.5, 1.5, 'F');
+        doc.setDrawColor(...C.warningBorder);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(mL, y, contentW, isBilingual ? 22 : 14, 1.5, 1.5, 'S');
+        doc.setFontSize(8);
+        doc.setFont(baseFont, 'normal');
+        doc.setTextColor(...C.textDark);
+        doc.text(
+            txt(
+                `ABN loss of ${money(Math.abs(bd.abnNet))} noted. Under ATO non-commercial loss rules this has not been applied against your PAYG income.`,
+                `ABN亏损${money(Math.abs(bd.abnNet))}已记录。根据ATO非商业损失规则，此亏损未抵扣您的PAYG收入。`
+            ),
+            mL + 4, y + 6, { maxWidth: contentW - 8 }
+        );
+        y += isBilingual ? 26 : 18;
+    }
+
+    // Rental loss carry-forward note
+    if (calc.rentalLossCarryForward > 0) {
+        doc.setFillColor(...C.warning);
+        doc.roundedRect(mL, y, contentW, isBilingual ? 20 : 14, 1.5, 1.5, 'F');
+        doc.setDrawColor(...C.warningBorder);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(mL, y, contentW, isBilingual ? 20 : 14, 1.5, 1.5, 'S');
+        doc.setFontSize(8);
+        doc.setFont(baseFont, 'normal');
+        doc.setTextColor(...C.textDark);
+        doc.text(
+            txt(
+                `Rental loss of ${money(calc.rentalLossCarryForward)} carried forward to next year.`,
+                `租金损失 ${money(calc.rentalLossCarryForward)} 结转至下一年度。`
+            ),
+            mL + 4, y + 6, { maxWidth: contentW - 8 }
+        );
+        y += isBilingual ? 24 : 18;
+    }
+
     y = sectionHeader(txt('DEDUCTIONS SUMMARY', '抵扣摘要'), y + 4);
     y += 3;
+    
 
     const deductionRows = [
         [txt('Working from home expenses', '居家工作费用'),  money(userData.homeOffice || 0)],
@@ -526,9 +563,85 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
     });
 
     y = doc.lastAutoTable.finalY + 10;
+    
+    if (userData.equipmentAssets && userData.equipmentAssets.length > 0) {
+        doc.setFontSize(10);
+        doc.setFont(baseFont, 'normal');
+        doc.setTextColor(...C.primary);
+        doc.text(txt('Equipment assets detail:', '设备资产明细：'), mL, y);
+        y += 5;
+
+        const assetRows = [];
+
+        userData.equipmentAssets.forEach((asset, idx) => {
+            const assetTypeName = ASSET_TYPES[asset.type]?.label || asset.type;
+            const originalCost  = asset.originalCost || asset.cost || 0;
+            const depreciation  = asset.depreciation || 0;
+            const workPercent   = asset.workPercentage || 100;
+
+            const enLabel = `${idx + 1}. ${assetTypeName}: $${originalCost.toLocaleString()} cost, ${workPercent}% work use, $${depreciation.toLocaleString()} depreciation`;
+            const zhLabel = `${idx + 1}. ${assetTypeName}：成本 $${originalCost.toLocaleString()}，工作使用 ${workPercent}%，折旧 $${depreciation.toLocaleString()}`;
+
+            // Same background for both EN and ZH rows of the same asset
+            const rowBg = idx % 2 === 0 ? C.rowAlt : [255, 255, 255];
+
+            assetRows.push([{
+                content: enLabel,
+                styles: { font: baseFont, fontSize: 9, textColor: [0, 0, 0], cellPadding: [2.8, 2.8, 0.5, 2.8], fillColor: rowBg }
+                //                                                              top, right, bottom, left
+            }]);
+
+            if (isBilingual) {
+                assetRows.push([{
+                    content: zhLabel,
+                    styles: { font: baseFont, fontSize: 8.5, textColor: C.muted, cellPadding: [0.5, 2.8, 2.8, 2.8], fillColor: rowBg }
+                    //                                                              top=0.5 so EN+ZH feel like one cell
+                }]);
+            }
+        });
+
+        // Prime jsPDF font state BEFORE calling autoTable
+        doc.setFont(baseFont, 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+
+        doc.autoTable({
+            startY: y,
+            body: assetRows,
+            margin: { left: mL, right: mR },
+            theme: 'plain',
+            bodyStyles: {
+                font: baseFont,
+                fontStyle: 'normal',
+                fontSize: 9,
+                textColor: [0, 0, 0],
+                cellPadding: 2.8,
+                overflow: 'linebreak',
+                minCellHeight: 0,
+            },
+            // ✅ removed alternateRowStyles — background now controlled manually per row
+            columnStyles: {
+                0: { cellWidth: 'auto', overflow: 'linebreak' }
+            },
+            didParseCell: (data) => {
+                data.cell.styles.font = baseFont;
+                data.cell.styles.fontStyle = 'normal';
+                data.cell.styles.overflow = 'linebreak';
+            },
+        });
+
+        y = doc.lastAutoTable.finalY + 10;
+    }
+    
+    doc.addPage();
+
+     // ========================================
+    // PAGE 3 - LODGEMENT GUIDE
+    // ========================================
+    pageTitleBand(txt('LODGEMENT GUIDE', '申报指南'));
+    y = 22;
     y = sectionHeader(txt('HOW TO LODGE YOUR RETURN WITH THE ATO', '如何向ATO提交税务申报'), y);
     y += 5;
-
     const steps = isBilingual ? [
         ['1', `Log into myGov at my.gov.au using your myGov credentials.\n访问 my.gov.au 并使用您的 myGov 凭据登录。`],
         ['2', `Link the ATO — search "Australian Taxation Office" and connect.\n关联ATO — 搜索并连接到您的账户。`],
@@ -611,11 +724,11 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
         y += rowH + 2;
     });
 
-    addFooter(2, totalPages);
+    
     doc.addPage();
 
     // ========================================
-    // PAGE 3 - EMPLOYMENT DETAILS & TAX CALCULATION
+    // PAGE 4 - EMPLOYMENT DETAILS & TAX CALCULATION
     // ========================================
     pageTitleBand(txt('EMPLOYMENT DETAILS & TAX BREAKDOWN', '就业详情与税务计算'));
 
@@ -624,7 +737,7 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
     y += 3;
 
     const empRows = (userData.employers || []).map(emp => [
-        emp.employerName || '—',
+        { content: (emp.employerName || '—').replace(/'/g, '’'), styles: { font: baseFont } },
         emp.employerAbn ? String(emp.employerAbn).replace(/(\d{2})(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4') : '—',
         { content: money(emp.grossIncome || 0), styles: { halign: 'right', font: baseFont } },
         { content: money(emp.taxWithheld || 0), styles: { halign: 'right', font: baseFont } }
@@ -661,7 +774,51 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
         }
     });
 
-    y = doc.lastAutoTable.finalY + 10;
+        y = doc.lastAutoTable.finalY + 10;
+
+    // ========================================
+    // NEW: STUDENT LOAN OBLIGATIONS SECTION
+    // ========================================
+    if (userData.hasHecsLoan !== undefined) {
+        y = sectionHeader(txt('STUDENT LOAN OBLIGATIONS', '学生贷款义务'), y);
+        y += isBilingual ? 10 : 6;
+
+        // HECS loan status
+        doc.setFontSize(8.5);
+        doc.setFont(baseFont, 'normal');
+        doc.setTextColor(...C.muted);
+        doc.text(txt('HELP / HECS student loan:', 'HELP / HECS 学生贷款：'), mL + 3, y);
+        doc.setTextColor(...C.textDark);
+        doc.text(userData.hasHecsLoan ? txt('Yes', '是') : txt('No', '否'), pageW - mR - 3, y, { align: 'right' });
+        y += isBilingual ? 10 : 6;
+
+        // Manual repayment income (if entered)
+        if (userData.hasHecsLoan && userData.hecsManualRepaymentIncome > 0) {
+            doc.setFontSize(8.5);
+            doc.setFont(baseFont, 'normal');
+            doc.setTextColor(...C.muted);
+            doc.text(txt('Manual repayment income:', '手动输入还款收入：'), mL + 3, y);
+            doc.setTextColor(...C.textDark);
+            doc.text(money(userData.hecsManualRepaymentIncome), pageW - mR - 3, y, { align: 'right' });
+            y += isBilingual ? 10 : 6;
+        }
+
+        // Compulsory repayment amount (if > 0)
+        if (calc.hecsRepayment > 0) {
+            doc.setFontSize(8.5);
+            doc.setFont(baseFont, 'normal');
+            doc.setTextColor(...C.muted);
+            doc.text(txt('Compulsory repayment (added to tax liability):', '强制还款额（计入税务负债）：'), mL + 3, y);
+            doc.setTextColor(...C.primary);
+            doc.text(money(calc.hecsRepayment), pageW - mR - 3, y, { align: 'right' });
+            y += isBilingual ? 10 : 6;
+        }
+
+        y += 4;
+        accentRule(y);
+        y += 8;
+    }
+
     y = sectionHeader(txt('TAX CALCULATION BREAKDOWN', '税务计算明细'), y);
     y += 3;
 
@@ -676,10 +833,17 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
             [{ content: txt('Medicare levy surcharge', '医疗保险附加税'), styles: { font: baseFont } }, { content: money(calc.medicareSurcharge), styles: { halign: 'right', font: baseFont } }],
             [{ content: txt('Low Income Tax Offset (LITO)', '低收入税收抵免（LITO）'), styles: { font: baseFont } }, { content: `- ${money(calc.lito)}`, styles: { halign: 'right', textColor: [40, 150, 80], font: baseFont } }],
             [
+                { content: txt('Less: PHI rebate (claimed at tax time)', '减：私人医保退税（报税时申报）'), styles: { font: baseFont } },
+                { content: `- ${money(calc.phiRebate)}`, styles: { halign: 'right', textColor: [40, 150, 80], font: baseFont } }
+            ],
+            [
+                { content: txt('Add: HELP / HECS compulsory repayment', '加：HELP / HECS 强制还款'), styles: { font: baseFont } },
+                { content: money(calc.hecsRepayment), styles: { halign: 'right', font: baseFont } }
+            ],
+            [
                 { content: txt('TOTAL TAX LIABILITY', '总税务负债'), styles: { fontStyle: 'bold', fillColor: C.totalRow, font: baseFont } },
                 { content: money(calc.totalTaxLiability), styles: { fontStyle: 'bold', halign: 'right', fillColor: C.totalRow, textColor: C.primary, font: baseFont } }
             ],
-            ['', ''],
             [{ content: txt('Less: PAYG tax withheld', '减：PAYG预扣税款'), styles: { font: baseFont } }, { content: `- ${money(calc.totalTaxWithheld)}`, styles: { halign: 'right', textColor: [40, 150, 80], font: baseFont } }],
             [{ content: txt('Less: Franking credit offset (refundable)', '减：股息抵免额（可退款）'), styles: { font: baseFont } }, { content: `- ${money(calc.frankingCreditOffset || 0)}`, styles: { halign: 'right', textColor: [40, 150, 80], font: baseFont } }],
             [
@@ -692,7 +856,6 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
         bodyStyles: { fontSize: 9, textColor: C.textDark, cellPadding: 2.8, font: baseFont },
         columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 42, halign: 'right' } }
     });
-
     y = doc.lastAutoTable.finalY + 10;
 
     if (hasCapLoss) {
@@ -751,11 +914,11 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
         });
     }
 
-    addFooter(3, totalPages);
+    
     doc.addPage();
 
     // ========================================
-    // PAGE 4 - HEALTH & IMPORTANT NOTES
+    // PAGE 5 - HEALTH & IMPORTANT NOTES
     // ========================================
     pageTitleBand(txt('PRIVATE HEALTH INSURANCE & IMPORTANT NOTES', '私人医疗保险与重要说明'));
 
@@ -854,13 +1017,13 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
         pageW / 2, y, { align: 'center' }
     );
 
-    addFooter(4, totalPages);
+    
 
     // ========================================
-    // PAGE 5 - TAX INVOICE
+    // PAGE  - TAX INVOICE
     // ========================================
     if (hasInvoice) {
-        doc.addPage();
+        doc.addPage();  // Creates Page 6
 
         doc.setFillColor(...C.navy);
         doc.rect(0, 0, pageW, 38, 'F');
@@ -1061,9 +1224,25 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
         doc.text('This is a tax invoice for GST purposes. ABN 73 666 661 338 is registered for GST.', pageW / 2, y, { align: 'center' });
         doc.text(`Total amount includes GST of ${money(finalGst)}. Keep this invoice with your tax records.`, pageW / 2, y + 5, { align: 'center' });
 
-        addFooter(5, totalPages);
+        
     }
-
+    // ========================================
+    // FIX FOOTERS WITH CORRECT PAGE NUMBERS
+    // ========================================
+    const totalPagesFinal = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPagesFinal; i++) {
+        doc.setPage(i);
+        const fy = pageH - 10;
+        doc.setDrawColor(...C.accent);
+        doc.setLineWidth(0.3);
+        doc.line(mL, fy - 4, pageW - mR, fy - 4);
+        doc.setFontSize(7.5);
+        doc.setFont(baseFont, 'normal');
+        doc.setTextColor(...C.muted);
+        doc.text('Taxlyy Individual', mL, fy);
+        doc.text(`Page ${i} / ${totalPagesFinal}`, pageW / 2, fy, { align: 'center' });
+        doc.text('Confidential', pageW - mR, fy, { align: 'right' });
+    }
     // ========================================
     // SAVE OR RETURN BLOB
     // ========================================
@@ -1076,7 +1255,7 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
             .replace(/\s+/g, '-')
             .toLowerCase();
         const langSuffix = isBilingual ? 'bilingual' : 'en';
-        const filename = `taxlyy-return-${safeName}-${taxYearLabel}-${langSuffix}.pdf`;
+        const filename = `taxlyy-estimate-${safeName}-${taxYearLabel}-${langSuffix}.pdf`;
         doc.save(filename);
         return true;
     }

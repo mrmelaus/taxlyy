@@ -109,3 +109,32 @@
 .bilingual-option {
     margin: var(--space-4) 0;
 }
+
+.delivery-email-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* center horizontally */
+    justify-content: center;
+    gap: 6px;
+    margin-top: 12px;
+    width: 100%;
+    text-align: center;    /* center text */
+}
+
+.email-value {
+    font-size: var(--font-sm);
+    color: var(--accent);   /* accent color */
+    font-weight: 500;
+    line-height: 1.5;
+    word-break: break-word;
+    text-align: center;
+}
+
+.email-hint {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 0;
+    text-align: center;
+    max-width: 90%;
+}

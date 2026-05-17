@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Taxlyy Business — coming soon. Tax solutions for sole traders and small businesses in Australia.">
+<title>Taxlyy Business — Coming Soon</title>
+<style>
+/* ========================================
+   TAXLYY BUSINESS - COMING SOON PAGE
+   Standalone styles matching brand identity
+   ======================================== */
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Core brand colors */
+    --primary: #4361ee;
+    --primary-dark: #3a0ca3;
+    --primary-light: #7209b7;
+    --accent: #4cc9f0;
+    --accent-dim: rgba(76, 201, 240, 0.2);
+    
+    /* Gradients */
+    --gradient-dark: linear-gradient(135deg, #0b0914 0%, #15132b 50%, #1a1838 100%);
+    --gradient-card-border: linear-gradient(135deg, #4cc9f0, #4361ee, #4cc9f0);
+    --gradient-text: linear-gradient(135deg, #4cc9f0, #4361ee);
+    
+    /* Backgrounds */
+    --bg-dark: #0a0818;
+    --bg-surface: rgba(20, 25, 55, 0.6);
+    --border-glass: rgba(76, 201, 240, 0.2);
+    
+    /* Text */
+    --text-primary: #f0f3ff;
+    --text-secondary: #c9d2f0;
+    --text-muted: #8a96c2;
+    
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    
+    /* Borders */
+    --radius-xl: 1rem;
+    --radius-2xl: 2rem;
+    
+    /* Effects */
+    --glass-blur: blur(12px);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --shadow-glow: 0 0 20px rgba(76, 201, 240, 0.3);
+    
+    /* Typography */
+    --font-family: 'Inter', -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+/* Navigation */
+#navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(10, 8, 24, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border-glass);
+    z-index: 100;
+}
+
+.nav-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-decoration: none;
+    background: var(--gradient-text);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-logo span {
+    background: none;
+    -webkit-text-fill-color: var(--accent);
+    color: var(--accent);
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover {
+    color: var(--accent);
+}
+
+.nav-cta {
+    background: var(--gradient-dark);
+    padding: 0.5rem 1.25rem;
+    border-radius: 2rem;
+    border: 0.5px solid var(--border-glass);
+    color: var(--text-primary) !important;
+}
+
+.nav-cta:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-glow);
+}
+
+/* Business Container */
+.business-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 2rem 4rem;
+    background: var(--bg-dark);
+    position: relative;
+}
+
+/* Card */
+.business-card {
+    max-width: 580px;
+    margin: 0 auto;
+    text-align: center;
+    background: var(--bg-surface);
+    backdrop-filter: var(--glass-blur);
+    border-radius: var(--radius-2xl);
+    padding: 3rem 2rem;
+    border: 0.5px solid var(--border-glass);
+    box-shadow: var(--shadow-glass);
+    position: relative;
+    z-index: 2;
+}
+
+/* Gradient border glow */
+.business-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-2xl);
+    padding: 1px;
+    background: var(--gradient-card-border);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Icon */
+.business-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+/* Heading */
+.business-card h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: var(--gradient-text);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+/* Coming Soon Badge */
+.coming-badge {
+    display: inline-block;
+    background: var(--accent-dim);
+    padding: 0.25rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(4px);
+    border: 0.5px solid var(--border-glass);
+}
+
+/* Description text */
+.business-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+/* Feature List */
+.feature-list {
+    text-align: left;
+    margin: 2rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+.feature-list li {
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.feature-list li::before {
+    content: "✓";
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Back Button */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--gradient-dark);
+    color: var(--text-primary);
+    padding: 0.75rem 2rem;
+    border-radius: 2rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    border: 0.5px solid var(--border-glass);
+    margin-top: 1rem;
+}
+
+.btn-back:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+    border-color: var(--accent);
+}
+
+/* Footer note */
+.construction-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--border-glass);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-links {
+        gap: 1rem;
+    }
+    
+    .nav-links a:not(.nav-cta) {
+        display: none;
+    }
+    
+    .business-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .business-card h1 {
+        font-size: 2rem;
+    }
+    
+    .business-icon {
+        font-size: 3rem;
+    }
+    
+    .feature-list li {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #navbar {
+        padding: 0.75rem 1rem;
+    }
+    
+    .nav-logo {
+        font-size: 1.25rem;
+    }
+    
+    .nav-cta {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .business-container {
+        padding: 5rem 1rem 3rem;
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav id="navbar">
+  <a href="/" class="nav-logo">Tax<span>lyy</span></a>
+  <div class="nav-links">
+    <a href="/#features">What's included</a>
+    <a href="/#how">How it works</a>
+    <a href="/#pricing">Pricing</a>
+    <a href="../individual/index.html" class="nav-cta">Get my tax report →</a>
+  </div>
+</nav>
+
+<!-- Business Coming Soon Content -->
+<section class="business-container">
+  <div class="business-card">
+    <div class="business-icon">
+      🏗️
+    </div>
+    <div class="coming-badge">Coming Soon</div>
+    <h1>Taxlyy Business</h1>
+    <p>We're building something special for Australian sole traders, freelancers, and small business owners.</p>
+    
+    <div class="feature-list">
+      <li>Invoicing & expense tracking</li>
+      <li>BAS preparation & reporting</li>
+      <li>Annual business tax summaries</li>
+      <li>GST calculations</li>
+      <li>Integration with your existing tools</li>
+    </div>
+    
+    <p style="font-size: 0.875rem; margin-top: 1rem; color: var(--text-muted);">
+      <strong>Expected launch:</strong> Late 2026
+    </p>
+    
+    <a href="../frontend/index.html" class="btn-back">
+      ← Back to Taxlyy Individual
+    </a>
+    
+    <p class="construction-note">
+      Taxlyy Business is currently under development.
+    </p>
+  </div>
+</section>
+
+</body>
+</html>

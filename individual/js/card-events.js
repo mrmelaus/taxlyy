@@ -65,7 +65,7 @@ function attachCardEventListeners(cardId) {
                     let val = e.target.value.replace(/[^a-zA-Z\s]/g, '').toUpperCase();
                     e.target.value = val;
                     userData.fullName = val;
-                    saveCurrentData();
+                    //saveCurrentData();
                     if (val.trim().length >= 2) {
                         nameEl.style.borderColor = 'var(--accent)';
                         if (nameError) nameError.style.display = 'none';
@@ -94,7 +94,7 @@ function attachCardEventListeners(cardId) {
                     const raw = getRawTfn(tfnInput.value);
                     tfnInput.value = formatTfnDisplay(raw);
                     userData.tfn = raw;
-                    saveCurrentData();
+                    //saveCurrentData();
                 });
                 tfnInput.addEventListener('focus', () => {
                     const raw = getRawTfn(tfnInput.value);
@@ -105,7 +105,7 @@ function attachCardEventListeners(cardId) {
                     if (raw.length > 9) raw = raw.slice(0, 9);
                     userData.tfn = raw;
                     e.target.value = formatTfnDisplay(raw);
-                    saveCurrentData();
+                    //saveCurrentData();
                 });
             }
 
@@ -120,7 +120,7 @@ function attachCardEventListeners(cardId) {
                     if (value.length >= 6) value = value.slice(0, 5) + '/' + value.slice(5);
                     e.target.value = value;
                     userData.dob = value;
-                    saveCurrentData();
+                    //saveCurrentData();
                     if (dobError) dobError.style.display = 'none';
                     e.target.style.borderColor = '';
                 });
@@ -136,6 +136,36 @@ function attachCardEventListeners(cardId) {
                     } else {
                         if (dobError) dobError.style.display = 'none';
                         e.target.style.borderColor = 'var(--accent)';
+                    }
+                });
+            }
+
+            // Email field
+            const emailInput = document.getElementById('email');
+            const emailError = document.getElementById('emailError');
+            if (emailInput) {
+                emailInput.addEventListener('input', (e) => {
+                    const email = e.target.value.trim();
+                    userData.email = email;
+                    //saveCurrentData();
+                    
+                    if (email && !validateEmail(email)) {
+                        if (emailError) emailError.style.display = 'block';
+                        emailInput.style.borderColor = 'var(--error)';
+                    } else {
+                        if (emailError) emailError.style.display = 'none';
+                        emailInput.style.borderColor = 'var(--accent)';
+                    }
+                });
+                
+                emailInput.addEventListener('blur', (e) => {
+                    const email = e.target.value.trim();
+                    if (email && !validateEmail(email)) {
+                        if (emailError) emailError.style.display = 'block';
+                        emailInput.style.borderColor = 'var(--error)';
+                    } else {
+                        if (emailError) emailError.style.display = 'none';
+                        emailInput.style.borderColor = 'var(--accent)';
                     }
                 });
             }
@@ -169,7 +199,7 @@ function attachCardEventListeners(cardId) {
 
                 const isResident = selected.value === 'yes';
                 userData.isAustralianTaxResident = isResident;
-                saveCurrentData();
+                //saveCurrentData();
 
                 if (tempVisaGroup) tempVisaGroup.style.display = isResident ? 'block' : 'none';
                 if (whmGroup) whmGroup.style.display = isResident ? 'none' : 'block';
@@ -207,7 +237,7 @@ function attachCardEventListeners(cardId) {
 
                 const isTemp = selected.value === 'yes';
                 userData.isTemporaryVisaHolder = isTemp;
-                saveCurrentData();
+                //saveCurrentData();
 
                 const medicareCertGroup = document.getElementById('medicareCertGroup');
                 if (medicareCertGroup) {
@@ -229,7 +259,7 @@ function attachCardEventListeners(cardId) {
             function updateMedicareCert() {
                 const selected = document.querySelector('input[name="medicareCert"]:checked');
                 userData.hasMedicareExemptionCertificate = selected ? selected.value === 'yes' : false;
-                saveCurrentData();
+                //saveCurrentData();
                 document.querySelectorAll('#medicareCertGroup .tax-residency-card').forEach(card => {
                     card.classList.remove('selected');
                 });
@@ -239,7 +269,7 @@ function attachCardEventListeners(cardId) {
             function updateWHM() {
                 const selected = document.querySelector('input[name="whmVisa"]:checked');
                 userData.isWHMVisaHolder = selected ? selected.value === 'yes' : false;
-                saveCurrentData();
+                //saveCurrentData();
                 document.querySelectorAll('#whmGroup .tax-residency-card').forEach(card => {
                     card.classList.remove('selected');
                 });
@@ -370,6 +400,76 @@ function attachCardEventListeners(cardId) {
                 });
             }
 
+            //drag to upload
+            function setupUploadListeners() {
+                const oldZone = document.getElementById('uploadZone');
+                if (!oldZone || typeof processPayslip === 'undefined') return;
+
+                // Clone to strip ALL old event listeners
+                const uploadZone = oldZone.cloneNode(false);
+                oldZone.parentNode.replaceChild(uploadZone, oldZone);
+
+                // Rebuild zone HTML
+                uploadZone.innerHTML = `
+                    <div class="upload-drag-hint">Drag &amp; drop or click to upload (PDF, JPG, PNG)</div>
+                    <input type="file" id="payslipInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+                `;
+
+                const payslipInput = document.getElementById('payslipInput');
+
+                uploadZone.addEventListener('click', () => payslipInput.click());
+
+                payslipInput.addEventListener('change', async () => {
+                    const file = payslipInput.files[0];
+                    if (!file) return;
+
+                    uploadZone.innerHTML = `
+                        <div class="spinner"></div>
+                        <div style="margin-top:1rem;">Processing payslip with AI...</div>
+                        <small>This may take 5–10 seconds</small>
+                    `;
+
+                    try {
+                        const enrichedData = await processPayslip(file);
+
+                        if (enrichedData.employerName && enrichedData.employerAbn) {
+                            const result = window.addOrUpdateEmployer({
+                                employerName: enrichedData.employerName,
+                                employerAbn: enrichedData.employerAbn,
+                                grossIncome: enrichedData.grossIncomeYTD || 0,
+                                taxWithheld: enrichedData.taxWithheldYTD || 0
+                            });
+
+                            // Force re-render AFTER finally rebuilds the upload zone
+                            setTimeout(() => {
+                                if (typeof renderEmployerList === 'function') renderEmployerList();
+                                const employerList = document.getElementById('employersListContainer');
+                                if (employerList) {
+                                    employerList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                            }, 200);
+
+                            const lookupStatus = document.getElementById('lookupStatus');
+                            if (lookupStatus) {
+                                lookupStatus.textContent = result?.action === 'updated'
+                                    ? `✓ Updated: ${enrichedData.employerName}`
+                                    : `✓ Payslip processed: ${enrichedData.employerName}`;
+                                lookupStatus.style.color = 'var(--accent)';
+                                setTimeout(() => { lookupStatus.textContent = ''; }, 5000);
+                            }
+                        } else {
+                            alert('Could not read employer details from payslip. Please enter manually.');
+                        }
+
+                    } catch (error) {
+                        console.error('OCR processing error:', error);
+                        alert('Failed to process payslip: ' + error.message);
+                    } finally {
+                        setupUploadListeners();
+                    }
+                });
+            }
+
             const lookupBtn = document.getElementById('lookupEmployerBtn');
             const searchInput = document.getElementById('employerSearchInput');
             const lookupStatus = document.getElementById('lookupStatus');
@@ -395,7 +495,7 @@ function attachCardEventListeners(cardId) {
                             _editing: true
                         };
                         if (!userData.employers) userData.employers = [];
-                        userData.employers.push(newEmployer);
+                        window.addOrUpdateEmployer(newEmployer);  
                         updateTotals();
                         renderEmployerList();
                         searchInput.value = '';
@@ -429,7 +529,7 @@ function attachCardEventListeners(cardId) {
                                     _editing: true
                                 };
                                 if (!userData.employers) userData.employers = [];
-                                userData.employers.push(newEmployer);
+                                window.addOrUpdateEmployer(newEmployer);  
                                 updateTotals();
                                 renderEmployerList();
                                 searchInput.value = '';
@@ -445,98 +545,475 @@ function attachCardEventListeners(cardId) {
                 });
             }
 
-            if (!userData.otherIncome) {
+           if (!userData.otherIncome) {
                 userData.otherIncome = { interest: 0, dividends: 0, otherDescription: '', otherAmount: 0 };
             }
-            const incomeCategories = [
-                { id: 'interest', labelKey: 'interest', hasDescription: false },
-                { id: 'dividends', labelKey: 'dividends', hasDescription: false },
-                { id: 'other', labelKey: 'other', hasDescription: true }
-            ];
+            // Initialise new top-level income fields
+            if (userData.frankingCredits === undefined) userData.frankingCredits = 0;
+            if (userData.governmentPayments === undefined) userData.governmentPayments = 0;
+            if (userData.govTaxWithheld === undefined) userData.govTaxWithheld = 0;
+            if (userData.abnIncome === undefined) userData.abnIncome = 0;
+            if (userData.abnExpenses === undefined) userData.abnExpenses = 0;
+            if (userData.abnTaxWithheld === undefined) userData.abnTaxWithheld = 0;
+            if (userData.capitalGains === undefined) userData.capitalGains = 0;
+            if (userData.capitalLosses === undefined) userData.capitalLosses = 0;
+            if (userData.priorYearCapitalLosses === undefined) userData.priorYearCapitalLosses = 0;
+            if (userData.cgtDiscountApplies === undefined) userData.cgtDiscountApplies = false;
+
+            function getAbnWarnings() {
+                const abnNet = (userData.abnIncome || 0) - (userData.abnExpenses || 0);
+                const warnings = [];
+                if (userData.abnIncome > 0 && abnNet < 0) {
+                    warnings.push({ type: 'warning', text: t('abnLossWarning') });
+                }
+                if ((userData.abnIncome || 0) > 75000) {
+                    warnings.push({ type: 'warning', text: t('abnGstWarning') });
+                }
+                return warnings;
+            }
+
+            function getCgtWarnings() {
+                const netGain = (userData.capitalGains || 0) - (userData.capitalLosses || 0) - (userData.priorYearCapitalLosses || 0);
+                const warnings = [];
+                if (netGain > 10000) {
+                    warnings.push({ type: 'info', text: t('cgtLargeWarning') });
+                }
+                const status = getEffectiveTaxStatus(userData);
+                if ((userData.capitalGains || 0) > 0 && userData.cgtDiscountApplies && status !== 'australian') {
+                    warnings.push({ type: 'error', text: t('cgtDiscountNotEligible') });
+                }
+                return warnings;
+            }
+
+            function renderWarnings(warnings) {
+                if (!warnings.length) return '';
+                return warnings.map(w => `
+                    <div class="warning-box ${w.type}" style="margin-top: var(--space-3);">
+                        <span class="warning-box-icon">${w.type === 'info' ? 'ℹ️' : '⚠️'}</span>
+                        <span class="warning-box-text">${w.text}</span>
+                    </div>
+                `).join('');
+            }
 
             function renderOtherIncomeList() {
                 const container = document.getElementById('otherIncomeList');
                 if (!container) return;
                 const oi = userData.otherIncome;
-                let html = '';
-                incomeCategories.forEach(cat => {
-                    const isEditing = (oi._editing === cat.id);
-                    let displayValue = '';
-                    let displayDesc = '';
-                    if (cat.id === 'other') {
-                        displayValue = (oi.otherAmount || 0) === 0 ? t('notEntered') : formatCurrency(oi.otherAmount);
-                        displayDesc = oi.otherDescription || t('notEntered');
-                    } else {
-                        displayValue = (oi[cat.id] || 0) === 0 ? t('notEntered') : formatCurrency(oi[cat.id]);
+
+                // --- INTEREST ---
+                const interestEditing = oi._editing === 'interest';
+                const interestDisplay = (oi.interest || 0) === 0 ? t('notEntered') : formatCurrency(oi.interest);
+
+                // --- DIVIDENDS + FRANKING ---
+                const dividendsEditing = oi._editing === 'dividends';
+                const dividendsDisplay = (oi.dividends || 0) === 0 && (userData.frankingCredits || 0) === 0
+                    ? `<span><span class="stat-label">${t('amountLabel')}:</span> <span class="stat-value">${t('notEntered')}</span></span>`
+                    : `
+                        <span><span class="stat-label">${t('cashDividendsLabel')}:</span> <span class="stat-value">${formatCurrency(oi.dividends || 0)}</span></span>
+                        <span><span class="stat-label">${t('frankingCreditsInputLabel')}:</span> <span class="stat-value">${formatCurrency(userData.frankingCredits || 0)}</span></span>
+                        <span><span class="stat-label">${t('grossedUpLabel')}:</span> <span class="stat-value">${formatCurrency((oi.dividends || 0) + (userData.frankingCredits || 0))}</span></span>
+                    `;
+                // --- GOVERNMENT PAYMENTS ---
+                const govEditing = oi._editing === 'gov';
+                const govDisplay = (userData.governmentPayments || 0) === 0
+                    ? `<span><span class="stat-label">${t('amountLabel')}:</span> <span class="stat-value">${t('notEntered')}</span></span>`
+                    : `
+                        <span><span class="stat-label">${t('governmentPaymentsInputLabel')}:</span> <span class="stat-value">${formatCurrency(userData.governmentPayments)}</span></span>
+                        <span><span class="stat-label">${t('govTaxWithheldLabel')}:</span> <span class="stat-value">${formatCurrency(userData.govTaxWithheld || 0)}</span></span>
+                    `;
+
+                // --- ABN INCOME ---
+                const abnEditing = oi._editing === 'abn';
+                const abnNet = (userData.abnIncome || 0) - (userData.abnExpenses || 0);
+
+                    //  Store original ABN values when entering edit mode
+                    if (abnEditing && userData._abnIncomeBackup === undefined) {
+                        userData._abnIncomeBackup = userData.abnIncome;
+                        userData._abnExpensesBackup = userData.abnExpenses;
+                        userData._abnTaxWithheldBackup = userData.abnTaxWithheld;
                     }
-                    html += `
-                        <div class="income-category-card" data-category="${cat.id}">
-                            <div class="category-header">
-                                <div class="category-name">${t(cat.labelKey)}</div>
-                                <button class="category-edit-btn" data-category="${cat.id}">${t('edit')}</button>
-                            </div>
-                            ${!isEditing ? `
+                const abnDisplay = (userData.abnIncome || 0) === 0
+                    ? `<span><span class="stat-label">${t('amountLabel')}:</span> <span class="stat-value">${t('notEntered')}</span></span>`
+                    : `
+                        <span><span class="stat-label">${t('abnIncomeLabel')}:</span> <span class="stat-value">${formatCurrency(userData.abnIncome)}</span></span>
+                        <span><span class="stat-label">${t('abnExpensesLabel')}:</span> <span class="stat-value">${formatCurrency(userData.abnExpenses || 0)}</span></span>
+                        <span><span class="stat-label">${t('abnNetLabel')}:</span> <span class="stat-value" style="color:${abnNet >= 0 ? 'var(--accent)' : 'var(--error)'};">${formatCurrency(abnNet)}</span></span>
+                        <span><span class="stat-label">${t('abnTaxWithheldLabel')}:</span> <span class="stat-value">${formatCurrency(userData.abnTaxWithheld || 0)}</span></span>
+                    `;
+
+                // --- CAPITAL GAINS ---
+                const cgtEditing = oi._editing === 'cgt';
+                const cgtNet = (userData.capitalGains || 0) - (userData.capitalLosses || 0) - (userData.priorYearCapitalLosses || 0);
+                const cgtDisplay = (userData.capitalGains || 0) === 0
+                    ? `<span><span class="stat-label">${t('amountLabel')}:</span> <span class="stat-value">${t('notEntered')}</span></span>`
+                    : `
+                        <span><span class="stat-label">${t('capitalGainsLabel')}:</span> <span class="stat-value">${formatCurrency(userData.capitalGains)}</span></span>
+                        <span><span class="stat-label">${t('capitalLossesLabel')}:</span> <span class="stat-value">${formatCurrency(userData.capitalLosses || 0)}</span></span>
+                        <span><span class="stat-label">${t('priorYearLossesLabel')}:</span> <span class="stat-value">${formatCurrency(userData.priorYearCapitalLosses || 0)}</span></span>
+                        <span><span class="stat-label">${t('netGainLabel')}:</span> <span class="stat-value">${formatCurrency(Math.max(0, cgtNet))}</span></span>
+                        <span><span class="stat-label">${t('cgtDiscountLabel')}:</span> <span class="stat-value">${userData.cgtDiscountApplies ? t('cgtDiscountYes') : t('cgtDiscountNo')}</span></span>
+                    `;
+                // --- OTHER ---
+                const otherEditing = oi._editing === 'other';
+                const otherDisplay = (oi.otherAmount || 0) === 0 ? t('notEntered') : formatCurrency(oi.otherAmount);
+
+               container.innerHTML = `
+                    <!-- INTEREST -->
+                    <div class="income-category-card" data-category="interest">
+                        <div class="category-header">
+                            <div class="category-name">${t('interest')}</div>
+                            <button class="category-edit-btn" data-category="interest">${t('edit')}</button>
+                         </div>
+                            ${!interestEditing ? `
                                 <div class="category-stats">
-                                    ${cat.hasDescription ? `
-                                        <span><span class="stat-label">${t('descriptionLabel')}:</span> <span class="stat-value">${escapeHtml(displayDesc)}</span></span>
-                                        <span><span class="stat-label">${t('amountLabel')}:</span> <span class="stat-value">${displayValue}</span></span>
-                                    ` : `
-                                        <span><span class="stat-label">${t('amountLabel')}:</span> <span class="stat-value">${displayValue}</span></span>
-                                    `}
+                                    <div class="stat-row">
+                                        <span class="stat-label">${t('interestReceived')}:</span>
+                                        <span class="stat-value">${formatMoney(oi.interest || 0)}</span>
+                                    </div>
                                 </div>
                             ` : `
-                                <div class="category-edit-form">
-                                    ${cat.hasDescription ? `
-                                        <div class="edit-field">
-                                            <label>${t('descriptionLabel')}</label>
-                                            <input type="text" class="edit-description" value="${escapeHtml(oi.otherDescription || '')}">
-                                        </div>
-                                    ` : ''}
-                                    <div class="edit-field">
-                                        <label>${t('amountLabel')}</label>
-                                        <input type="number" class="edit-amount" value="${cat.id === 'other' ? (oi.otherAmount || 0) : (oi[cat.id] || 0)}" step="any" min="0">
-                                    </div>
-                                    <div class="edit-actions">
-                                        <button class="update-btn" data-category="${cat.id}">${t('update')}</button>
-                                        <button class="cancel-btn" data-category="${cat.id}">${t('cancel')}</button>
+                            <div class="category-edit-form">
+                                <div class="edit-field">
+                                    <label>${t('amountLabel')}</label>
+                                    <input type="number" class="edit-interest" value="${oi.interest || 0}" step="any" min="0">
+                                </div>
+                                <div class="edit-actions">
+                                    <button class="update-btn" data-category="interest">${t('update')}</button>
+                                    <button class="cancel-btn" data-category="interest">${t('cancel')}</button>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- DIVIDENDS + FRANKING -->
+                    <div class="income-category-card" data-category="dividends">
+                        <div class="category-header">
+                            <div class="category-name">${t('dividends')}</div>
+                            <button class="category-edit-btn" data-category="dividends">${t('edit')}</button>
+                        </div>
+                        ${!dividendsEditing ? `
+                            <div class="category-stats column">
+                                ${dividendsDisplay}
+                            </div>
+                        ` : `
+                            <div class="category-edit-form">
+                                <div class="edit-field">
+                                    <label>${t('cashDividendsLabel')}</label>
+                                    <input type="number" class="edit-dividends" value="${oi.dividends || 0}" step="any" min="0">
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('frankingCreditsInputLabel')}</label>
+                                    <input type="number" class="edit-franking" value="${userData.frankingCredits || 0}" step="any" min="0">
+                                    <small class="form-note">${t('frankingCreditsHint')}</small>
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('grossedUpLabel')}</label>
+                                    <div class="calculated-value" id="grossedUpDisplay">${formatCurrency((oi.dividends || 0) + (userData.frankingCredits || 0))}</div>
+                                </div>
+                                <div class="edit-actions">
+                                    <button class="update-btn" data-category="dividends">${t('update')}</button>
+                                    <button class="cancel-btn" data-category="dividends">${t('cancel')}</button>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- GOVERNMENT PAYMENTS -->
+                    <div class="income-category-card" data-category="gov">
+                        <div class="category-header">
+                            <div class="category-name">${t('governmentPayments')}</div>
+                            <button class="category-edit-btn" data-category="gov">${t('edit')}</button>
+                        </div>
+                        ${!govEditing ? `
+                            <div class="category-stats column">
+                                ${govDisplay}
+                            </div>
+                            <div class="deduction-hint">${t('governmentPaymentsHint')}</div>
+                        ` : `
+                            <div class="category-edit-form">
+                                <div class="edit-field">
+                                    <label>${t('governmentPaymentsInputLabel')}</label>
+                                    <input type="number" class="edit-gov-amount" value="${userData.governmentPayments || 0}" step="any" min="0">
+                                    <small class="form-note">${t('governmentPaymentsHint')}</small>
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('govTaxWithheldLabel')}</label>
+                                    <input type="number" class="edit-gov-withheld" value="${userData.govTaxWithheld || 0}" step="any" min="0">
+                                    <small class="form-note">${t('govTaxWithheldHint')}</small>
+                                </div>
+                                <div class="edit-actions">
+                                    <button class="update-btn" data-category="gov">${t('update')}</button>
+                                    <button class="cancel-btn" data-category="gov">${t('cancel')}</button>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- ABN INCOME -->
+                    <div class="income-category-card" data-category="abn">
+                        <div class="category-header">
+                            <div class="category-name">${t('abnIncomeTitle')}</div>
+                            <button class="category-edit-btn" data-category="abn">${t('edit')}</button>
+                        </div>
+                        ${!abnEditing ? `
+                            <div class="category-stats column">
+                                ${abnDisplay}
+                            </div>
+                            <div class="deduction-hint">${t('abnIncomeHint')}</div>
+                            ${renderWarnings(getAbnWarnings())}
+                            
+                             ${abnNet > 4000 ? `
+                                <div class="warning-box warning">
+                                    <span class="warning-box-icon">⚠️</span>
+                                    <span class="warning-box-text">${t('paygInstalmentWarning')}</span>
+                                </div>
+                            ` : ''}
+                        ` : `
+                            <div class="category-edit-form">
+                                <div class="edit-field">
+                                    <label>${t('abnIncomeLabel')}</label>
+                                    <input type="number" class="edit-abn-income" value="${userData.abnIncome || 0}" step="any" min="0">
+                                    <small class="form-note">${t('abnIncomeInputHint')}</small>
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('abnExpensesLabel')}</label>
+                                    <input type="number" class="edit-abn-expenses" value="${userData.abnExpenses || 0}" step="any" min="0">
+                                    <small class="form-note">${t('abnExpensesHint')}</small>
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('abnNetLabel')}</label>
+                                    <div class="calculated-value" id="abnNetDisplay">${formatCurrency(abnNet)}</div>
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('abnTaxWithheldLabel')}</label>
+                                    <input type="number" class="edit-abn-withheld" value="${userData.abnTaxWithheld || 0}" step="any" min="0">
+                                    <small class="form-note">${t('abnTaxWithheldHint')}</small>
+                                </div>
+                                <div class="edit-actions">
+                                    <button class="update-btn" data-category="abn">${t('update')}</button>
+                                    <button class="cancel-btn" data-category="abn">${t('cancel')}</button>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- CAPITAL GAINS -->
+                    <div class="income-category-card" data-category="cgt">
+                        <div class="category-header">
+                            <div class="category-name">${t('capitalGainsTitle')}</div>
+                            <button class="category-edit-btn" data-category="cgt">${t('edit')}</button>
+                        </div>
+                        ${!cgtEditing ? `
+                            <div class="category-stats column">
+                                ${cgtDisplay}
+                            </div>
+                            <div class="deduction-hint">${t('capitalGainsHint')}</div>
+                            ${renderWarnings(getCgtWarnings())}
+                        ` : `
+                            <div class="category-edit-form">
+                                <div class="edit-field">
+                                    <label>${t('capitalGainsLabel')}</label>
+                                    <input type="number" class="edit-cgt-gains" value="${userData.capitalGains || 0}" step="any" min="0">
+                                    <small class="form-note">${t('capitalGainsInputHint')}</small>
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('capitalLossesLabel')}</label>
+                                    <input type="number" class="edit-cgt-losses" value="${userData.capitalLosses || 0}" step="any" min="0">
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('priorYearLossesLabel')}</label>
+                                    <input type="number" class="edit-cgt-prior" value="${userData.priorYearCapitalLosses || 0}" step="any" min="0">
+                                    <small class="form-note">${t('priorYearLossesHint')}</small>
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('netGainLabel')}</label>
+                                    <div class="calculated-value" id="cgtNetDisplay">${formatCurrency(Math.max(0, cgtNet))}</div>
+                                </div>
+                                <div class="edit-field" style="display:flex; align-items:flex-start; gap:var(--space-3); margin-top:var(--space-2);">
+                                    <input type="checkbox" class="edit-cgt-discount" 
+                                        id="cgtDiscountCheck"
+                                        ${userData.cgtDiscountApplies ? 'checked' : ''}
+                                        style="width:1.1rem; height:1.1rem; margin-top:0.2rem; accent-color:var(--accent); flex-shrink:0; cursor:pointer;">
+                                    <div>
+                                        <label for="cgtDiscountCheck" style="cursor:pointer; font-size:var(--font-sm); color:var(--text-primary); font-weight:500;">
+                                            ${t('cgtDiscountLabel')}
+                                        </label>
+                                        <div class="form-note" style="margin-top:var(--space-1);">${t('cgtDiscountHint')}</div>
                                     </div>
                                 </div>
-                            `}
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
+                                <div class="edit-actions">
+                                    <button class="update-btn" data-category="cgt">${t('update')}</button>
+                                    <button class="cancel-btn" data-category="cgt">${t('cancel')}</button>
+                                </div>
+                            </div>
+                        `}
+                    </div>
 
-                document.querySelectorAll('.category-edit-btn').forEach(btn => {
+                    <!-- OTHER -->
+                    <div class="income-category-card" data-category="other">
+                        <div class="category-header">
+                            <div class="category-name">${t('other')}</div>
+                            <button class="category-edit-btn" data-category="other">${t('edit')}</button>
+                        </div>
+                        ${!otherEditing ? `
+                            <div class="category-stats">
+                                <span><span class="stat-label">${t('descriptionLabel')}:</span> <span class="stat-value">${escapeHtml(oi.otherDescription || t('notEntered'))}</span></span>
+                                <span><span class="stat-label">${t('amountLabel')}:</span> <span class="stat-value">${otherDisplay}</span></span>
+                            </div>
+                        ` : `
+                            <div class="category-edit-form">
+                                <div class="edit-field">
+                                    <label>${t('descriptionLabel')}</label>
+                                    <input type="text" class="edit-description" value="${escapeHtml(oi.otherDescription || '')}">
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('amountLabel')}</label>
+                                    <input type="number" class="edit-amount" value="${oi.otherAmount || 0}" step="any" min="0">
+                                </div>
+                                <div class="edit-actions">
+                                    <button class="update-btn" data-category="other">${t('update')}</button>
+                                    <button class="cancel-btn" data-category="other">${t('cancel')}</button>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                `;
+
+                // Attach edit buttons
+                container.querySelectorAll('.category-edit-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
                         userData.otherIncome._editing = btn.dataset.category;
                         renderOtherIncomeList();
                     });
                 });
-                document.querySelectorAll('.update-btn').forEach(btn => {
+
+                // Live grossed-up calculation
+                const editDividends = container.querySelector('.edit-dividends');
+                const editFranking = container.querySelector('.edit-franking');
+                if (editDividends && editFranking) {
+                    const updateGrossed = () => {
+                        const gross = (parseFloat(editDividends.value) || 0) + (parseFloat(editFranking.value) || 0);
+                        const el = document.getElementById('grossedUpDisplay');
+                        if (el) el.textContent = formatCurrency(gross);
+                    };
+                    editDividends.addEventListener('input', updateGrossed);
+                    editFranking.addEventListener('input', updateGrossed);
+                }
+
+                // Live ABN net calculation
+                const editAbnIncome = container.querySelector('.edit-abn-income');
+                const editAbnExpenses = container.querySelector('.edit-abn-expenses');
+                if (editAbnIncome && editAbnExpenses) {
+                    const updateAbnNet = () => {
+                        const net = (parseFloat(editAbnIncome.value) || 0) - (parseFloat(editAbnExpenses.value) || 0);
+                        const el = document.getElementById('abnNetDisplay');
+                        if (el) {
+                            el.textContent = formatCurrency(net);
+                            el.style.color = net < 0 ? 'var(--error)' : 'var(--accent)';
+                        }
+                    };
+                    editAbnIncome.addEventListener('input', updateAbnNet);
+                    editAbnExpenses.addEventListener('input', updateAbnNet);
+                }
+
+                // Live CGT net calculation
+                const editGains = container.querySelector('.edit-cgt-gains');
+                const editLosses = container.querySelector('.edit-cgt-losses');
+                const editPrior = container.querySelector('.edit-cgt-prior');
+                if (editGains && editLosses && editPrior) {
+                    const updateCgtNet = () => {
+                        const net = (parseFloat(editGains.value) || 0)
+                            - (parseFloat(editLosses.value) || 0)
+                            - (parseFloat(editPrior.value) || 0);
+                        const el = document.getElementById('cgtNetDisplay');
+                        if (el) {
+                            el.textContent = formatCurrency(Math.max(0, net));
+                            el.style.color = net <= 0 ? 'var(--text-muted)' : 'var(--accent)';
+                        }
+                    };
+                    editGains.addEventListener('input', updateCgtNet);
+                    editLosses.addEventListener('input', updateCgtNet);
+                    editPrior.addEventListener('input', updateCgtNet);
+                }
+
+                // Update buttons
+                container.querySelectorAll('.update-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
                         const catId = btn.dataset.category;
                         const cardDiv = btn.closest('.income-category-card');
-                        const amount = parseFloat(cardDiv.querySelector('.edit-amount').value) || 0;
-                        if (amount < 0) { alert('Amount cannot be negative.'); return; }
-                        if (catId === 'other') {
-                            const descInput = cardDiv.querySelector('.edit-description');
-                            userData.otherIncome.otherDescription = descInput ? descInput.value : '';
-                            userData.otherIncome.otherAmount = amount;
-                        } else {
-                            userData.otherIncome[catId] = amount;
-                        }
-                        delete userData.otherIncome._editing;
 
-                        renderOtherIncomeList();
+                        if (catId === 'interest') {
+                            const val = parseFloat(cardDiv.querySelector('.edit-interest').value) || 0;
+                            if (val < 0) { alert(t('amountNegativeError')); return; }
+                            userData.otherIncome.interest = val;
+
+                        } else if (catId === 'dividends') {
+                            const divVal = parseFloat(cardDiv.querySelector('.edit-dividends').value) || 0;
+                            const frkVal = parseFloat(cardDiv.querySelector('.edit-franking').value) || 0;
+                            if (divVal < 0 || frkVal < 0) { alert(t('amountNegativeError')); return; }
+                            userData.otherIncome.dividends = divVal;
+                            userData.frankingCredits = frkVal;
+
+                        } else if (catId === 'gov') {
+                            const govAmt = parseFloat(cardDiv.querySelector('.edit-gov-amount').value) || 0;
+                            const govWht = parseFloat(cardDiv.querySelector('.edit-gov-withheld').value) || 0;
+                            if (govAmt < 0 || govWht < 0) { alert(t('amountNegativeError')); return; }
+                            userData.governmentPayments = govAmt;
+                            userData.govTaxWithheld = govWht;
+
+                        } else if (catId === 'abn') {
+                            const abnInc = parseFloat(cardDiv.querySelector('.edit-abn-income').value) || 0;
+                            const abnExp = parseFloat(cardDiv.querySelector('.edit-abn-expenses').value) || 0;
+                            const abnWht = parseFloat(cardDiv.querySelector('.edit-abn-withheld').value) || 0;
+                            if (abnInc < 0 || abnExp < 0 || abnWht < 0) { alert(t('amountNegativeError')); return; }
+                            userData.abnIncome = abnInc;
+                            userData.abnExpenses = abnExp;
+                            userData.abnTaxWithheld = abnWht;
+
+                        } else if (catId === 'cgt') {
+                            const gains = parseFloat(cardDiv.querySelector('.edit-cgt-gains').value) || 0;
+                            const losses = parseFloat(cardDiv.querySelector('.edit-cgt-losses').value) || 0;
+                            const prior = parseFloat(cardDiv.querySelector('.edit-cgt-prior').value) || 0;
+                            if (gains < 0 || losses < 0 || prior < 0) { alert(t('amountNegativeError')); return; }
+                            userData.capitalGains = gains;
+                            userData.capitalLosses = losses;
+                            userData.priorYearCapitalLosses = prior;
+                            userData.cgtDiscountApplies = cardDiv.querySelector('.edit-cgt-discount')?.checked || false;
+
+                        } else if (catId === 'other') {
+                            const amt = parseFloat(cardDiv.querySelector('.edit-amount').value) || 0;
+                            if (amt < 0) { alert(t('amountNegativeError')); return; }
+                            userData.otherIncome.otherAmount = amt;
+                            userData.otherIncome.otherDescription = cardDiv.querySelector('.edit-description')?.value || '';
+                        }
+
+                        delete userData.otherIncome._editing;
                         if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
-                        saveCurrentData();
+                        //saveCurrentData();
+                        renderOtherIncomeList();
                     });
                 });
-                document.querySelectorAll('.cancel-btn').forEach(btn => {
+
+                 // Cancel buttons
+                container.querySelectorAll('.cancel-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
+                        const catId = btn.closest('.income-category-card')?.dataset.category;
+                        
+                        // Restore ABN original values if cancelled
+                        if (catId === 'abn' && userData._abnIncomeBackup !== undefined) {
+                            userData.abnIncome = userData._abnIncomeBackup;
+                            userData.abnExpenses = userData._abnExpensesBackup;
+                            userData.abnTaxWithheld = userData._abnTaxWithheldBackup;
+                            delete userData._abnIncomeBackup;
+                            delete userData._abnExpensesBackup;
+                            delete userData._abnTaxWithheldBackup;
+                        }
+                        
                         delete userData.otherIncome._editing;
                         renderOtherIncomeList();
+                        
+                        // Clean localStorage
+                        //if (typeof //saveCurrentData === 'function') //saveCurrentData();
                     });
                 });
             }
@@ -547,6 +1024,10 @@ function attachCardEventListeners(cardId) {
             break;
 
         case 'deductions':
+
+        const WFH_RATE = window.deductionRates?.wfhRate ?? 0.70;
+        const TRAVEL_RATE = window.deductionRates?.travelRate ?? 0.88;
+
             const deductionItems = [
                 {
                     id: 'homeOffice',
@@ -554,7 +1035,7 @@ function attachCardEventListeners(cardId) {
                     hintKey: 'homeOfficeHint',
                     renderDisplay: (data) => {
                         const hours = data.homeOfficeHours || 0;
-                        const deduction = hours * 0.70;
+                        const deduction = hours * WFH_RATE;
                         userData.homeOffice = deduction;
                         return `${hours} hours → ${formatCurrency(deduction)}`;
                     },
@@ -565,14 +1046,14 @@ function attachCardEventListeners(cardId) {
                         </div>
                         <div class="edit-field">
                             <label>${t('homeOfficeCalculated')}</label>
-                            <div class="calculated-value">${formatCurrency((data.homeOfficeHours || 0) * 0.70)}</div>
+                            <div class="calculated-value">${formatCurrency((data.homeOfficeHours || 0) * WFH_RATE)}</div>
                         </div>
                     `,
                     update: (cardDiv) => {
                         const hours = parseFloat(cardDiv.querySelector('.edit-homeOffice-hours')?.value) || 0;
                         userData.homeOfficeHours = hours;
-                        userData.homeOfficeDeduction = hours * 0.70;
-                        userData.homeOffice = hours * 0.70;
+                        userData.homeOfficeDeduction = hours * WFH_RATE;
+                        userData.homeOffice = hours * WFH_RATE;
                         return true;
                     }
                 },
@@ -583,7 +1064,7 @@ function attachCardEventListeners(cardId) {
                     renderDisplay: (data) => {
                         if (data.travelMethod === 'cents') {
                             const km = data.travelKilometres || 0;
-                            return `Cents per km: ${km} km → ${formatCurrency(Math.min(km, 5000) * 0.88)}`;
+                            return `Cents per km: ${km} km → ${formatCurrency(Math.min(km, 5000) * TRAVEL_RATE)}`;
                         } else {
                             const expenses = data.travelLogbookExpenses || 0;
                             const percent = data.travelLogbookPercent || 0;
@@ -634,7 +1115,7 @@ function attachCardEventListeners(cardId) {
                             const warningDiv = cardDiv.querySelector('.warning-message');
                             if (km > 5000) { if (warningDiv) warningDiv.style.display = 'block'; km = 5000; }
                             else { if (warningDiv) warningDiv.style.display = 'none'; }
-                            deduction = km * 0.88;
+                            deduction = km * TRAVEL_RATE;
                             userData.travelKilometres = km;
                             userData.travelLogbookExpenses = 0;
                             userData.travelLogbookPercent = 0;
@@ -650,49 +1131,219 @@ function attachCardEventListeners(cardId) {
                         return true;
                     }
                 },
-                {
+               {
                     id: 'equipment',
                     labelKey: 'equipment',
                     hintKey: 'equipmentHint',
                     renderDisplay: (data) => {
                         const under300 = data.equipmentUnder300 || 0;
-                        const over300 = data.equipmentOver300 || 0;
-                        return `Under $300: ${formatCurrency(under300)} | Over $300: ${formatCurrency(over300)}`;
+                        const assets = data.equipmentAssets || [];
+                        
+                        // Calculate total depreciation from assets
+                        let totalDepreciation = 0;
+                        assets.forEach(asset => {
+                            totalDepreciation += calculateAssetDepreciation(asset, data.taxYear);
+                        });
+                        
+                        const totalEquipment = under300 + totalDepreciation;
+                        
+                        // Store for calculation
+                        userData.equipment = totalEquipment;
+                        userData.equipmentAssets = assets;
+                        
+                        let assetsDisplay = '';
+                        if (assets.length > 0) {
+                            assetsDisplay = ` | ${assets.length} asset(s) depreciated: ${formatCurrency(totalDepreciation)}`;
+                        }
+                        
+                        return `Under $300: ${formatCurrency(under300)}${assetsDisplay} | Total: ${formatCurrency(totalEquipment)}`;
                     },
-                    renderEdit: (data) => `
-                        <div class="edit-field">
-                            <label>${t('equipmentUnder300')}</label>
-                            <input type="number" class="edit-equipment-under" value="${data.equipmentUnder300 || 0}" step="any" min="0">
-                        </div>
-                        <div class="edit-field">
-                            <label>${t('equipmentOver300')}</label>
-                            <input type="number" class="edit-equipment-over" value="${data.equipmentOver300 || 0}" step="any" min="0">
-                        </div>
-                    `,
+                    renderEdit: (data) => {
+                        const under300 = data.equipmentUnder300 || 0;
+                        const assets = data.equipmentAssets || [];
+                        const currentTaxYear = data.taxYear || window.activeTaxYearString || '2025-26';
+                        const taxYearStart = getTaxYearStartDate(currentTaxYear);
+                        
+                        let assetsHtml = '';
+                        assets.forEach((asset, index) => {
+                            assetsHtml += renderAssetItem(asset, index, taxYearStart);
+                        });
+                        
+                        return `
+                            <div class="edit-field">
+                                <label>${t('equipmentUnder300')}</label>
+                                <input type="number" class="edit-equipment-under" value="${under300}" step="any" min="0">
+                                <div class="field-hint">${t('equipmentUnder300Hint')}</div>
+                            </div>
+                            
+                            <div class="edit-field equipment-assets-section">
+                                <label>${t('equipmentOver300')}</label>
+                                <div class="assets-list" id="equipment-assets-list">
+                                    ${assetsHtml || '<div class="no-assets">' + t('noAssetsAdded') + '</div>'}
+                                </div>
+                                <button type="button" class="add-asset-btn" data-action="add-asset">+ ${t('addAsset')}</button>
+                            </div>
+                            
+                            <div class="edit-field equipment-total-preview">
+                                <label>${t('equipmentTotalPreview')}</label>
+                                <div class="calculated-value" id="equipment-total-preview-value">${formatCurrency(calculateTotalEquipmentPreview(data))}</div>
+                            </div>
+                        `;
+                    },
                     update: (cardDiv) => {
-                        const under300 = parseFloat(cardDiv.querySelector('.edit-equipment-under')?.value) || 0;
-                        const over300 = parseFloat(cardDiv.querySelector('.edit-equipment-over')?.value) || 0;
-                        userData.equipmentUnder300 = under300;
-                        userData.equipmentOver300 = over300;
-                        userData.equipment = under300;
-                        return true;
-                    }
+                    const under300 = parseFloat(cardDiv.querySelector('.edit-equipment-under')?.value) || 0;
+                    userData.equipmentUnder300 = under300;
+                    
+                    const assetItems = cardDiv.querySelectorAll('.asset-item');
+                    const assets = [];
+                    const fyStart = getTaxYearStartDate(userData.taxYear || window.activeTaxYearString);
+                    
+                    assetItems.forEach(item => {
+                        const assetType = item.querySelector('.asset-type')?.value || 'computer';
+                        const effectiveLife = getAssetEffectiveLife(assetType);
+                        const workPercentage = parseFloat(item.querySelector('.asset-work-percent')?.value) || 100;
+                        const originalCost = parseFloat(item.querySelector('.asset-original-cost')?.value) || 0;
+                        const purchaseDateDisplay = item.querySelector('.asset-purchase-date')?.value || '';
+                        const purchaseDate = parseDateFromInput(purchaseDateDisplay);
+                        
+                        // Validation
+                        let hasError = false;
+                        const dateHint = item.querySelector('.date-hint');
+                        const costHint = item.querySelector('.cost-hint');
+                        
+                        if (!purchaseDateDisplay) {
+                            dateHint.textContent = t('assetDateMissing');
+                            dateHint.style.display = 'block';
+                            hasError = true;
+                        } else {
+                            const validation = isValidPurchaseDate(purchaseDateDisplay, fyStart);
+                            if (!validation.valid) {
+                                if (validation.error === 'format') dateHint.textContent = t('assetDateInvalid');
+                                else if (validation.error === 'future') dateHint.textContent = t('assetDateFuture');
+                                else if (validation.error === 'year') dateHint.textContent = t('assetDateYear');
+                                else dateHint.textContent = t('assetDateInvalid');
+                                dateHint.style.display = 'block';
+                                hasError = true;
+                            } else {
+                                dateHint.style.display = 'none';
+                            }
+                        }
+                        
+                        if (originalCost <= 0) {
+                            costHint.textContent = t('assetCostMissing');
+                            costHint.style.display = 'block';
+                            hasError = true;
+                        } else {
+                            costHint.style.display = 'none';
+                        }
+                        
+                        if (hasError) return; // Skip this asset, don't push
+                        
+                        // Determine if asset is existing (purchased before current FY start)
+                        const purchaseDateObj = new Date(purchaseDate);
+                        const fyStartDate = new Date(fyStart);
+                        const isExisting = purchaseDateObj < fyStartDate;
+                        
+                        let depreciation = 0;
+                        if (isExisting) {
+                            const { remainingValue, remainingLife, fullYearsHeld } = calculateAssetRemainingValue(
+                                originalCost, purchaseDate, effectiveLife, fyStart
+                            );
+                            if (remainingValue <= 0 || remainingLife <= 0 || fullYearsHeld >= effectiveLife) {
+                                // Asset fully depreciated – show warning but still allow (depreciation = 0)
+                                const warningHint = item.querySelector('.asset-field .warning-hint') || document.createElement('div');
+                                warningHint.className = 'field-hint warning-hint';
+                                warningHint.textContent = t('assetFullyDepreciated');
+                                if (!item.querySelector('.warning-hint')) item.querySelector('.asset-fields-container').appendChild(warningHint);
+                                depreciation = 0;
+                            } else {
+                                // Calculate current year depreciation from remaining value
+                                // For existing asset, days held in current FY = full year (365) unless purchased mid-FY? But purchased before FY start, so full year.
+                                const dvRate = 2 / remainingLife;
+                                const daysHeld = 365; // Full financial year
+                                const fullDepreciation = remainingValue * (daysHeld / 365) * dvRate;
+                                depreciation = fullDepreciation * (workPercentage / 100);
+                                depreciation = Math.round(depreciation);
+                            }
+                            assets.push({
+                                isExisting: true,
+                                type: assetType,
+                                originalCost: originalCost,
+                                purchaseDate: purchaseDate,
+                                effectiveLife: effectiveLife,
+                                workPercentage: workPercentage,
+                                remainingValue: remainingValue,
+                                remainingLife: remainingLife,
+                                depreciation: depreciation
+                            });
+                        } else {
+                            // New asset – calculate depreciation from original cost
+                            const daysHeld = calculateDaysHeld(purchaseDate);
+                            depreciation = calculateNewAssetDepreciation(originalCost, effectiveLife, daysHeld, workPercentage);
+                            assets.push({
+                                isExisting: false,
+                                type: assetType,
+                                originalCost: originalCost,
+                                purchaseDate: purchaseDate,
+                                effectiveLife: effectiveLife,
+                                workPercentage: workPercentage,
+                                depreciation: depreciation,
+                                remainingValue: originalCost - depreciation
+                            });
+                        }
+                    });
+                    
+                    userData.equipmentAssets = assets;
+                    
+                    let totalDepreciation = 0;
+                    assets.forEach(asset => totalDepreciation += asset.depreciation);
+                    userData.equipment = under300 + totalDepreciation;
+                    
+                    return true;
                 },
-                {
-                    id: 'selfEducation',
-                    labelKey: 'selfEducation',
-                    hintKey: 'selfEducationHint',
-                    renderDisplay: (data) => formatCurrency(data.selfEducation || 0),
-                    renderEdit: (data) => `
-                        <div class="edit-field">
-                            <label>${t('amount')}</label>
-                            <input type="number" class="edit-selfEducation" value="${data.selfEducation || 0}" step="any" min="0">
-                        </div>
-                    `,
-                    update: (cardDiv) => {
-                        userData.selfEducation = parseFloat(cardDiv.querySelector('.edit-selfEducation')?.value) || 0;
-                        return true;
-                    }
+
+                  updatePreview: (editForm) => {
+                    const under300 = parseFloat(editForm.querySelector('.edit-equipment-under')?.value) || 0;
+                    const assetItems = editForm.querySelectorAll('.asset-item');
+                    let totalDepreciation = 0;
+                    const fyStart = getTaxYearStartDate(userData.taxYear || window.activeTaxYearString);
+                    
+                    assetItems.forEach(item => {
+                        const assetType = item.querySelector('.asset-type')?.value || 'computer';
+                        const effectiveLife = getAssetEffectiveLife(assetType);
+                        const workPercentage = parseFloat(item.querySelector('.asset-work-percent')?.value) || 100;
+                        const originalCost = parseFloat(item.querySelector('.asset-original-cost')?.value) || 0;
+                        const purchaseDateDisplay = item.querySelector('.asset-purchase-date')?.value || '';
+                        const purchaseDate = parseDateFromInput(purchaseDateDisplay);
+                        
+                        if (!purchaseDateDisplay || originalCost <= 0) return; // skip preview if invalid
+                        
+                        const purchaseDateObj = new Date(purchaseDate);
+                        const fyStartDate = new Date(fyStart);
+                        const isExisting = purchaseDateObj < fyStartDate;
+                        
+                        if (isExisting) {
+                            const { remainingValue, remainingLife, fullYearsHeld } = calculateAssetRemainingValue(
+                                originalCost, purchaseDate, effectiveLife, fyStart
+                            );
+                            if (remainingValue <= 0 || remainingLife <= 0 || fullYearsHeld >= effectiveLife) {
+                                // fully depreciated
+                                return;
+                            }
+                            const dvRate = 2 / remainingLife;
+                            const daysHeld = 365;
+                            const fullDepreciation = remainingValue * (daysHeld / 365) * dvRate;
+                            totalDepreciation += fullDepreciation * (workPercentage / 100);
+                        } else {
+                            const daysHeld = calculateDaysHeld(purchaseDate);
+                            totalDepreciation += calculateNewAssetDepreciation(originalCost, effectiveLife, daysHeld, workPercentage);
+                        }
+                    });
+                    
+                    const total = under300 + totalDepreciation;
+                    const previewSpan = editForm.querySelector('#equipment-total-preview-value');
+                    if (previewSpan) previewSpan.textContent = formatCurrency(total);
+                }
                 },
                 {
                     id: 'otherDeductions',
@@ -758,7 +1409,7 @@ function attachCardEventListeners(cardId) {
                         if (item && item.update) item.update(cardDiv);
                         delete userData._editingDed;
                         if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
-                        saveCurrentData();
+                        //saveCurrentData();
                         renderDeductionsList();
                     });
                 });
@@ -785,11 +1436,204 @@ function attachCardEventListeners(cardId) {
                     methodSelect.addEventListener('change', updateTravelFields);
                     updateTravelFields();
                 }
+
+                // Inside renderDeductionsList(), after the existing event listeners
+                // Add handlers for equipment asset buttons
+
+                // Handle Add Asset button
+                document.querySelectorAll('.add-asset-btn').forEach(btn => {
+                    btn.removeEventListener('click', handleAddAsset);
+                    btn.addEventListener('click', handleAddAsset);
+                });
+
+                // Handle Delete Asset buttons
+                document.querySelectorAll('.asset-delete-btn').forEach(btn => {
+                    btn.removeEventListener('click', handleDeleteAsset);
+                    btn.addEventListener('click', handleDeleteAsset);
+                });
+                // Function to add a new asset
+                function handleAddAsset(e) {
+                    const editForm = e.target.closest('.category-edit-form');
+                    if (!editForm) return;
+                    const currentAssets = [...(userData.equipmentAssets || [])];
+                    currentAssets.push({
+                        type: 'computer',
+                        originalCost: 0,
+                        purchaseDate: '',
+                        workPercentage: 100,
+                        depreciation: 0
+                    });
+                    userData.equipmentAssets = currentAssets;
+                    const equipmentItem = deductionItems.find(i => i.id === 'equipment');
+                    if (equipmentItem) {
+                        const newHtml = equipmentItem.renderEdit(userData);
+                        const actionsDiv = editForm.querySelector('.edit-actions');
+                        editForm.innerHTML = newHtml;
+                        if (actionsDiv) editForm.appendChild(actionsDiv);
+                        attachEquipmentHandlers(editForm);
+                    }
+                }
+
+                function handleDeleteAsset(e) {
+                    e.stopPropagation();
+                    const btn = e.currentTarget;
+                    const index = parseInt(btn.dataset.index);
+                    if (isNaN(index)) return;
+                    
+                    const currentAssets = [...(userData.equipmentAssets || [])];
+                    currentAssets.splice(index, 1);
+                    userData.equipmentAssets = currentAssets;
+                    
+                    const editForm = btn.closest('.category-edit-form');
+                    if (editForm) {
+                        const equipmentItem = deductionItems.find(i => i.id === 'equipment');
+                        if (equipmentItem) {
+                            const newHtml = equipmentItem.renderEdit(userData);
+                            const actionsDiv = editForm.querySelector('.edit-actions');
+                            editForm.innerHTML = newHtml;
+                            if (actionsDiv) editForm.appendChild(actionsDiv);
+                            attachEquipmentHandlers(editForm);
+                            
+                            // Update preview (moved inside the if block)
+                            if (equipmentItem.updatePreview) {
+                                equipmentItem.updatePreview(editForm);
+                            }
+                        }
+                    }
+                    
+                    // Update estimate
+                    if (typeof updateEstimateAndDisplay === 'function') {
+                        updateEstimateAndDisplay(userData);
+                    }
+                    //saveCurrentData();
+                }
+                // Helper to attach all equipment-related handlers
+                function attachEquipmentHandlers(container) {
+                    // Add asset button
+                    container.querySelectorAll('.add-asset-btn').forEach(btn => {
+                        btn.removeEventListener('click', handleAddAsset);
+                        btn.addEventListener('click', handleAddAsset);
+                    });
+                    
+                    // Delete asset buttons
+                    container.querySelectorAll('.asset-delete-btn').forEach(btn => {
+                        btn.removeEventListener('click', handleDeleteAsset);
+                        btn.addEventListener('click', handleDeleteAsset);
+                    });
+                                        
+                    // Real-time preview updates
+                    const inputs = container.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        input.removeEventListener('input', updatePreviewDebounced);
+                        input.addEventListener('input', updatePreviewDebounced);
+                    });
+                }
+
+                // ------------------------------------------------------------------
+                // Dynamic validation and hints for assets (no checkbox, only original cost)
+                // ------------------------------------------------------------------
+                function validateAssetFields(assetItem) {
+                    const dateInput = assetItem.querySelector('.asset-purchase-date');
+                    const costInput = assetItem.querySelector('.asset-original-cost');
+                    const dateHint = assetItem.querySelector('.date-hint');
+                    const costHint = assetItem.querySelector('.cost-hint');
+                    if (!dateInput || !costInput) return;
+                    
+                    const fyStart = dateInput.dataset.fyStart;
+                    const dateValue = dateInput.value;
+                    const costValue = parseFloat(costInput.value) || 0;
+                    
+                    let valid = true;
+                    
+                    // Date validation
+                    if (!dateValue) {
+                        dateHint.textContent = t('assetDateMissing');
+                        dateHint.style.display = 'block';
+                        valid = false;
+                    } else {
+                        const validation = isValidPurchaseDate(dateValue, fyStart);
+                        if (!validation.valid) {
+                            if (validation.error === 'format') dateHint.textContent = t('assetDateInvalid');
+                            else if (validation.error === 'future') dateHint.textContent = t('assetDateFuture');
+                            else if (validation.error === 'year') dateHint.textContent = t('assetDateYear');
+                            else dateHint.textContent = t('assetDateInvalid');
+                            dateHint.style.display = 'block';
+                            valid = false;
+                        } else {
+                            dateHint.style.display = 'none';
+                        }
+                    }
+                    
+                    // Cost validation
+                    if (costValue <= 0) {
+                        costHint.textContent = t('assetCostMissing');
+                        costHint.style.display = 'block';
+                        valid = false;
+                    } else {
+                        costHint.style.display = 'none';
+                    }
+                    
+                    // Fully depreciated check (only if date and cost are valid)
+                    if (valid && dateValue && costValue > 0) {
+                        const purchaseDate = parseDateFromInput(dateValue);
+                        const fyStartDate = new Date(fyStart);
+                        const isExisting = new Date(purchaseDate) < fyStartDate;
+                        if (isExisting) {
+                            const assetType = assetItem.querySelector('.asset-type')?.value || 'computer';
+                            const effectiveLife = getAssetEffectiveLife(assetType);
+                            const { fullYearsHeld } = calculateAssetRemainingValue(costValue, purchaseDate, effectiveLife, fyStart);
+                            if (fullYearsHeld >= effectiveLife) {
+                                let warningHint = assetItem.querySelector('.fully-depreciated-warning');
+                                if (!warningHint) {
+                                    warningHint = document.createElement('div');
+                                    warningHint.className = 'field-hint fully-depreciated-warning';
+                                    assetItem.querySelector('.asset-fields-container').appendChild(warningHint);
+                                }
+                                warningHint.textContent = t('assetFullyDepreciated');
+                                warningHint.style.display = 'block';
+                            } else {
+                                const existingWarning = assetItem.querySelector('.fully-depreciated-warning');
+                                if (existingWarning) existingWarning.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+
+                // Attach blur listeners to purchase date inputs
+                document.querySelectorAll('.asset-purchase-date').forEach(input => {
+                    input.removeEventListener('blur', () => {});
+                    input.addEventListener('blur', function() {
+                        validateAssetFields(this.closest('.asset-item'));
+                    });
+                });
+
+                // Attach input listeners to original cost inputs
+                document.querySelectorAll('.asset-original-cost').forEach(input => {
+                    input.removeEventListener('input', () => {});
+                    input.addEventListener('input', function() {
+                        validateAssetFields(this.closest('.asset-item'));
+                    });
+                });
+
+                // Debounced preview update
+                let previewTimeout;
+                function updatePreviewDebounced() {
+                    if (previewTimeout) clearTimeout(previewTimeout);
+                    previewTimeout = setTimeout(() => {
+                        const editForm = document.querySelector('.category-edit-form[data-item="equipment"]');
+                        if (editForm) {
+                            const equipmentItem = deductionItems.find(i => i.id === 'equipment');
+                            if (equipmentItem && equipmentItem.updatePreview) {
+                                equipmentItem.updatePreview(editForm);
+                            }
+                        }
+                    }, 300);
+                }
             }
             renderDeductionsList();
             break;
 
-        case 'adjustments':
+            case 'adjustments':
             const adjustmentItems = [
                 { id: 'fringeBenefits', labelKey: 'fringeBenefits', hintKey: 'fringeBenefitsHint', isNumber: true, min: 0, step: 'any', displayUnit: '$' },
                 { id: 'reportableSuper', labelKey: 'reportableSuper', hintKey: 'reportableSuperHint', isNumber: true, min: 0, step: 'any', displayUnit: '$' },
@@ -805,6 +1649,7 @@ function attachCardEventListeners(cardId) {
                 if (!container) return;
                 let html = '';
 
+                // Existing adjustment items (fringeBenefits, reportableSuper, etc.)
                 adjustmentItems.forEach(item => {
                     const value = userData[item.id] || 0;
                     const isEditing = (userData._editingAdj === item.id);
@@ -838,6 +1683,7 @@ function attachCardEventListeners(cardId) {
                     `;
                 });
 
+                // Rental property section (existing)
                 const rentalEditing = (userData._editingAdj === 'rental');
                 const rentalIncomeVal = userData.rentalIncome || 0;
                 const rentalExpensesVal = userData.rentalExpenses || 0;
@@ -873,14 +1719,61 @@ function attachCardEventListeners(cardId) {
                     </div>
                 `;
 
+                // ========== NEW: HELP / HECS Loan Section ==========
+                const hecsEditing = (userData._editingAdj === 'hecs');
+                const hasHecsLoan = userData.hasHecsLoan === true;
+                const manualRepaymentIncome = userData.hecsManualRepaymentIncome || 0;
+
+                let hecsDisplay = t('notSelected');
+                if (userData.hasHecsLoan !== undefined) {
+                    hecsDisplay = userData.hasHecsLoan ? t('hecsYes') : t('hecsNo');
+                    if (userData.hasHecsLoan && manualRepaymentIncome > 0) {
+                        hecsDisplay += ` | ${t('hecsManualIncome')}: ${formatCurrency(manualRepaymentIncome)}`;
+                    }
+                }
+
+                html += `
+                    <div class="income-category-card" data-item="hecs">
+                        <div class="category-header">
+                            <div class="category-name">${t('hecsLoanLabel')}</div>
+                            <button class="category-edit-btn" data-item="hecs">${t('edit')}</button>
+                        </div>
+                        ${!hecsEditing ? `
+                            <div class="category-stats"><span class="stat-value">${hecsDisplay}</span></div>
+                            <div class="adjustment-hint">${t('hecsHint')}</div>
+                        ` : `
+                            <div class="category-edit-form">
+                                <div class="radio-group" style="margin-bottom: var(--space-3);">
+                                    <label><input type="radio" name="hecsStatus" value="yes" ${userData.hasHecsLoan === true ? 'checked' : ''}> ${t('hecsYes')}</label>
+                                    <label><input type="radio" name="hecsStatus" value="no" ${userData.hasHecsLoan === false ? 'checked' : ''}> ${t('hecsNo')}</label>
+                                </div>
+                                <div class="hecs-manual-field" style="display: ${hasHecsLoan ? 'block' : 'none'}; margin-bottom: var(--space-3);">
+                                    <div class="edit-field">
+                                        <label>${t('hecsManualIncomeLabel')}</label>
+                                        <input type="number" class="edit-hecs-manual-income" value="${manualRepaymentIncome}" step="any" min="0">
+                                        <div class="field-hint">${t('hecsManualIncomeHint')}</div>
+                                    </div>
+                                </div>
+                                <div class="edit-actions">
+                                    <button class="update-btn" data-item="hecs">${t('update')}</button>
+                                    <button class="cancel-btn" data-item="hecs">${t('cancel')}</button>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                `;
+
                 container.innerHTML = html;
 
+                // ----- Edit button handlers (unchanged) -----
                 document.querySelectorAll('.category-edit-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
                         userData._editingAdj = btn.dataset.item;
                         renderAdjustmentsList();
                     });
                 });
+
+                // ----- Update button handlers (add HECS case) -----
                 document.querySelectorAll('.update-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
                         const itemId = btn.dataset.item;
@@ -892,7 +1785,18 @@ function attachCardEventListeners(cardId) {
                             if (income < 0 || expenses < 0) { alert('Income and expenses cannot be negative.'); return; }
                             userData.rentalIncome = income;
                             userData.rentalExpenses = expenses;
-                        } else {
+                        } 
+                        else if (itemId === 'hecs') {
+                            const isYes = cardDiv.querySelector('input[name="hecsStatus"]:checked')?.value === 'yes';
+                            userData.hasHecsLoan = isYes;
+                            if (isYes) {
+                                const manualIncome = parseFloat(cardDiv.querySelector('.edit-hecs-manual-income')?.value) || 0;
+                                userData.hecsManualRepaymentIncome = manualIncome;
+                            } else {
+                                userData.hecsManualRepaymentIncome = 0;
+                            }
+                        }
+                        else {
                             let value = parseFloat(cardDiv.querySelector('.edit-value')?.value) || 0;
                             if (itemId === 'dependentChildren') {
                                 value = Math.min(20, Math.max(0, Math.floor(value)));
@@ -904,17 +1808,31 @@ function attachCardEventListeners(cardId) {
 
                         delete userData._editingAdj;
                         if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
-                        saveCurrentData();
                         renderAdjustmentsList();
                     });
                 });
+
+                // ----- Cancel button handlers (unchanged) -----
                 document.querySelectorAll('.cancel-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
                         delete userData._editingAdj;
                         renderAdjustmentsList();
                     });
                 });
+
+                // ----- Toggle manual income field for HECS based on radio selection -----
+                const hecsRadios = document.querySelectorAll('input[name="hecsStatus"]');
+                const hecsManualField = document.querySelector('.hecs-manual-field');
+                if (hecsRadios.length) {
+                    const updateHecsField = () => {
+                        const isYes = document.querySelector('input[name="hecsStatus"]:checked')?.value === 'yes';
+                        if (hecsManualField) hecsManualField.style.display = isYes ? 'block' : 'none';
+                    };
+                    hecsRadios.forEach(r => r.addEventListener('change', updateHecsField));
+                    updateHecsField();
+                }
             }
+
             renderAdjustmentsList();
             break;
 
@@ -970,18 +1888,39 @@ function attachCardEventListeners(cardId) {
                     hintKey: 'familySituationHint',
                     renderDisplay: (data) => {
                         if (data.isSingle === undefined) return t('notSelected');
-                        return data.isSingle ? t('familySingle') : t('familyCouple');
+                        let display = data.isSingle ? t('familySingle') : t('familyCouple');
+                        if (!data.isSingle && data.spouseIncome) {
+                            display += ` | ${t('spouseIncomeLabel')}: ${formatCurrency(data.spouseIncome)}`;
+                        }
+                        return display;
                     },
-                    renderEdit: (data) => `
-                        <div class="radio-group">
-                            <label><input type="radio" name="familyStatus" value="single" ${data.isSingle === true ? 'checked' : ''}> ${t('familySingle')}</label>
-                            <label><input type="radio" name="familyStatus" value="couple" ${data.isSingle === false ? 'checked' : ''}> ${t('familyCouple')}</label>
-                        </div>
-                    `,
+                    renderEdit: (data) => {
+                        const isSingle = data.isSingle !== undefined ? data.isSingle : true;
+                        return `
+                            <div class="radio-group">
+                                <label><input type="radio" name="familyStatus" value="single" ${isSingle ? 'checked' : ''}> ${t('familySingle')}</label>
+                                <label><input type="radio" name="familyStatus" value="couple" ${!isSingle ? 'checked' : ''}> ${t('familyCouple')}</label>
+                            </div>
+                            <div class="spouse-income-field" style="display: ${!isSingle ? 'block' : 'none'}; margin-top: var(--space-3);">
+                                <div class="edit-field">
+                                    <label>${t('spouseIncomeLabel')}</label>
+                                    <input type="number" class="edit-spouse-income" value="${data.spouseIncome || 0}" step="any" min="0">
+                                    <div class="field-hint">${t('spouseIncomeHint')}</div>
+                                </div>
+                            </div>
+                        `;
+                    },
                     update: (cardDiv) => {
                         const selected = cardDiv.querySelector('input[name="familyStatus"]:checked')?.value;
                         if (!selected) return false;
                         userData.isSingle = (selected === 'single');
+                        
+                        const spouseIncomeInput = cardDiv.querySelector('.edit-spouse-income');
+                        if (spouseIncomeInput && !userData.isSingle) {
+                            userData.spouseIncome = parseFloat(spouseIncomeInput.value) || 0;
+                        } else {
+                            userData.spouseIncome = 0;
+                        }
                         return true;
                     }
                 },
@@ -992,39 +1931,65 @@ function attachCardEventListeners(cardId) {
                     renderDisplay: (data) => {
                         if (!data.phiRebateMethod) return t('notSelected');
                         if (data.phiRebateMethod === 'upfront') return t('phiRebateUpfront');
-                        if (data.phiRebateMethod === 'taxtime') return `${t('phiRebateTaxTime')} (${t('phiRebateTier' + data.phiRebateTier)})`;
+                        if (data.phiRebateMethod === 'taxtime') {
+                             const rebateAmount = calculatePhiRebate(data);
+                            return `${t('phiRebateTaxTime')} - ${t('estimatedRebateShort')}: ${formatCurrency(rebateAmount)}`;
+                        }
                         return t('phiRebateNone');
                     },
-                    renderEdit: (data) => {
+                  renderEdit: (data) => {
                         const method = data.phiRebateMethod || '';
-                        const tier = data.phiRebateTier || 1;
+                        const annualPremium = data.annualPremium || 0;
+                        
                         return `
                             <div class="radio-group">
                                 <label><input type="radio" name="rebateMethod" value="upfront" ${method === 'upfront' ? 'checked' : ''}> ${t('phiRebateUpfront')}</label>
                                 <label><input type="radio" name="rebateMethod" value="taxtime" ${method === 'taxtime' ? 'checked' : ''}> ${t('phiRebateTaxTime')}</label>
                                 <label><input type="radio" name="rebateMethod" value="none" ${method === 'none' ? 'checked' : ''}> ${t('phiRebateNone')}</label>
                             </div>
-                            <div class="tier-fields" style="display: ${method === 'taxtime' ? 'block' : 'none'}">
-                                <div class="radio-group">
-                                    <label><input type="radio" name="rebateTier" value="1" ${tier === 1 ? 'checked' : ''}> ${t('phiRebateTier1')}</label>
-                                    <label><input type="radio" name="rebateTier" value="2" ${tier === 2 ? 'checked' : ''}> ${t('phiRebateTier2')}</label>
-                                    <label><input type="radio" name="rebateTier" value="3" ${tier === 3 ? 'checked' : ''}> ${t('phiRebateTier3')}</label>
+                            <div class="taxtime-fields" style="display: ${method === 'taxtime' ? 'block' : 'none'}">
+                                <div class="edit-field">
+                                    <label>${t('annualPremiumLabel')}</label>
+                                    <input type="number" class="edit-annual-premium" value="${annualPremium}" step="any" min="0">
+                                    <div class="field-hint">${t('annualPremiumHint')}</div>
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('phiRebateTierSelect')}</label>
+                                    <div class="calculated-value" id="phiTierDisplay">${getTierDisplayText(data)}</div>
+                                    <div class="field-hint">${t('phiRebateTierAutoHint')}</div>
+                                </div>
+                                <div class="edit-field">
+                                    <label>${t('estimatedRebateLabel')}</label>
+                                    <div class="calculated-value" id="estimatedRebateDisplay">${formatCurrency(calculatePhiRebate(data))}</div>
+                                    <div class="field-hint">${t('estimatedRebateHint')}</div>
                                 </div>
                             </div>
                         `;
+
                     },
                     update: (cardDiv) => {
-                        const method = cardDiv.querySelector('input[name="rebateMethod"]:checked')?.value;
-                        if (!method) return false;
-                        userData.phiRebateMethod = method;
-                        if (method === 'taxtime') {
-                            const tierRadio = cardDiv.querySelector('input[name="rebateTier"]:checked');
-                            userData.phiRebateTier = tierRadio ? parseInt(tierRadio.value) : 1;
-                        } else {
-                            userData.phiRebateTier = 0;
-                        }
-                        return true;
+                    const editForm = cardDiv.querySelector('.category-edit-form');
+                    if (!editForm) return false;
+                    
+                    const method = editForm.querySelector('input[name="rebateMethod"]:checked')?.value;
+                    if (!method) return false;
+                    
+                    userData.phiRebateMethod = method;
+                    
+                    if (method === 'taxtime') {
+                        const annualPremium = parseFloat(editForm.querySelector('.edit-annual-premium')?.value) || 0;
+                        userData.annualPremium = annualPremium;
+
+                    } else {
+                        userData.annualPremium = 0;
                     }
+                    
+                    if (typeof updateEstimateAndDisplay === 'function') {
+                        updateEstimateAndDisplay(userData);
+                    }
+                    
+                    return true;
+                }
                 },
                 {
                     id: 'lhcLoading',
@@ -1080,6 +2045,68 @@ function attachCardEventListeners(cardId) {
                 });
                 container.innerHTML = html;
 
+                 // Toggle spouse income field based on family status
+                const familyRadios = document.querySelectorAll('input[name="familyStatus"]');
+                const spouseIncomeField = document.querySelector('.spouse-income-field');
+
+                function toggleSpouseField() {
+                    const isSingle = document.querySelector('input[name="familyStatus"]:checked')?.value === 'single';
+                    if (spouseIncomeField) {
+                        spouseIncomeField.style.display = isSingle ? 'none' : 'block';
+                    }
+                }
+
+                if (familyRadios.length) {
+                    familyRadios.forEach(radio => radio.addEventListener('change', toggleSpouseField));
+                    toggleSpouseField();
+                }
+
+                                // Live PHI rebate preview update
+                const annualPremiumInput = document.querySelector('.edit-annual-premium');
+                const methodRadios = document.querySelectorAll('input[name="rebateMethod"]');
+
+                function updatePhiRebatePreview() {
+                    const method = document.querySelector('input[name="rebateMethod"]:checked')?.value;
+                    const annualPremium = parseFloat(document.querySelector('.edit-annual-premium')?.value) || 0;
+                    
+                    // Get family status and spouse income from saved userData (not DOM)
+                    const isSingle = userData.isSingle !== undefined ? userData.isSingle : true;
+                    const spouseIncome = userData.spouseIncome || 0;
+                    const taxableIncome = userData.taxableIncome || 0;  // Will be updated when user has income
+                    
+                    if (method === 'taxtime' && annualPremium > 0) {
+                        const previewData = { 
+                            phiRebateMethod: method,
+                            annualPremium: annualPremium,
+                            taxableIncome: taxableIncome,
+                            isSingle: isSingle,
+                            spouseIncome: spouseIncome,
+                            dependentChildren: userData.dependentChildren || 0,
+                            dob: userData.dob,
+                            taxYear: userData.taxYear || '2025-26'
+                        };
+                        
+                        const rebate = calculatePhiRebate(previewData);
+                        const displayElem = document.getElementById('estimatedRebateDisplay');
+                        if (displayElem) displayElem.textContent = formatCurrency(rebate);
+                        
+                        const tierDisplayElem = document.getElementById('phiTierDisplay');
+                        if (tierDisplayElem && typeof getTierDisplayText === 'function') {
+                            tierDisplayElem.innerHTML = getTierDisplayText(previewData);
+                        }
+                    } else {
+                        const displayElem = document.getElementById('estimatedRebateDisplay');
+                        if (displayElem) displayElem.textContent = formatCurrency(0);
+                    }
+                }
+
+                // Bind preview updates
+                if (annualPremiumInput) {
+                    annualPremiumInput.addEventListener('input', updatePhiRebatePreview);
+                }
+                methodRadios.forEach(radio => radio.addEventListener('change', updatePhiRebatePreview));
+
+                // Edit/Cancel/Update buttons (unchanged)
                 document.querySelectorAll('.category-edit-btn').forEach(btn => {
                     btn.addEventListener('click', () => { userData._editingHealth = btn.dataset.item; renderHealthList(); });
                 });
@@ -1092,7 +2119,7 @@ function attachCardEventListeners(cardId) {
                         }
                         delete userData._editingHealth;
                         if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
-                        saveCurrentData();
+                        //saveCurrentData();
                         renderHealthList();
                     });
                 });
@@ -1100,6 +2127,7 @@ function attachCardEventListeners(cardId) {
                     btn.addEventListener('click', () => { delete userData._editingHealth; renderHealthList(); });
                 });
 
+                // Cover status: show/hide days field
                 const coverRadios = document.querySelectorAll('input[name="coverStatus"]');
                 if (coverRadios.length) {
                     const updateDaysField = () => {
@@ -1111,15 +2139,18 @@ function attachCardEventListeners(cardId) {
                     updateDaysField();
                 }
 
+                // Rebate method: show/hide taxtime fields (fixed from .tier-fields to .taxtime-fields)
                 const rebateRadios = document.querySelectorAll('input[name="rebateMethod"]');
                 if (rebateRadios.length) {
-                    const updateTierField = () => {
+                    const updateTaxtimeFields = () => {
                         const selected = document.querySelector('input[name="rebateMethod"]:checked')?.value;
-                        const tierField = document.querySelector('.tier-fields');
-                        if (tierField) tierField.style.display = selected === 'taxtime' ? 'block' : 'none';
+                        const taxtimeFields = document.querySelector('.taxtime-fields');
+                        if (taxtimeFields) {
+                            taxtimeFields.style.display = selected === 'taxtime' ? 'block' : 'none';
+                        }
                     };
-                    rebateRadios.forEach(r => r.addEventListener('change', updateTierField));
-                    updateTierField();
+                    rebateRadios.forEach(r => r.addEventListener('change', updateTaxtimeFields));
+                    updateTaxtimeFields(); // run once to set initial visibility
                 }
             }
             renderHealthList();
@@ -1133,55 +2164,62 @@ function attachCardEventListeners(cardId) {
                         sessionStorage.setItem('returnToReview', 'true');
                         currentCardIndex = cardIndex;
                         renderCard();
+                        updateNextButtonLabel(); // ← AFTER renderCard, not before
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 });
             });
             break;
 
-        case 'declaration':
-            let selectedMethod = null;
-            const deliveryCards = document.querySelectorAll('.delivery-card');
-            const emailField = document.querySelector('.delivery-email-field');
+            case 'declaration':
+                let selectedMethod = userData.deliveryMethod || null;
+                const deliveryCards = document.querySelectorAll('.delivery-card');
+                const emailField = document.querySelector('.delivery-email-field');
+                const userEmailDisplay = document.getElementById('userEmailDisplay');
 
-            deliveryCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    deliveryCards.forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    selectedMethod = card.dataset.method;
-                    if (emailField) emailField.style.display = selectedMethod === 'email' ? 'block' : 'none';
-                    userData.deliveryMethod = selectedMethod;
-                    saveCurrentData();
+                // Pre-fill email from Personal Info (not editable)
+                if (userEmailDisplay && userData.email) {
+                    userEmailDisplay.textContent = userData.email;
+                }
+
+                deliveryCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        deliveryCards.forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        selectedMethod = card.dataset.method;
+                        if (emailField) emailField.style.display = selectedMethod === 'email' ? 'flex' : 'none';
+                        userData.deliveryMethod = selectedMethod;
+                        //saveCurrentData();
+                    });
                 });
-            });
 
-            if (userData.deliveryMethod) {
-                const savedCard = document.querySelector(`.delivery-card[data-method="${userData.deliveryMethod}"]`);
-                if (savedCard) savedCard.click();
-            }
+                if (userData.deliveryMethod) {
+                    const savedCard = document.querySelector(`.delivery-card[data-method="${userData.deliveryMethod}"]`);
+                    if (savedCard) savedCard.click();
+                }
 
-            const emailInput = document.getElementById('userEmail');
-            if (emailInput) {
-                emailInput.addEventListener('input', (e) => {
-                    userData.email = e.target.value.trim();
-                    saveCurrentData();
-                });
-            }
-
-            const bilingualCheckbox = document.getElementById('bilingualReportCheckbox');
-            if (bilingualCheckbox) {
-                bilingualCheckbox.addEventListener('change', (e) => {
-                    userData.bilingualReport = e.target.checked;
-                    saveCurrentData();
-                });
-            }
-            break;
-
+                const bilingualCheckbox = document.getElementById('bilingualReportCheckbox');
+                if (bilingualCheckbox) {
+                    bilingualCheckbox.addEventListener('change', (e) => {
+                        userData.bilingualReport = e.target.checked;
+                        //saveCurrentData();
+                    });
+                }
+                break;
+                
         case 'payment':
             function initPaymentCard() {
-                let currentTotal = (userData.employers || []).length > 1
-                    ? (window.pricing.multiple_jobs_fee || 79.99)
-                    : (window.pricing.standard_fee || 69.99);
+                const employerCount = (userData.employers || []).length;
+                const hasAbn = (userData.abnIncome || 0) > 0;
+
+                let currentTotal;
+                if (hasAbn) {
+                    currentTotal = window.pricing.abn_fee || 89.99;
+                } else if (employerCount > 1) {
+                    currentTotal = window.pricing.multiple_jobs_fee || 79.99;
+                } else {
+                    currentTotal = window.pricing.standard_fee || 69.99;
+                }
                 let discountAmount = 0;
                 let appliedPromo = null;
 
@@ -1190,7 +2228,9 @@ function attachCardEventListeners(cardId) {
                     discountAmount = appliedPromo.discount;
                     userData.promoCode = userData.appliedPromo.code;
                     userData.discountAmount = discountAmount;
-                    const baseFee = (userData.employers || []).length > 1
+                    const baseFee = hasAbn
+                    ? (window.pricing.abn_fee || 89.99)
+                    : employerCount > 1
                         ? (window.pricing.multiple_jobs_fee || 79.99)
                         : (window.pricing.standard_fee || 69.99);
                     userData.originalTotal = baseFee;
@@ -1260,7 +2300,9 @@ function attachCardEventListeners(cardId) {
                             userData.appliedPromo = appliedPromo;
                             userData.promoCode = code;
                             userData.discountAmount = discountAmount;
-                            const baseFee = (userData.employers || []).length > 1
+                           const baseFee = hasAbn
+                            ? (window.pricing.abn_fee || 89.99)
+                            : employerCount > 1
                                 ? (window.pricing.multiple_jobs_fee || 79.99)
                                 : (window.pricing.standard_fee || 69.99);
                             userData.originalTotal = baseFee;
@@ -1274,6 +2316,7 @@ function attachCardEventListeners(cardId) {
                             if (promoMessage) {
                                 promoMessage.innerHTML = t('promoApplied').replace(/\{amount\}/g, formatCurrency(discountAmount));
                                 promoMessage.className = 'promo-message success';
+                                if (promoInput) promoInput.value = '';
                             }
                             updatePayButton();
                             if (typeof initStripePayment === 'function') {
@@ -1283,6 +2326,7 @@ function attachCardEventListeners(cardId) {
                             if (promoMessage) {
                                 promoMessage.innerHTML = t('promoInvalid');
                                 promoMessage.className = 'promo-message error';
+                                if (promoInput) promoInput.value = '';
                             }
                         }
                     });
@@ -1305,7 +2349,8 @@ function attachCardEventListeners(cardId) {
                 if (closeModalBtn) {
                     closeModalBtn.addEventListener('click', () => {
                         if (successModal) successModal.style.display = 'none';
-                        currentCardIndex = 0;
+                        resetUserData();                 // Reset all data
+                        currentCardIndex = 0;           // Go to first card
                         renderCard();
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     });
@@ -1332,7 +2377,7 @@ function attachCardEventListeners(cardId) {
                             const email = prompt(stripHtml(t('emailPrompt')) || 'Please enter your email address:');
                             if (email && email.includes('@')) {
                                 userData.email = email;
-                                saveCurrentData();
+                                //saveCurrentData();
                                 alert(`${stripHtml(t('reportSentTo') || 'Report will be sent to')} ${email}`);
                             }
                         } else {

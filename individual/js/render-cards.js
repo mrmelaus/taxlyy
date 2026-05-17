@@ -36,12 +36,13 @@ function getCardHtml(cardId) {
                 <div class="welcome-section">
                     <div class="welcome-section-title">${t('welcomeDeadlineTitle')}</div>
                     <div class="welcome-deadline-box">
-                        <div>
+                        <div class="deadline-row">
                             <span class="deadline-icon">📅</span>
                             <span>${t('welcomeDeadline')}</span>
                         </div>
-                        <div class="disclaimer-payg">
-                            ${t('paygOnlyDisclaimer')}
+                        <div class="deadline-row disclaimer-payg">
+                            <span class="deadline-icon">⚠️</span>
+                            <span>${t('paygOnlyDisclaimer')}</span>
                         </div>
                     </div>
                 </div>
@@ -49,15 +50,20 @@ function getCardHtml(cardId) {
                 <div class="welcome-section">
                     <div class="welcome-section-title">${t('welcomeFeeTitle')}</div>
                     <div class="welcome-fee-row">
-                        <div class="fee-card">
+                      <div class="fee-card">
                             <div class="fee-label">${t('feeCardSingle')}</div>
                             <div class="fee-amount">$${window.pricing.standard_fee}</div>
-                            <div class="fee-desc">One employer / payslip</div>
+                            <div class="fee-desc">${t('feeCardSingleDesc')}</div>
                         </div>
-                        <div class="fee-card fee-card-highlight">
+                        <div class="fee-card">
                             <div class="fee-label">${t('feeCardMultiple')}</div>
                             <div class="fee-amount">$${window.pricing.multiple_jobs_fee}</div>
-                            <div class="fee-desc">2+ employers (extra complexity)</div>
+                            <div class="fee-desc">${t('feeCardMultipleDesc')}</div>
+                        </div>
+                        <div class="fee-card fee-card-highlight">
+                            <div class="fee-label">${t('feeCardAbn')}</div>
+                            <div class="fee-amount">$${window.pricing.abn_fee}</div>
+                            <div class="fee-desc">${t('feeCardAbnDesc')}</div>
                         </div>
                     </div>
                     <small class="fee-note">${t('feePromo')}</small>
@@ -152,6 +158,13 @@ function getCardHtml(cardId) {
                 <small class="form-error" id="dobError" style="display:none; color:var(--error);">
                     ⚠ ${t('dobErrorText')}
                 </small>
+            </div>
+
+            <div class="form-group">
+                <label for="email">${t('emailLabel')}</label>
+                <input type="email" id="email" class="form-input" value="${escapeHtml(userData.email || '')}" placeholder="name@example.com">
+                <div class="field-hint">${t('emailHint')}</div>
+                <div id="emailError" class="form-error" style="display: none;">${t('emailErrorText')}</div>
             </div>
 
             <!-- NEW TAX RESIDENCY SECTION -->
@@ -266,11 +279,14 @@ function getCardHtml(cardId) {
                     <div class="employers-header">${t('employersAdded')}</div>
                     <div id="employersListContainer" class="employers-list"></div>
                     <div class="add-employer-hint">${t('addEmployerHint')}</div>
-                    <div class="warning-ato">${t('warningMatchAto')}</div>
+                    <div class="warning-ato">
+                        <span class="warning-ato-icon">⚠️</span>
+                        <span class="warning-ato-text">${t('warningMatchAto')}</span>
+                    </div>
                 </div>
 
                 <div class="other-income-section">
-                    <div class="other-income-title">${t('otherIncomeTitle')}</div>
+                    <div class="card-title">${t('otherIncomeTitle')}</div>
                     <div id="otherIncomeList" class="other-income-list"></div>
                 </div>
             </div>
@@ -286,6 +302,10 @@ function getCardHtml(cardId) {
             if (userData.dependentChildren === undefined) userData.dependentChildren = 0;
             if (userData.rentalIncome === undefined) userData.rentalIncome = 0;
             if (userData.rentalExpenses === undefined) userData.rentalExpenses = 0;
+            // HECS fields – do NOT default to false; keep undefined so user must answer
+            if (userData.hasHecsLoan === undefined) userData.hasHecsLoan = undefined; // leave undefined
+            if (userData.hecsManualRepaymentIncome === undefined) userData.hecsManualRepaymentIncome = 0;
+
             return `
                 <div class="adjustments-intro">${t('adjustmentsIntro')}</div>
                 <div id="adjustmentsList" class="other-income-list"></div>
@@ -364,10 +384,43 @@ function getCardHtml(cardId) {
             }
 
             const oi = userData.otherIncome || {};
+
+            // Calculate derived values
+            const grossedUpDividends = (oi.dividends || 0) + (userData.frankingCredits || 0);
+            const abnNet = (userData.abnIncome || 0) - (userData.abnExpenses || 0);
+            const netCapitalGain = Math.max(0, 
+                (userData.capitalGains || 0) - 
+                (userData.capitalLosses || 0) - 
+                (userData.priorYearCapitalLosses || 0)
+            );
+
             const otherIncomeHtml = `
-                <div class="review-subitem">${t('interest')}: ${formatMoney(oi.interest || 0)}</div>
-                <div class="review-subitem">${t('dividends')}: ${formatMoney(oi.dividends || 0)}</div>
-                <div class="review-subitem">${t('other')}: ${formatMoney(oi.otherAmount || 0)}${oi.otherDescription ? ` (${escapeHtml(oi.otherDescription)})` : ''}</div>
+                <div class="review-subitem"><strong>${t('interest')}</strong>: ${formatMoney(oi.interest || 0)}</div>
+                
+                <div class="review-subitem"><strong>${t('dividends')}</strong></div>
+                <div class="review-subitem">${t('cashDividends')}: ${formatMoney(oi.dividends || 0)}</div>
+                <div class="review-subitem">${t('frankingCredits')}: ${formatMoney(userData.frankingCredits || 0)}</div>
+                <div class="review-subitem"><strong>${t('grossedUpTotal')}: ${formatMoney(grossedUpDividends)}</strong></div>
+                
+                <div class="review-subitem"><strong>${t('governmentPayments')}</strong></div>
+                <div class="review-subitem">${t('taxablePayments')}: ${formatMoney(userData.governmentPayments || 0)}</div>
+                <div class="review-subitem">${t('taxWithheld')}: ${formatMoney(userData.govTaxWithheld || 0)}</div>
+                
+                <div class="review-subitem"><strong>${t('abnSoleTraderIncome')}</strong></div>
+                <div class="review-subitem">${t('totalAbnIncome')}: ${formatMoney(userData.abnIncome || 0)}</div>
+                <div class="review-subitem">${t('totalBusinessExpenses')}: ${formatMoney(userData.abnExpenses || 0)}</div>
+                <div class="review-subitem"><strong>${t('netAbnProfitLoss')}: ${formatMoney(abnNet)}</strong></div>
+                <div class="review-subitem">${t('taxWithheldOnAbn')}: ${formatMoney(userData.abnTaxWithheld || 0)}</div>
+                ${abnNet < 0 ? `<div class="warning-ato">${t('abnLossRecorded', { amount: formatMoney(Math.abs(abnNet)) })}</div>` : ''}
+                
+                <div class="review-subitem"><strong>${t('capitalGains')}</strong></div>
+                <div class="review-subitem">${t('grossCapitalGains')}: ${formatMoney(userData.capitalGains || 0)}</div>
+                <div class="review-subitem">${t('capitalLossesCurrent')}: ${formatMoney(userData.capitalLosses || 0)}</div>
+                <div class="review-subitem">${t('priorYearLosses')}: ${formatMoney(userData.priorYearCapitalLosses || 0)}</div>
+                <div class="review-subitem"><strong>${t('netCapitalGain')}: ${formatMoney(netCapitalGain)}</strong></div>
+                ${userData.cgtDiscountApplies ? `<div class="review-subitem">${t('cgtDiscountApplied')} ✓</div>` : ''}
+                
+                <div class="review-subitem"><strong>${t('other')}</strong>: ${formatMoney(oi.otherAmount || 0)}${oi.otherDescription ? ` (${escapeHtml(oi.otherDescription)})` : ''}</div>
             `;
 
             const deductionsHtml = `
@@ -379,13 +432,18 @@ function getCardHtml(cardId) {
                 <div class="review-subtotal">${t('totalDeductions')}: ${formatMoney(userData.totalDeductions || 0)}</div>
             `;
 
-            const adjustmentsHtml = `
+           const adjustmentsHtml = `
                 <div class="review-subitem">${t('fringeBenefits')}: ${formatMoney(userData.fringeBenefits || 0)}</div>
                 <div class="review-subitem">${t('reportableSuper')}: ${formatMoney(userData.reportableSuper || 0)}</div>
                 <div class="review-subitem">${t('financialInvestmentLoss')}: ${formatMoney(userData.financialInvestmentLoss || 0)}</div>
                 <div class="review-subitem">${t('childSupportPaid')}: ${formatMoney(userData.childSupportPaid || 0)}</div>
                 <div class="review-subitem">${t('dependentChildren')}: ${userData.dependentChildren || 0}</div>
                 <div class="review-subitem">${t('rentalProperty')}: ${formatMoney(userData.rentalPropertyLoss || 0)}</div>
+                ${userData.hasHecsLoan !== undefined ? `
+                    <div class="review-subitem">${t('hecsLoanLabel')}: ${userData.hasHecsLoan ? t('hecsYes') : t('hecsNo')}
+                    ${userData.hasHecsLoan && userData.hecsManualRepaymentIncome > 0 ? ` (${t('hecsManualIncome')}: ${formatMoney(userData.hecsManualRepaymentIncome)})` : ''}
+                    </div>
+                ` : ''}
             `;
 
             const healthHtml = `
@@ -446,14 +504,7 @@ function getCardHtml(cardId) {
 
                     <div class="tax-summary">
                         <div class="tax-summary-title">${t('taxSummary')}</div>
-                        <div class="tax-summary-row">
-                            <span>${t('totalIncomeLabel')}</span>
-                            <span>${formatMoney(calculation.totalIncome)}</span>
-                        </div>
-                        <div class="tax-summary-row">
-                            <span>${t('totalDeductionsLabel')}</span>
-                            <span>- ${formatMoney(calculation.totalDeductions)}</span>
-                        </div>
+
                         ${calculation.rentalLossCarryForward && calculation.rentalLossCarryForward > 0 ? `
                             <div class="rental-loss-info">
                                 <div class="rental-loss-title">🏠 Rental Property Loss Summary</div>
@@ -475,40 +526,66 @@ function getCardHtml(cardId) {
                                 </div>
                             </div>
                         ` : ''}
-                        <div class="tax-summary-divider"></div>
-                        <div class="tax-summary-row total">
-                            <span>${t('taxableIncomeLabel')}</span>
-                            <span>${formatMoney(calculation.taxableIncome)}</span>
+
+                        <!-- BLUR WRAPPER — covers everything except estimated refund -->
+                        <div class="ts-blur-wrapper">
+                            <div class="ts-blurred-rows">
+                                <div class="tax-summary-row">
+                                    <span>${t('totalIncomeLabel')}</span>
+                                    <span>${formatMoney(calculation.totalIncome)}</span>
+                                </div>
+                                <div class="tax-summary-row">
+                                    <span>${t('totalDeductionsLabel')}</span>
+                                    <span>- ${formatMoney(calculation.totalDeductions)}</span>
+                                </div>
+                                <div class="tax-summary-divider"></div>
+                                <div class="tax-summary-row total">
+                                    <span>${t('taxableIncomeLabel')}</span>
+                                    <span>${formatMoney(calculation.taxableIncome)}</span>
+                                </div>
+                                <div class="tax-summary-row">
+                                    <span>${t('incomeTaxLabel')}</span>
+                                    <span>${formatMoney(calculation.incomeTax)}</span>
+                                </div>
+                                <div class="tax-summary-row">
+                                    <span>${t('medicareLevyLabel')}</span>
+                                    <span>+ ${formatMoney(calculation.medicareLevy)}</span>
+                                </div>
+                                <div class="tax-summary-row">
+                                    <span>${t('medicareSurchargeLabel')}</span>
+                                    <span>+ ${formatMoney(calculation.medicareSurcharge)}</span>
+                                </div>
+                                <div class="tax-summary-row">
+                                    <span>${t('litoLabel')}</span>
+                                    <span>- ${formatMoney(calculation.lito)}</span>
+                                </div>
+                                <div class="tax-summary-divider"></div>
+                                <div class="tax-summary-row total">
+                                    <span>${t('totalTaxLiabilityLabel')}</span>
+                                    <span>${formatMoney(calculation.totalTaxLiability)}</span>
+                                </div>
+                                <div class="tax-summary-row">
+                                    <span>${t('totalTaxWithheldLabel')}</span>
+                                    <span>${formatMoney(calculation.totalTaxWithheld)}</span>
+                                </div>
+                                <div class="tax-summary-row">
+                                    <span>${t('frankingCreditsLabel')}</span>
+                                    <span>+ ${formatMoney(calculation.frankingCreditOffset)}</span>
+                                </div>
+                            </div>
+
+                            <!-- Glass overlay — hint only, no button -->
+                            <div class="ts-overlay">
+                                <div class="ts-overlay-card">
+                                    <div class="ts-overlay-emoji">🎉</div>
+                                    <div class="ts-overlay-headline">${t('reviewOverlayHeadline')}</div>
+                                    <div class="ts-overlay-body">${t('reviewOverlayBody')}</div>
+                                    <div class="ts-overlay-meta">${t('reviewOverlayMeta')}</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="tax-summary-row">
-                            <span>${t('incomeTaxLabel')}</span>
-                            <span>${formatMoney(calculation.incomeTax)}</span>
-                        </div>
-                        <div class="tax-summary-row">
-                            <span>${t('medicareLevyLabel')}</span>
-                            <span>+ ${formatMoney(calculation.medicareLevy)}</span>
-                        </div>
-                        <div class="tax-summary-row">
-                            <span>${t('medicareSurchargeLabel')}</span>
-                            <span>+ ${formatMoney(calculation.medicareSurcharge)}</span>
-                        </div>
-                        <div class="tax-summary-row">
-                            <span>${t('litoLabel')}</span>
-                            <span>- ${formatMoney(calculation.lito)}</span>
-                        </div>
-                        <div class="tax-summary-divider"></div>
-                        <div class="tax-summary-row total">
-                            <span>${t('totalTaxLiabilityLabel')}</span>
-                            <span>${formatMoney(calculation.totalTaxLiability)}</span>
-                        </div>
-                        <div class="tax-summary-row">
-                            <span>${t('totalTaxWithheldLabel')}</span>
-                            <span>${formatMoney(calculation.totalTaxWithheld)}</span>
-                        </div>
-                        <div class="tax-summary-row">
-                            <span>${t('frankingCreditsLabel')}</span>
-                            <span>+ ${formatMoney(calculation.frankingCreditOffset)}</span>
-                        </div>
+                        <!-- BLUR WRAPPER END -->
+
                         <div class="tax-summary-divider"></div>
                         <div class="tax-summary-row grand-total">
                             <span>${t('estimatedRefundLabel')}</span>
@@ -517,39 +594,54 @@ function getCardHtml(cardId) {
                             </span>
                         </div>
                     </div>
+                        
+                    </div>
                 </div>
             `;
 
-        case 'declaration':
-            const refundCalc = calculateRefund(userData);
-            return `
-                <div class="declaration-container">
-                    <div class="warning-box warning">
-                        <strong>${t('declarationLegalNotice')}</strong>
-                        <p>${t('declarationLegalText')}</p>
-                    </div>
-                    <label class="checkbox-group">
-                        <input type="checkbox" id="declarationCheckbox">
-                        <span>${t('declarationConfirmText')}</span>
-                    </label>
-                    <div class="delivery-title">${t('deliveryTitle')}</div>
-                    <div class="delivery-options">
-                        <div class="delivery-card" data-method="download">
-                            <div class="delivery-icon">💾</div>
-                            <div class="delivery-option-title">${t('downloadOption')}</div>
-                            <div class="delivery-desc">${t('downloadDesc')}</div>
+            case 'declaration':
+                const refundCalc = calculateRefund(userData);
+                return `
+                    <div class="declaration-container">
+                        <div class="warning-box warning">
+                            <strong>${t('declarationLegalNotice')}</strong>
+                            <p>${t('declarationLegalText')}</p>
                         </div>
-                        <div class="delivery-card" data-method="email">
-                            <div class="delivery-icon">📧</div>
-                            <div class="delivery-option-title">${t('emailOption')}</div>
-                            <div class="delivery-desc">${t('emailDesc')}</div>
-                            <div class="delivery-email-field" style="display: none;">
-                                 <input type="email" id="userEmail" class="form-input"
-                                    placeholder="${t('emailPlaceholder')}"
-                                    value="${escapeHtml(userData.email || '')}">
+                        
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="declarationCheckbox">
+                            <span>${t('declarationConfirmText')}</span>
+                        </label>
+                        
+                        <div class="delivery-title">${t('deliveryTitle')}</div>
+
+                        <div class="delivery-options">
+                            <div class="delivery-card" data-method="download">
+                                <div class="delivery-icon">💾</div>
+                                <div class="delivery-option-title">${t('downloadOption')}</div>
+                                <div class="delivery-desc">${t('downloadDesc')}</div>
+                            </div>
+
+                            <div class="delivery-card" data-method="email">
+                                <div class="delivery-icon">📧</div>
+                                <div class="delivery-option-title">${t('emailOption')}</div>
+                                <div class="delivery-desc">${t('emailDesc')}</div>
+
+                                <div class="delivery-email-field" style="display: none;">
+                                    
+                                    <div class="email-value" id="userEmailDisplay">
+                                        ${escapeHtml(userData.email || 'Not provided')}
+                                    </div>
+
+                                    <div class="email-hint">
+                                        ${t('declarationEmailHint')}
+                                    </div>
+
+                                </div>
                             </div>
                         </div>
                     </div>
+                
                     <div class="bilingual-option">
                         <label class="checkbox-group" style="align-items: flex-start;">
                             <input type="checkbox" id="bilingualReportCheckbox" ${userData.bilingualReport ? 'checked' : ''}>
@@ -585,9 +677,12 @@ function getCardHtml(cardId) {
 
         case 'payment':
             const employerCount = (userData.employers || []).length;
-            const baseFee = employerCount > 1
-                ? (window.pricing.multiple_jobs_fee || 79.99)
-                : (window.pricing.standard_fee || 69.99);
+            const hasAbn = (userData.abnIncome || 0) > 0;
+            const baseFee = hasAbn
+                ? (window.pricing.abn_fee || 89.99)
+                : employerCount > 1
+                    ? (window.pricing.multiple_jobs_fee || 79.99)
+                    : (window.pricing.standard_fee || 69.99);
             let payDiscountAmount = 0;
             let payAppliedPromo = '';
             if (userData.appliedPromo) {

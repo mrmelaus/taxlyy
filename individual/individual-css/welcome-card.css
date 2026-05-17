@@ -191,3 +191,15 @@
     content: ' ';
 }
 
+.deadline-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+}
+
+.deadline-icon {
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+}
