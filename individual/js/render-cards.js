@@ -125,6 +125,8 @@ function getCardHtml(cardId) {
 
         case 'personal':
         return `
+            <div id="personalCardError" class="warning-box error" style="display:none; align-items:center; gap:8px;"></div>
+
             <div class="form-group">
                 <div class="form-label-bilingual">${t('nameLabel')}</div>
                 <input type="text" id="fullName" class="form-input"
@@ -132,7 +134,7 @@ function getCardHtml(cardId) {
                     placeholder="${escapeHtml(stripHtml(t('namePlaceholder')))}"
                     maxlength="60"
                     autocomplete="name">
-                <small class="form-error" id="fullNameError" style="display:none; color:var(--error);">
+                <small class="form-error" id="fullNameError" style="display:none;">
                     ⚠ ${t('nameError')}
                 </small>
             </div>
@@ -146,6 +148,9 @@ function getCardHtml(cardId) {
                     inputmode="numeric"
                     autocomplete="off">
                 <small class="form-note">${t('tfnNote')}</small>
+                <small class="form-error" id="tfnError" style="display:none;">
+                    ⚠ ${t('tfnErrorText')}
+                </small>
             </div>
 
             <div class="form-group">
@@ -155,87 +160,103 @@ function getCardHtml(cardId) {
                     placeholder="DD/MM/YYYY"
                     maxlength="10"
                     inputmode="numeric">
-                <small class="form-error" id="dobError" style="display:none; color:var(--error);">
+                <small class="form-error" id="dobError" style="display:none;">
                     ⚠ ${t('dobErrorText')}
                 </small>
             </div>
 
             <div class="form-group">
                 <label for="email">${t('emailLabel')}</label>
-                <input type="email" id="email" class="form-input" value="${escapeHtml(userData.email || '')}" placeholder="name@example.com">
+                <input type="email" id="email" class="form-input"
+                    value="${escapeHtml(userData.email || '')}"
+                    placeholder="name@example.com">
                 <div class="field-hint">${t('emailHint')}</div>
-                <div id="emailError" class="form-error" style="display: none;">${t('emailErrorText')}</div>
+                <div id="emailError" class="form-error" style="display:none;">${t('emailErrorText')}</div>
             </div>
 
-            <!-- NEW TAX RESIDENCY SECTION -->
+            <!-- Q1: Visa type -->
             <div class="form-group">
-                <div class="form-label-bilingual">${t('taxResidentLabel')}</div>
-                <div class="tax-residency-group">
-                    <label class="tax-residency-card ${userData.isAustralianTaxResident === true ? 'selected' : ''}">
-                        <input type="radio" name="taxResident" value="yes" ${userData.isAustralianTaxResident === true ? 'checked' : ''}>
-                        <div class="tax-residency-title form-label-bilingual">${t('taxResidentYes')}</div>
-                        <div class="tax-residency-desc form-label-bilingual">${t('taxResidentYesDesc')}</div>
+                <div class="form-label-bilingual">${t('visaTypeLabel')}</div>
+                <div class="tax-residency-group" id="visaTypeGroup">
+
+                    <label class="tax-residency-card ${userData.visaType === 'citizen_pr' ? 'selected' : ''}">
+                        <input type="radio" name="visaType" value="citizen_pr" ${userData.visaType === 'citizen_pr' ? 'checked' : ''}>
+                        <div class="tax-residency-title">${t('visaTypeCitizenPr')}</div>
+                        <div class="tax-residency-desc">${t('visaTypeCitizenPrDesc')}</div>
                     </label>
-                    <label class="tax-residency-card ${userData.isAustralianTaxResident === false ? 'selected' : ''}">
-                        <input type="radio" name="taxResident" value="no" ${userData.isAustralianTaxResident === false ? 'checked' : ''}>
-                        <div class="tax-residency-title form-label-bilingual">${t('taxResidentNo')}</div>
-                        <div class="tax-residency-desc form-label-bilingual">${t('taxResidentNoDesc')}</div>
+
+                    <label class="tax-residency-card ${userData.visaType === 'temp_visa' ? 'selected' : ''}">
+                        <input type="radio" name="visaType" value="temp_visa" ${userData.visaType === 'temp_visa' ? 'checked' : ''}>
+                        <div class="tax-residency-title">${t('visaTypeTempVisa')}</div>
+                        <div class="tax-residency-desc">${t('visaTypeTempVisaDesc')}</div>
                     </label>
+
+                    <label class="tax-residency-card ${userData.visaType === 'whm' ? 'selected' : ''}">
+                        <input type="radio" name="visaType" value="whm" ${userData.visaType === 'whm' ? 'checked' : ''}>
+                        <div class="tax-residency-title">${t('visaTypeWhm')}</div>
+                        <div class="tax-residency-desc">${t('visaTypeWhmDesc')}</div>
+                    </label>
+
                 </div>
             </div>
 
-            <!-- DYNAMIC FOLLOW-UP: Temporary Visa + Medicare (shown only if tax resident = Yes) -->
-            <div id="tempVisaGroup" style="display: ${userData.isAustralianTaxResident === true ? 'block' : 'none'};">
+            <!-- Q2: Tax residency — shown for temp_visa and whm -->
+            <div id="taxResidentGroup" style="display:${(userData.visaType === 'temp_visa' || userData.visaType === 'whm') ? 'block' : 'none'};">
                 <div class="form-group">
-                    <div class="form-label-bilingual">${t('tempVisaLabel')}</div>
+                    <div class="form-label-bilingual">${t('taxResidentLabel')}</div>
                     <div class="tax-residency-group">
-                        <label class="tax-residency-card ${userData.isTemporaryVisaHolder === true ? 'selected' : ''}">
-                            <input type="radio" name="tempVisa" value="yes" ${userData.isTemporaryVisaHolder === true ? 'checked' : ''}>
-                            <div class="tax-residency-title form-label-bilingual">${t('tempVisaYes')}</div>
-                            <div class="tax-residency-desc form-label-bilingual">${t('tempVisaYesDesc')}</div>
+                        <label class="tax-residency-card ${userData.isTaxResident === true ? 'selected' : ''}">
+                            <input type="radio" name="isTaxResident" value="yes" ${userData.isTaxResident === true ? 'checked' : ''}>
+                            <div class="tax-residency-title">${t('taxResidentYes')}</div>
+                            <div class="tax-residency-desc">${t('taxResidentYesDesc')}</div>
                         </label>
-                        <label class="tax-residency-card ${userData.isTemporaryVisaHolder === false ? 'selected' : ''}">
-                            <input type="radio" name="tempVisa" value="no" ${userData.isTemporaryVisaHolder === false ? 'checked' : ''}>
-                            <div class="tax-residency-title form-label-bilingual">${t('tempVisaNo')}</div>
-                            <div class="tax-residency-desc form-label-bilingual">${t('tempVisaNoDesc')}</div>
+                        <label class="tax-residency-card ${userData.isTaxResident === false ? 'selected' : ''}">
+                            <input type="radio" name="isTaxResident" value="no" ${userData.isTaxResident === false ? 'checked' : ''}>
+                            <div class="tax-residency-title">${t('taxResidentNo')}</div>
+                            <div class="tax-residency-desc">${t('taxResidentNoDesc')}</div>
                         </label>
-                    </div>
-                </div>
-
-                <div id="medicareCertGroup" style="display: ${userData.isTemporaryVisaHolder === true ? 'block' : 'none'};">
-                    <div class="form-group">
-                        <div class="form-label-bilingual">${t('medicareCertLabel')}</div>
-                        <div class="tax-residency-group">
-                            <label class="tax-residency-card ${userData.hasMedicareExemptionCertificate === true ? 'selected' : ''}">
-                                <input type="radio" name="medicareCert" value="yes" ${userData.hasMedicareExemptionCertificate === true ? 'checked' : ''}>
-                                <div class="tax-residency-title form-label-bilingual">${t('medicareCertYes')}</div>
-                                <div class="tax-residency-desc form-label-bilingual">${t('medicareCertYesDesc')}</div>
-                            </label>
-                            <label class="tax-residency-card ${userData.hasMedicareExemptionCertificate === false ? 'selected' : ''}">
-                                <input type="radio" name="medicareCert" value="no" ${userData.hasMedicareExemptionCertificate === false ? 'checked' : ''}>
-                                <div class="tax-residency-title form-label-bilingual">${t('medicareCertNo')}</div>
-                                <div class="tax-residency-desc form-label-bilingual">${t('medicareCertNoDesc')}</div>
-                            </label>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- DYNAMIC FOLLOW-UP: WHM (shown only if tax resident = No) -->
-            <div id="whmGroup" style="display: ${userData.isAustralianTaxResident === false ? 'block' : 'none'};">
+            <!-- Q3a: Medicare cert — shown for temp_visa + tax resident -->
+            <div id="medicareCertGroup" style="display:${(userData.visaType === 'temp_visa' && userData.isTaxResident === true) ? 'block' : 'none'};">
                 <div class="form-group">
-                    <div class="form-label-bilingual">${t('whmLabel')}</div>
+                    <div class="form-label-bilingual">${t('medicareCertLabel')}</div>
                     <div class="tax-residency-group">
-                        <label class="tax-residency-card ${userData.isWHMVisaHolder === true ? 'selected' : ''}">
-                            <input type="radio" name="whmVisa" value="yes" ${userData.isWHMVisaHolder === true ? 'checked' : ''}>
-                            <div class="tax-residency-title form-label-bilingual">${t('whmYes')}</div>
-                            <div class="tax-residency-desc form-label-bilingual">${t('whmYesDesc')}</div>
+                        <label class="tax-residency-card ${userData.hasMedicareExemptCert === true ? 'selected' : ''}">
+                            <input type="radio" name="medicareCert" value="yes" ${userData.hasMedicareExemptCert === true ? 'checked' : ''}>
+                            <div class="tax-residency-title">${t('medicareCertYes')}</div>
+                            <div class="tax-residency-desc">${t('medicareCertYesDesc')}</div>
                         </label>
-                        <label class="tax-residency-card ${userData.isWHMVisaHolder === false ? 'selected' : ''}">
-                            <input type="radio" name="whmVisa" value="no" ${userData.isWHMVisaHolder === false ? 'checked' : ''}>
-                            <div class="tax-residency-title form-label-bilingual">${t('whmNo')}</div>
-                            <div class="tax-residency-desc form-label-bilingual">${t('whmNoDesc')}</div>
+                        <label class="tax-residency-card ${userData.hasMedicareExemptCert === false ? 'selected' : ''}">
+                            <input type="radio" name="medicareCert" value="no" ${userData.hasMedicareExemptCert === false ? 'checked' : ''}>
+                            <div class="tax-residency-title">${t('medicareCertNo')}</div>
+                            <div class="tax-residency-desc">${t('medicareCertNoDesc')}</div>
                         </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q3b: NDA country — shown for whm + tax resident -->
+            <div id="ndaCountryGroup" style="display:${(userData.visaType === 'whm' && userData.isTaxResident === true) ? 'block' : 'none'};">
+                <div class="form-group">
+                    <div class="form-label-bilingual">${t('ndaCountryLabel')}</div>
+                    <div class="tax-residency-group">
+                        <label class="tax-residency-card ${userData.isNdaCountry === true ? 'selected' : ''}">
+                            <input type="radio" name="ndaCountry" value="yes" ${userData.isNdaCountry === true ? 'checked' : ''}>
+                            <div class="tax-residency-title">${t('ndaCountryYes')}</div>
+                            <div class="tax-residency-desc">${t('ndaCountryYesDesc')}</div>
+                        </label>
+                        <label class="tax-residency-card ${userData.isNdaCountry === false ? 'selected' : ''}">
+                            <input type="radio" name="ndaCountry" value="no" ${userData.isNdaCountry === false ? 'checked' : ''}>
+                            <div class="tax-residency-title">${t('ndaCountryNo')}</div>
+                            <div class="tax-residency-desc">${t('ndaCountryNoDesc')}</div>
+                        </label>
+                    </div>
+                    <div class="warning-box info" style="margin-top:var(--space-3); display:${userData.isNdaCountry === true ? 'flex' : 'none'};" id="ndaWarnBox">
+                        <span class="warning-box-icon">ℹ️</span>
+                        <span class="warning-box-text">${t('ndaCountryWarnText')}</span>
                     </div>
                 </div>
             </div>
@@ -340,18 +361,15 @@ function getCardHtml(cardId) {
 
             const getResidencyText = () => {
                 const status = getEffectiveTaxStatus(userData);
-                // Temporary resident is a sub-status of 'australian' — surface it separately
-                if (status === 'australian' && userData.isTemporaryVisaHolder === true) {
-                    return t('residentOptionTemporary');
-                }
                 const map = {
-                    'australian': t('residentOptionAustralian'),
-                    'whm':        t('residentOptionWhm'),
-                    'foreign':    t('residentOptionForeign')
+                    'australian':        t('residentOptionAustralian'),
+                    'resident_exempt':   t('residentOptionResidentExempt'),
+                    'whm':               t('residentOptionWhm'),
+                    'whm_nda_resident':  t('residentOptionWhmNda'),
+                    'foreign':           t('residentOptionForeign')
                 };
                 return map[status] || t('residentOptionAustralian');
             };
-
             const getCoverText = () => {
                 if (userData.hasPrivateHospitalCover === false) return t('coverStatusNo');
                 if (userData.daysWithoutCover === 0) return t('coverStatusYes');
@@ -651,28 +669,7 @@ function getCardHtml(cardId) {
                             </span>
                         </label>
                     </div>
-                    <div class="declaration-summary">
-                        <div class="declaration-summary-title">${t('declarationSummaryTitle')}</div>
-                        <div class="declaration-summary-row">
-                            <span>${t('estimatedRefundLabel')}:</span>
-                            <strong class="${refundCalc.refund >= 0 ? 'refund-positive' : 'refund-negative'}">
-                                ${formatCurrency(Math.abs(refundCalc.refund))} ${refundCalc.refund >= 0 ? t('refund') : t('owing')}
-                            </strong>
-                        </div>
-                        <div class="declaration-summary-row">
-                            <span>${t('totalIncomeLabel')}:</span>
-                            <span>${formatCurrency(refundCalc.totalIncome)}</span>
-                        </div>
-                        <div class="declaration-summary-row">
-                            <span>${t('totalTaxWithheldLabel')}:</span>
-                            <span>${formatCurrency(refundCalc.totalTaxWithheld)}</span>
-                        </div>
-                    </div>
-                    <div class="declaration-note">
-                        <span class="declaration-note-icon">🔒</span>
-                        <span>${t('declarationNote')}</span>
-                    </div>
-                </div>
+                
             `;
 
         case 'payment':

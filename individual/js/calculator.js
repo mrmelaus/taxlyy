@@ -125,14 +125,17 @@ function getConfig(taxYear) {
 // ========================================
 
 function getEffectiveTaxStatus(userData) {
-    if (userData.isAustralianTaxResident === undefined) return 'australian'; // safe default for estimate
-    if (userData.isAustralianTaxResident === true) return 'australian';
-    if (userData.isWHMVisaHolder === true) return 'whm';
-    return 'foreign';
+    // Single taxStatus field is source of truth
+    if (userData.taxStatus) return userData.taxStatus;
+    // Default safe fallback for uninitialised sessions
+    return 'australian';
 }
 
 function calculateLITO(taxableIncome, userData, taxYear) {
-    if (!userData.isAustralianTaxResident) return 0;
+    
+    const _litoStatus = getEffectiveTaxStatus(userData);
+    if (_litoStatus === 'whm' || _litoStatus === 'foreign') return 0;
+
     const { lito } = getConfig(taxYear);
     if (taxableIncome <= lito.tier1Max) return lito.max;
     if (taxableIncome <= lito.tier2Max) {
@@ -149,9 +152,12 @@ function calculateIncomeTax(taxableIncome, status, taxYear) {
     const config = getConfig(taxYear);
     let brackets;
     switch (status) {
-        case 'whm':     brackets = config.whm; break;
-        case 'foreign': brackets = config.foreign; break;
-        default:        brackets = config.resident; break;
+    case 'whm':             brackets = config.whm; break;
+    case 'foreign':         brackets = config.foreign; break;
+    case 'whm_nda_resident':
+    case 'australian':
+    case 'resident_exempt':
+    default:                brackets = config.resident; break;
     }
     for (const bracket of brackets) {
         if (taxableIncome >= bracket.min && taxableIncome <= bracket.max) {
@@ -163,8 +169,9 @@ function calculateIncomeTax(taxableIncome, status, taxYear) {
 }
 
 function calculateMedicareLevy(taxableIncome, userData, taxYear) {
-    if (!userData.isAustralianTaxResident) return 0;
-    if (userData.hasMedicareExemptionCertificate) return 0;
+    const _mlStatus = getEffectiveTaxStatus(userData);
+    if (_mlStatus === 'whm' || _mlStatus === 'foreign') return 0;
+    if (_mlStatus === 'resident_exempt') return 0;
     const { medicareLevy } = getConfig(taxYear);
     if (taxableIncome <= medicareLevy.exemptThreshold) return 0;
     if (taxableIncome <= medicareLevy.shadeInThreshold) {
@@ -174,11 +181,9 @@ function calculateMedicareLevy(taxableIncome, userData, taxYear) {
 }
 
 function calculateATI(taxableIncome, userData) {
-    if (!userData.isAustralianTaxResident) return taxableIncome;
-
-    // Temporary residents (s768-R ITAA97): foreign income is exempt from Australian tax.
-    // Do not include targetForeignIncome in ATI for temporary visa holders.
-    const foreignIncomeForATI = userData.isTemporaryVisaHolder
+    
+    const _atiStatus = getEffectiveTaxStatus(userData);
+    const foreignIncomeForATI = (_atiStatus === 'resident_exempt' || _atiStatus === 'whm' || _atiStatus === 'foreign')
         ? 0
         : (userData.targetForeignIncome || 0);
 
@@ -212,7 +217,8 @@ function calculateATI(taxableIncome, userData) {
 //   passed in from calculateRefund.
 // ========================================
 function calculateMLS(taxableIncome, userData, taxYear) {
-    if (!userData.isAustralianTaxResident) return 0;
+    const _mlsStatus = getEffectiveTaxStatus(userData);
+    if (_mlsStatus === 'whm' || _mlsStatus === 'foreign') return 0;
 
     if (userData.hasPrivateHospitalCover && (!userData.daysWithoutCover || userData.daysWithoutCover === 0)) {
         return 0;
@@ -272,21 +278,29 @@ function getTaxYearStartDate(taxYear) {
     return `${startYear}-07-01`;
 }
 
-function calculateDaysHeld(purchaseDate) {
+function calculateDaysHeld(purchaseDate, taxYear) {
     if (!purchaseDate) return 365;
-    const purchase = new Date(purchaseDate);
-    const june30 = new Date(purchase.getFullYear(), 5, 30); // June 30 of purchase year
     
-    if (purchase > june30) {
-        // Purchased after June 30, count days to next June 30
-        const nextJune30 = new Date(purchase.getFullYear() + 1, 5, 30);
-        const diffTime = nextJune30 - purchase;
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    } else {
-        // Purchased before June 30, count days from purchase to June 30
-        const diffTime = june30 - purchase;
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const purchase = new Date(purchaseDate);
+    const fyStart = getTaxYearStartDate(taxYear);
+    const fyStartDate = new Date(fyStart);
+    const fyEndDate = new Date(fyStartDate);
+    fyEndDate.setFullYear(fyEndDate.getFullYear() + 1);
+    fyEndDate.setMonth(5); // June
+    fyEndDate.setDate(30);
+    
+    // If purchased before current FY start, return 365 (full year)
+    if (purchase < fyStartDate) {
+        return 365;
     }
+    
+    // If purchased after FY start, calculate days remaining in FY
+    if (purchase > fyEndDate) {
+        return 0;
+    }
+    
+    const diffTime = fyEndDate - purchase;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
 function calculateNewAssetDepreciation(cost, effectiveLife, daysHeld, workPercentage) {
@@ -311,9 +325,9 @@ function calculateAssetDepreciation(asset, taxYear) {
             asset.workPercentage
         );
     } else {
-        const daysHeld = calculateDaysHeld(asset.purchaseDate);
+        const daysHeld = calculateDaysHeld(asset.purchaseDate, taxYear);  // ← ADD taxYear
         return calculateNewAssetDepreciation(
-            asset.cost,
+            asset.originalCost,
             asset.effectiveLife,
             daysHeld,
             asset.workPercentage
@@ -492,14 +506,11 @@ function calculatePhiRebate(userData) {
         else tier = 'tier3';
     }
     
-    const now = new Date();
-    const currentMonth = now.getMonth() + 1;
-    const isAprilToJune = (currentMonth >= 4 && currentMonth <= 6);
-    const period = isAprilToJune ? 'aprilToJune' : 'julyToMarch';
-    
+    // Get age group from DOB
     let ageGroup = 'under65';
     if (userData.dob) {
         const birthDate = new Date(userData.dob);
+        const now = new Date();
         let age = now.getFullYear() - birthDate.getFullYear();
         const m = now.getMonth() - birthDate.getMonth();
         if (m < 0 || (m === 0 && now.getDate() < birthDate.getDate())) age--;
@@ -507,14 +518,15 @@ function calculatePhiRebate(userData) {
         else if (age >= 65) ageGroup = 'age65to69';
     }
     
+    // Get blended rate (no period logic)
     let rebateRate = 0;
     const taxYear = userData.taxYear || '2025-26';
-    const periodRates = window.phiRebateRates?.[taxYear]?.[period]?.[ageGroup];
-    if (periodRates) {
-        if (tier === 'base') rebateRate = periodRates.base || 0;
-        else if (tier === 'tier1') rebateRate = periodRates.tier1 || 0;
-        else if (tier === 'tier2') rebateRate = periodRates.tier2 || 0;
-        else rebateRate = periodRates.tier3 || 0;
+    const rates = window.phiRebateRates?.[taxYear]?.[ageGroup];
+    if (rates) {
+        if (tier === 'base') rebateRate = rates.base || 0;
+        else if (tier === 'tier1') rebateRate = rates.tier1 || 0;
+        else if (tier === 'tier2') rebateRate = rates.tier2 || 0;
+        else rebateRate = rates.tier3 || 0;
     }
     
     return userData.annualPremium * rebateRate;
@@ -632,7 +644,7 @@ function calculateCGT(userData) {
     }
 
     // 50% CGT discount: Australian residents only, assets held 12+ months
-    const discountEligible = status === 'australian' && userData.cgtDiscountApplies;
+    const discountEligible = (status === 'australian' || status === 'resident_exempt' || status === 'whm_nda_resident') && userData.cgtDiscountApplies;
     const cgDiscount = discountEligible ? netCGT * 0.5 : 0;
     const assessableCapitalGains = netCGT - cgDiscount;
 
@@ -662,10 +674,10 @@ function calculateTotalIncome(userData) {
     const abnNet = abnGross - abnExpenses;
     const abnNetAssessable = Math.max(0, abnNet);
 
-    const foreignIncome = (userData.isAustralianTaxResident && !userData.isTemporaryVisaHolder)
+    const _incStatus = getEffectiveTaxStatus(userData);
+    const foreignIncome = (_incStatus === 'australian' || _incStatus === 'whm_nda_resident')
         ? (userData.targetForeignIncome || 0)
         : 0;
-
     const otherIncomeAmount = userData.otherIncome?.otherAmount || 0;
 
     // ABN net assessable now included
@@ -719,10 +731,13 @@ function calculateTotalWithheld(userData) {
 }
 
 function calculateTotalDeductions(userData) {
+    const selfEducationRaw = userData.selfEducation || 0;
+    const selfEducationDeductible = Math.max(0, selfEducationRaw - 250);
+    
     return (userData.homeOffice || 0)
         + (userData.travelExpenses || 0)
         + (userData.equipment || 0)
-        + (userData.selfEducation || 0)
+        + selfEducationDeductible
         + (userData.otherDeductions || 0);
 }
 
@@ -850,30 +865,36 @@ function formatCurrency(amount) {
 }
 
 function calculateHECSRepayment(userData) {
-    if (!userData.hasHecsLoan) return 0;
+    // Early return if no HECS loan
+    if (!userData?.hasHecsLoan) return 0;
 
-    // Determine repayment income
-    let repaymentIncome = userData.ati || 0;
-    if (userData.hecsManualRepaymentIncome && userData.hecsManualRepaymentIncome > 0) {
-        repaymentIncome = userData.hecsManualRepaymentIncome;
-    }
+    // Determine repayment income (ATI or manual override)
+    const repaymentIncome = userData.hecsManualRepaymentIncome > 0 
+        ? userData.hecsManualRepaymentIncome 
+        : (userData.ati || 0);
 
+    // Get HECS brackets for the tax year
     const taxYear = userData.taxYear || ACTIVE_TAX_YEAR;
-    const config = getConfig(taxYear);
-    const brackets = config?.hecs;
-    
-    // Safety check – if no brackets, return 0 (fallback)
-    if (!brackets || !Array.isArray(brackets) || brackets.length === 0) {
-        return 0;
+    const brackets = getConfig(taxYear)?.hecs;
+
+    // Validate brackets exist
+    if (!brackets?.length) return 0;
+
+    // Find matching bracket
+    const matchedBracket = brackets.find(bracket => 
+        repaymentIncome >= bracket.min && repaymentIncome <= bracket.max
+    );
+
+    if (!matchedBracket) return 0;
+
+    // TOP BRACKET: 10% of TOTAL repayment income
+    const isTopBracket = matchedBracket.max === Infinity || matchedBracket.max >= 999999999;
+    if (isTopBracket) {
+        return repaymentIncome * matchedBracket.rate;
     }
 
-    for (const bracket of brackets) {
-        if (repaymentIncome >= bracket.min && repaymentIncome <= bracket.max) {
-            // If rate is 0 (first bracket), return 0
-            return bracket.base + (repaymentIncome - bracket.min) * bracket.rate;
-        }
-    }
-    return 0;
+    // All other brackets: base + marginal on amount above min
+    return matchedBracket.base + (repaymentIncome - matchedBracket.min) * matchedBracket.rate;
 }
 // ========================================
 // 6. EXPOSE PUBLIC API

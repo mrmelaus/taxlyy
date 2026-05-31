@@ -620,6 +620,7 @@ h1 {
 .btn-primary:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-glow-strong);
+    color: white;  /* ← Dark slate, excellent contrast */
 }
 .trust-row {
     display: flex;

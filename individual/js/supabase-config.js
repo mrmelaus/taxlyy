@@ -159,22 +159,6 @@ async function loadTranslations() {
     }
 }
 
-async function validatePromoCode(code) {
-    if (!window.supabaseClient) {
-        console.warn('supabaseClient not ready, skipping promo validation');
-        return null;
-    }
-    try {
-        const { data, error } = await window.supabaseClient
-            .rpc('get_promo_discount', { p_code: code });
-        if (error || data === null) return null;
-        return data;
-    } catch (err) {
-        console.warn('Promo validation failed', err);
-        return null;
-    }
-}
-
 // ========================================
 // PHI Rebate rates cache
 // ========================================
@@ -205,16 +189,11 @@ async function loadPhiRebateRates() {
 function getPhiRebateFallback() {
     return {
         '2025-26': {
-            julyToMarch: {
-                under65: { tier1: 0.16192, tier2: 0.08095, tier3: 0 },
-                age65to69: { tier1: 0.20240, tier2: 0.12143, tier3: 0 },
-                age70plus: { tier1: 0.24288, tier2: 0.16192, tier3: 0 }
-            },
-            aprilToJune: {
-                under65: { tier1: 0.16079, tier2: 0.08038, tier3: 0 },
-                age65to69: { tier1: 0.20098, tier2: 0.12058, tier3: 0 },
-                age70plus: { tier1: 0.24118, tier2: 0.16079, tier3: 0 }
-            }
+            // Blended rates for the full tax year
+            // Formula: (9/12 × julyToMarch) + (3/12 × aprilToJune)
+            under65:   { base: 0.242455, tier1: 0.161655, tier2: 0.080755, tier3: 0 },
+            age65to69: { base: 0.282875, tier1: 0.201795, tier2: 0.121085, tier3: 0 },
+            age70plus: { base: 0.323085, tier1: 0.242455, tier2: 0.161655, tier3: 0 }
         }
     };
 }

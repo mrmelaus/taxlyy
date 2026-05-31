@@ -219,29 +219,53 @@ function findEmployerByAbn(abn) {
     return userData.employers.find(emp => normaliseAbn(emp.employerAbn) === norm);
 }
 
+// utils.js
+function isUserEligibleForPromo(promo, userData) {
+    switch (promo.target) {
+        case 'general':
+            return true;
+        case 'whm':
+            return userData.visaType === 'whm';
+        case 'multiple_employers':
+            return (userData.employers || []).length > 1;
+        case 'abn':
+            return (userData.abnIncome || 0) > 0;
+        default:
+            return false;
+    }
+}
+
+
 // Add or update employer – called from ABN lookup, OCR, manual add
-window.addOrUpdateEmployer = function(employer) {
+window.addOrUpdateEmployer = function(employer, callback) {
     const existing = findEmployerByAbn(employer.employerAbn);
     if (existing) {
         const msg = `An employer with ABN ${employer.employerAbn} (${existing.employerName}) already exists.\nDo you want to update the existing entry with the new figures?`;
-        if (confirm(msg)) {
-            existing.grossIncome = employer.grossIncome;
-            existing.taxWithheld = employer.taxWithheld;
-            if (employer.employerName) existing.employerName = employer.employerName;
-            existing._editing = true; // open edit form for verification
-            if (typeof renderEmployerList === 'function') renderEmployerList();
-            if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
-            //saveCurrentData();
-            return { action: 'updated' };
-        }
-        return { action: 'cancelled' };
+        
+        // Use modal instead of confirm
+        showConfirmDialog(msg, 
+            () => {
+                // On confirm: update existing
+                existing.grossIncome = employer.grossIncome;
+                existing.taxWithheld = employer.taxWithheld;
+                if (employer.employerName) existing.employerName = employer.employerName;
+                existing._editing = true;
+                if (typeof renderEmployerList === 'function') renderEmployerList();
+                if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
+                if (callback) callback({ action: 'updated' });
+            },
+            () => {
+                // On cancel: do nothing
+                if (callback) callback({ action: 'cancelled' });
+            }
+        );
+        return;
     }
     // No duplicate – add new
     userData.employers.push({ ...employer, _editing: true });
     if (typeof renderEmployerList === 'function') renderEmployerList();
     if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
-    //saveCurrentData();
-    return { action: 'added' };
+    if (callback) callback({ action: 'added' });
 };
 
 // Strip HTML tags — use for input values and placeholders
@@ -249,6 +273,183 @@ function stripHtml(str) {
     return (str || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+async function validatePromoCode(code, userData) {
+    const { data: promo, error } = await window.supabaseClient
+        .from('promo_codes')
+        .select('*')
+        .eq('code', code.toUpperCase())
+        .single();
+    
+    if (error || !promo) {
+        return { valid: false, message: 'Invalid promo code.' };
+    }
+    
+    if (!promo.active) {
+        return { valid: false, message: 'This promo code is no longer active.' };
+    }
+    
+    if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
+        return { valid: false, message: 'This promo code has expired.' };
+    }
+    
+    if (promo.usage_limit && promo.used_count >= promo.usage_limit) {
+        return { valid: false, message: 'This promo code has reached its usage limit.' };
+    }
+    
+    if (!window.isUserEligibleForPromo(promo, userData)) {
+        return { valid: false, message: 'This promo code is not available for your situation.' };
+    }
+    
+    return { valid: true, discount: promo.discount, promo: promo };
+}
+
+// ========================================
+// TOAST NOTIFICATION SYSTEM
+// ========================================
+
+let toastContainer = null;
+
+function getToastContainer() {
+    if (!toastContainer) {
+        toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+        }
+    }
+    return toastContainer;
+}
+
+function removeToast(toast) {
+    if (!toast || !toast.parentNode) return;
+    if (toast.dataset.timeoutId) {
+        clearTimeout(parseInt(toast.dataset.timeoutId));
+    }
+    toast.classList.add('toast-hide');
+    setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+    }, 300);
+}
+
+function showToast(message, type = 'info', duration = 5000) {
+    const container = getToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '❌';
+    if (type === 'warning') icon = '⚠️';
+    
+    toast.innerHTML = `
+        <div class="toast-content">
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <div class="toast-progress" style="animation-duration: ${duration}ms"></div>
+    `;
+    
+    container.appendChild(toast);
+    
+    const timeoutId = setTimeout(() => {
+        removeToast(toast);
+    }, duration);
+    
+    toast.dataset.timeoutId = timeoutId;
+    
+    return toast;
+}
+
+function toastSuccess(message, duration = 3000) {
+    return showToast(message, 'success', duration);
+}
+
+function toastError(message, duration = 5000) {
+    return showToast(message, 'error', duration);
+}
+
+function toastWarning(message, duration = 4000) {
+    return showToast(message, 'warning', duration);
+}
+
+function toastInfo(message, duration = 3000) {
+    return showToast(message, 'info', duration);
+}
+
+function clearAllToasts() {
+    const container = getToastContainer();
+    const toasts = container.querySelectorAll('.toast');
+    toasts.forEach(toast => removeToast(toast));
+}
+// Radio group highlighting for validation errors
+function highlightRadioGroup(groupElement) {
+    if (!groupElement) return;
+    groupElement.style.border = '1px solid var(--error)';
+    groupElement.style.borderRadius = 'var(--radius-md)';
+    groupElement.style.padding = 'var(--space-3)';
+    groupElement.style.marginBottom = 'var(--space-3)';
+    groupElement.style.backgroundColor = 'rgba(255, 77, 109, 0.05)';
+}
+
+function clearRadioGroupHighlight(groupElement) {
+    if (!groupElement) return;
+    groupElement.style.border = '';
+    groupElement.style.borderRadius = '';
+    groupElement.style.padding = '';
+    groupElement.style.marginBottom = '';
+    groupElement.style.backgroundColor = '';
+}
+
+function showConfirmDialog(messages, onConfirm, onCancel) {
+    const existingModal = document.querySelector('.confirm-modal');
+    if (existingModal) existingModal.remove();
+    
+    const messageArray = Array.isArray(messages) ? messages : [messages];
+    
+    let messagesHtml = '';
+    messageArray.forEach((msg, index) => {
+        messagesHtml += `
+            <div class="confirm-modal-message">
+                <span class="confirm-modal-bullet">•</span>
+                <span class="confirm-modal-text">${msg}</span>
+            </div>
+        `;
+        if (index < messageArray.length - 1) {
+            messagesHtml += '<div class="confirm-modal-divider"></div>';
+        }
+    });
+    
+    const modal = document.createElement('div');
+    modal.className = 'confirm-modal';
+    modal.innerHTML = `
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-header">
+                <span class="confirm-modal-header-icon">⚠️</span>
+                <span class="confirm-modal-header-title">Please review before continuing</span>
+            </div>
+            <div class="confirm-modal-messages">
+                ${messagesHtml}
+            </div>
+            <div class="confirm-modal-buttons">
+                <button class="confirm-yes">Yes, continue</button>
+                <button class="confirm-no">Cancel</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    modal.querySelector('.confirm-yes').onclick = () => {
+        modal.remove();
+        if (onConfirm) onConfirm();
+    };
+    
+    modal.querySelector('.confirm-no').onclick = () => {
+        modal.remove();
+        if (onCancel) onCancel();
+    };
+}
 
 // ========================================
 // Expose globals — ALL files use these directly
@@ -270,7 +471,20 @@ window.formatDateForATO = formatDateForATO;
 window.getCurrentFinancialYear = getCurrentFinancialYear;
 window.validateDOB = validateDOB;
 window.formatDateInput = formatDateInput;
+window.isUserEligibleForPromo = isUserEligibleForPromo;
+window.validatePromoCode = validatePromoCode;
 window.stripHtml = stripHtml;
+
+window.highlightRadioGroup=highlightRadioGroup;
+window.clearRadioGroupHighlight=clearRadioGroupHighlight;
+window.showConfirmDialog = showConfirmDialog;
+
+window.showToast = showToast;
+window.toastSuccess = toastSuccess;
+window.toastError = toastError;
+window.toastWarning = toastWarning;
+window.toastInfo = toastInfo;
+window.clearAllToasts = clearAllToasts;
 
 window.utils = {
     setTranslationCache,
@@ -290,6 +504,12 @@ window.utils = {
     formatDateForATO,
     getCurrentFinancialYear,
     validateDOB,
+     showToast,
+    toastSuccess,
+    toastError,
+    toastWarning,
+    toastInfo,
+    clearAllToasts,
     currentLang: () => window.currentLang,
     setLang: (lang) => { window.currentLang = lang; }
 };

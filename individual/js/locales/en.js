@@ -67,33 +67,48 @@ window.enLocale = {
     nameError: "Full name must be at least 2 characters",
     tfnErrorText: "Tax File Number must be exactly 9 digits",
     
-    // Tax Residency Main Question
-    taxResidentLabel: "Are you an Australian resident for tax purposes?",
-    taxResidentYes: "Yes",
-    taxResidentYesDesc: "You generally live in Australia, have a permanent home here, and intend to stay. This includes citizens, permanent residents, and some temporary visa holders who meet the ATO's 'resides test'. If unsure, use the ATO residency decision tool.",
-    taxResidentNo: "No",
-    taxResidentNoDesc: "You do not meet the ATO's residency criteria. Your primary residence and ties are outside Australia, even if you hold a visa.",
+    taxResidentLabel: 'Are you an Australian tax resident?',
+    taxResidentYes: 'Yes, I am an Australian tax resident',
+    taxResidentYesDesc: 'You have a settled life in Australia — fixed address, ongoing employment or study, and you intend to stay. Applies to most people on 500, 482, 485, 491, 494 visas who have been here 183+ days.',
+    taxResidentNo: 'No, I am not an Australian tax resident',
+    taxResidentNoDesc: 'You do not have a settled life in Australia. Your main home and connections are overseas. Foreign resident tax rates apply — no tax-free threshold, no LITO, no Medicare levy.',
 
-    // Temporary Visa (shown for tax residents)
-    tempVisaLabel: "Do you hold a temporary visa (e.g., 500, 482, 417/462, 485)?",
-    tempVisaYes: "Yes",
-    tempVisaYesDesc: "I hold a temporary visa (e.g., Student 500, Temporary Skill Shortage/ Skill In Demand 482, Working Holiday 417/462, Graduate 485).",
-    tempVisaNo: "No",
-    tempVisaNoDesc: "I am an Australian citizen or permanent resident (not a temporary visa holder).",
+    tempVisaLabel: 'What type of temporary visa do you hold?',
+    tempVisaYes: 'Student, work, or graduate visa',
+    tempVisaYesDesc: 'Includes Student 500, Temporary Skill Shortage 482, Temporary Graduate 485, Skilled Work Regional 491/494, and other non-WHM temporary visas.',
+    tempVisaNo: 'Other / not listed',
+    tempVisaNoDesc: 'If unsure, select this option and use the ATO residency tool to confirm your status.',
 
+    whmLabel: 'Are you on a Working Holiday Maker visa (subclass 417 or 462)?',
+    whmYes: 'Yes — subclass 417 or 462',
+    whmYesDesc: 'WHM tax rates apply: 15% on the first $45,000, then standard foreign resident rates above that. No tax-free threshold, no LITO.',
+    whmNo: 'No — I hold a different visa',
+    whmNoDesc: 'Select No if you hold a student, work, or other temporary visa that is not a working holiday visa.',
+
+    visaTypeLabel: 'What is your visa or residency status?',
+    visaTypeCitizenPr: 'Australian citizen or permanent resident',
+    visaTypeCitizenPrDesc: 'You hold Australian citizenship or a permanent resident visa. Australian resident tax rates apply — tax-free threshold, LITO, and Medicare levy.',
+    visaTypeTempVisa: 'Temporary visa holder',
+    visaTypeTempVisaDesc: 'You hold a temporary visa, such as Student (500), Temporary Graduate (485), Temporary Skill Shortage (482), Skills in Demand (482), or Skilled Work Regional (491/494). Tax treatment depends on whether you are an Australian tax resident.',
+    visaTypeWhm: 'Working Holiday Maker (417 or 462)',
+    visaTypeWhmDesc: 'You hold a Working Holiday (417) or Work and Holiday (462) visa. Special WHM tax rates apply: 15% on the first $45,000. No tax-free threshold, no LITO, no Medicare levy for most WHMs.',
+
+    ndaCountryLabel: "Is your home country on Australia's Non-Discrimination Article (NDA) list?",
+    ndaCountryYes: 'Yes — my passport is from an NDA country',
+    ndaCountryYesDesc: 'NDA countries: United Kingdom, Germany, Finland, Japan, Norway, Turkey, Chile, Israel. If you are also an Australian tax resident, you may be entitled to Australian resident tax rates instead of WHM rates.',
+    ndaCountryNo: 'No — my passport is not from an NDA country',
+    ndaCountryNoDesc: 'WHM tax rates apply regardless of your residency status. 15% on the first $45,000, then standard foreign resident rates.',
+    ndaCountryWarnText: 'Your situation — a WHM visa holder who is an Australian tax resident from an NDA country — may qualify for Australian resident tax rates. This is complex and involves the ATO resides test. We have applied Australian resident rates to your estimate, but we strongly recommend verifying with a registered tax agent before lodging.',
+
+    residentOptionResidentExempt: 'Temporary resident (Medicare exempt)',
+    residentOptionWhmNda: 'Working Holiday Maker (Australian resident rates)',
+    
     // Medicare Exemption Certificate (shown for temporary visa holders who are tax residents)
     medicareCertLabel: "Do you have a current Medicare levy exemption certificate from Services Australia?",
     medicareCertYes: "Yes",
     medicareCertYesDesc: "I have a valid certificate and am exempt from the 2% Medicare levy.",
     medicareCertNo: "No",
     medicareCertNoDesc: "I do not have an exemption certificate, so I will pay the Medicare levy (subject to low-income thresholds).",
-
-    // WHM Question (shown for non-residents)
-    whmLabel: "Do you hold a Working Holiday Maker visa (subclass 417 or 462)?",
-    whmYes: "Yes",
-    whmYesDesc: "WHM tax rates apply: 15% on income up to $45,000, then progressive rates. No tax-free threshold, no Medicare levy, no LITO.",
-    whmNo: "No",
-    whmNoDesc: "Foreign resident tax rates apply: 30% on income up to $135,000, then higher rates. No tax-free threshold, no Medicare levy, no LITO.",
 
     // Tooltip (optional, can keep or remove)
     residentTooltipLabel: "Information about tax residency",
@@ -198,7 +213,8 @@ window.enLocale = {
     equipmentUnder300: "Total cost of items under $300 (immediate deduction)",
     equipmentOver300: "Total cost of items over $300 (will be depreciated)",
     selfEducation: "Self-education expenses",
-    selfEducationHint: "Courses, textbooks, seminars that maintain or improve skills for your current job. First qualification to enter a new field is not deductible.",
+    selfEducationHint: "Courses, textbooks, seminars that maintain or improve skills for your current job are deductible. The first qualification to enter a completely new field is not deductible. Expenses must have a sufficient connection to your current employment.",
+    selfEducationDeductionHint: 'The first $250 of self-education expenses is not deductible. Enter your total expenses; we will automatically deduct the $250 for you.',
     otherDeductions: "Other work-related expenses",
     otherDeductionsHint: "Union fees, professional memberships, tools, protective clothing, overtime meals (only if employer paid an allowance).",
     amount: "Amount ($)",
@@ -453,4 +469,5 @@ window.enLocale = {
     hecsManualIncomeHint: 'If you know your repayment income (e.g., from myGov), enter it here. Otherwise we will estimate it from your tax return.',
     hecsRepaymentLabel: 'HELP / HECS compulsory repayment',
 
+    rebateRate: 'rebate',
       };

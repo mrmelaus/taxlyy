@@ -28,27 +28,43 @@ async function processPayslip(file) {
         throw new Error('File too large. Free tier limit is 1MB. Upgrade to PRO for 5MB or 100MB+ limit.');
     }
     
-    // Show loading indicator
+    // Show AI typewriter loading indicator
     const uploadZone = document.getElementById('uploadZone');
-    if (uploadZone) {
+        if (uploadZone) {
         uploadZone.innerHTML = `
             <div class="spinner"></div>
-            <div style="margin-top: 1rem;">Processing payslip with AI...</div>
-            <small>This may take 5-10 seconds</small>
+            <div id="aiTypewriter" style="
+                margin-top: 1rem;
+                font-weight: 500;
+                min-height: 1.4em;
+            "></div>
         `;
+
+        const text = 'Processing payslip with AI...';
+        let i = 0;
+
+        function typeNext() {
+            const el = document.getElementById('aiTypewriter');
+            if (!el) return;
+            if (i <= text.length) {
+                el.textContent = text.substring(0, i) + '▍';
+                i++;
+                setTimeout(typeNext, 55);
+            }
+        }
+
+        typeNext();
     }
     
     try {
-        // Create FormData for API request
         const formData = new FormData();
         formData.append('apikey', OCR_API_KEY);
         formData.append('file', file);
         formData.append('language', OCR_LANGUAGE);
-        formData.append('isTable', 'true');      // Better table extraction for payslips
-        formData.append('OCREngine', '2');        // Engine 2 = better accuracy
-        formData.append('scale', 'true');         // Scale images for better OCR
+        formData.append('isTable', 'true');
+        formData.append('OCREngine', '2');
+        formData.append('scale', 'true');
         
-        // Make API request
         const response = await fetch(OCR_API_URL, {
             method: 'POST',
             body: formData
@@ -56,13 +72,16 @@ async function processPayslip(file) {
         
         const result = await response.json();
         
-        // Check for API errors
         if (!result || result.OCRExitCode !== 1) {
-            const errorMsg = result?.ErrorMessage || 'OCR processing failed';
+            let errorMsg = result?.ErrorMessage || 'OCR processing failed';
+            if (typeof errorMsg !== 'string') errorMsg = String(errorMsg);
+            if (errorMsg.toLowerCase().includes('pages were reached') || 
+                errorMsg.toLowerCase().includes('only pages up to the limit')) {
+                throw new Error('FILE_TOO_MANY_PAGES');
+            }
             throw new Error(`OCR Error: ${errorMsg}`);
         }
         
-        // Extract parsed text from all pages
         let fullText = '';
         if (result.ParsedResults && result.ParsedResults.length > 0) {
             result.ParsedResults.forEach(page => {
@@ -74,26 +93,23 @@ async function processPayslip(file) {
             throw new Error('No text could be extracted from the payslip. Please ensure the file is clear and readable.');
         }
         
-        // Parse the extracted text to find payslip data
         const extractedData = parsePayslipText(fullText);
-
-        // Enrich with ABN lookup (fixes wrong employer names)
         const enrichedData = await enrichWithAbnLookup(extractedData);
         
-        // Validate extracted data
         const validation = validatePayslipData(extractedData);
         if (!validation.isValid) {
-            // Still return partial data, but show warnings
             console.warn('Validation warnings:', validation.errors);
         }
         
         return enrichedData;
         
     } catch (error) {
-        console.error('OCR.space error:', error);
         throw error;
     } finally {
-        // Reset upload zone if needed (caller will handle)
+        // Clear typewriter timer when done
+        if (uploadZone?._typewriterTimer) {
+            clearTimeout(uploadZone._typewriterTimer);
+        }
     }
 }
 
@@ -208,44 +224,98 @@ function parsePayslipText(text) {
     }
     
     // 6. Extract pay period dates
-    const datePattern = /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})|\b(\d{1,2}\s+(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\w*\s+\d{2,4})\b/gi;
-    const dates = [...text.matchAll(datePattern)].map(m => m[0] || m[1]);
-    if (dates.length >= 2) {
-        result.payPeriod.start = dates[0];
-        result.payPeriod.end = dates[dates.length - 1];
+    let payPeriodStart = null;
+    let payPeriodEnd = null;
+    
+    // Look for "Pay Period: start - end" format
+    const payPeriodMatch = text.match(/Pay Period:\s*(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/\d{4})/i);
+    if (payPeriodMatch) {
+        payPeriodStart = payPeriodMatch[1];
+        payPeriodEnd = payPeriodMatch[2];
     }
     
-    // 7. Extract Employee Name – improved for Australian payslips
+    // Look for explicit "Pay Period End" or "Period Ending"
+    if (!payPeriodEnd) {
+        const periodEndPatterns = [
+            /PAY\s+PERIOD\s+END\s*:?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i,
+            /PERIOD\s+ENDING\s*:?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i,
+            /PAY\s+DATE\s*:?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i
+        ];
+        for (const pattern of periodEndPatterns) {
+            const match = text.match(pattern);
+            if (match) {
+                payPeriodEnd = match[1];
+                break;
+            }
+        }
+    }
+    
+    result.payPeriod.start = payPeriodStart;
+    result.payPeriod.end = payPeriodEnd;
+    
+    // 7. Extract Employee Name – robust for multiple payslip formats
     let employeeName = null;
-    // First, look for a line that looks like a name (two capitalized words) before "Annual Salary" or "Employment Basis"
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (line.length > 5 && line.length < 50 && /^[A-Z][a-z]+\s+[A-Z][a-z]+$/.test(line)) {
-            // Skip lines that are likely company names or addresses
-            if (!/(COMPANY|PTY|LTD|ABN|PAYSLIP|STREET|ROAD|DRIVE|VIC|NSW|QLD|WA|SA|TAS|ACT|NT)/i.test(line)) {
+    
+    // Method 1: Look for common labels
+    const nameLabelPatterns = [
+        /EMPLOYEE\s+NAME\s*:?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
+        /EMPLOYEE\s*:?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
+        /STAFF\s+NAME\s*:?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
+        /PAYEE\s+NAME\s*:?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
+        /PAY\s+TO\s*:?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
+    ];
+        
+    for (const pattern of nameLabelPatterns) {
+        const match = text.match(pattern);
+        if (match) {
+            employeeName = match[1].trim();
+            break;
+        }
+    }
+    
+    // Method 2: Look for a line with two capitalized words in first 10 lines
+    if (!employeeName) {
+        for (let i = 0; i < Math.min(10, lines.length); i++) {
+            const line = lines[i].trim();
+            if (/^[A-Z][a-z]+\s+[A-Z][a-z]+$/.test(line) && 
+                line.length < 40 &&
+                !line.toUpperCase().includes('COMPANY') &&
+                !line.toUpperCase().includes('PTY') &&
+                !line.toUpperCase().includes('LTD') &&
+                !line.toUpperCase().includes('BANK') &&
+                !line.toUpperCase().includes('ACCOUNT') &&
+                !line.toUpperCase().includes('LEAVE') &&
+                !line.toUpperCase().includes('TOTAL') &&
+                !line.toUpperCase().includes('GROSS') &&
+                !line.toUpperCase().includes('INCOME') &&
+                !line.toUpperCase().includes('ABN')) {
                 employeeName = line;
                 break;
             }
         }
     }
-    // If not found, try specific patterns
+    
+    // Method 3: Look for name before "Annual Salary" or "Employment Basis"
     if (!employeeName) {
-        const namePatterns = [
-            /EMPLOYMENT\s+DETAILS\s*[\n\r]+\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
-            /PAY\s+TO\s*:?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
-            /EMPLOYEE\s*:?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
-            /NAME\s*:?\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
-            /Zhen\s+Liu/i,   // direct match for sample
-            /[A-Z][a-z]+\s+[A-Z][a-z]+(?=\s*\n\s*Annual Salary)/i  // name before "Annual Salary"
-        ];
-        for (const pattern of namePatterns) {
-            const match = text.match(pattern);
-            if (match) {
-                employeeName = (match[1] || match[0]).trim();
-                break;
+        const nameBeforeSalary = /([A-Z][a-z]+\s+[A-Z][a-z]+)(?=\s*\n\s*Annual Salary)/i;
+        const match = text.match(nameBeforeSalary);
+        if (match) {
+            employeeName = match[1].trim();
+        }
+    }
+    
+    // Method 4: Look for name before "Employee ID" (fallback)
+    if (!employeeName) {
+        const employeeIdIndex = text.toLowerCase().indexOf('employee id');
+        if (employeeIdIndex !== -1) {
+            const textBeforeId = text.substring(0, employeeIdIndex);
+            const allNames = textBeforeId.match(/[A-Z][a-z]+\s+[A-Z][a-z]+/g);
+            if (allNames && allNames.length) {
+                employeeName = allNames[allNames.length - 1];
             }
         }
     }
+    
     result.employeeName = employeeName;
     
     return result;
@@ -273,7 +343,7 @@ async function enrichWithAbnLookup(extractedData) {
             // ✅ ONLY update employer name and ABN format
             extractedData.employerName = lookupResult.data.legalName;
             extractedData.employerAbn = lookupResult.data.abnFormatted;
-            console.log('ABN lookup enriched - Name corrected to:', extractedData.employerName);
+           
         } else {
             console.log('ABN lookup failed or returned multiple results – keeping OCR data');
         }

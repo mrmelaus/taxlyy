@@ -70,20 +70,41 @@ window.zhLocale = {
     nameError: "全名至少需要2个字符",
     tfnErrorText: "税号必须为9位数字",
    
+    taxResidentLabel: '您是澳大利亚税务居民吗？',
+    taxResidentYes: '是，我是澳大利亚税务居民',
+    taxResidentYesDesc: '您在澳大利亚有稳定的生活——固定住址、持续的工作或学习，并打算继续居住。适用于大多数在澳超过183天的500、482、485、491、494签证持有者。',
+    taxResidentNo: '否，我不是澳大利亚税务居民',
+    taxResidentNoDesc: '您在澳大利亚没有稳定的生活，主要住所和联系在海外。适用外国居民税率——无免税门槛、无低收入抵免、无需缴纳医疗保险税。',
 
-   // Tax Residency Main Question
-    taxResidentLabel: "您是澳大利亚税务居民吗？",
-    taxResidentYes: "是",
-    taxResidentYesDesc: "您通常居住在澳大利亚，并拥有永久的住所，且有居住意向。这包括公民、永久居民以及符合ATO『居住测试』的临时签证持有者。如果不确定，请使用ATO居民身份判断工具。",
-    taxResidentNo: "否",
-    taxResidentNoDesc: "您不符合ATO的居民标准。您的主要居住地和联系都在澳大利亚境外，即使持有签证也不例外。",
+    tempVisaLabel: '您持有哪类临时签证？',
+    tempVisaYes: '学生、工作或毕业生签证',
+    tempVisaYesDesc: '包括学生签证500、临时技能短缺签证482、临时毕业生签证485、技术工作区域签证491/494及其他非打工度假临时签证。',
+    tempVisaNo: '其他 / 未列出',
+    tempVisaNoDesc: '如不确定，请选择此选项并使用ATO居民身份工具确认您的状态。',
 
-    // Temporary Visa (shown for tax residents)
-    tempVisaLabel: "您持有临时签证吗？(例如 500, 482, 417/462, 485)",
-    tempVisaYes: "是",
-    tempVisaYesDesc: "我持有临时签证（例如：学生签证 500、临时技能短缺签证 482、打工度假签证 417/462、毕业生签证 485）。",
-    tempVisaNo: "否",
-    tempVisaNoDesc: "我是澳大利亚公民或永久居民（非临时签证持有者）。",
+    whmLabel: '您持有打工度假签证（417或462子类）吗？',
+    whmYes: '是 — 417或462子类',
+    whmYesDesc: '适用打工度假者税率：前$45,000收入按15%征税，超出部分按外国居民税率。无免税门槛，无低收入抵免。',
+    whmNo: '否 — 我持有其他签证',
+    whmNoDesc: '如果您持有学生、工作或其他非打工度假临时签证，请选择否。',
+
+    visaTypeLabel: '您的签证或居留状态是什么？',
+    visaTypeCitizenPr: '澳大利亚公民或永久居民',
+    visaTypeCitizenPrDesc: '您持有澳大利亚公民身份或永久居留签证。适用澳大利亚居民税率——免税门槛、低收入抵免及医疗保险税。',
+    visaTypeTempVisa: '临时签证持有者',
+    visaTypeTempVisaDesc: '您持有临时签证，如学生签证（500）、临时毕业生签证（485）、临时技能短缺签证（482）、紧缺技能签证（482）或技术工作区域签证（491/494）。税务处理取决于您是否为澳大利亚税务居民。',
+    visaTypeWhm: '打工度假签证（417或462）',
+    visaTypeWhmDesc: '您持有打工度假签证（417）或工作与度假签证（462）。适用特殊打工度假税率：前$45,000按15%征税。大多数打工度假者无免税门槛、无低收入抵免、无医疗保险税。',
+
+    ndaCountryLabel: '您的母国是否在澳大利亚非歧视条款（NDA）国家名单上？',
+    ndaCountryYes: '是 — 我的护照来自NDA国家',
+    ndaCountryYesDesc: 'NDA国家包括：英国、德国、芬兰、日本、挪威、土耳其、智利、以色列。如果您同时是澳大利亚税务居民，可能有权适用澳大利亚居民税率而非打工度假税率。',
+    ndaCountryNo: '否 — 我的护照不来自NDA国家',
+    ndaCountryNoDesc: '无论您的居民身份如何，均适用打工度假税率。前$45,000按15%征税，超出部分按外国居民税率。',
+    ndaCountryWarnText: '您的情况——持打工度假签证、同时是澳大利亚税务居民且来自NDA国家——可能有权适用澳大利亚居民税率。这种情况较为复杂，涉及ATO居住测试。我们已在估算中适用澳大利亚居民税率，但强烈建议在申报前咨询注册税务代理人。',
+
+    residentOptionResidentExempt: '临时居民（医疗保险税豁免）',
+    residentOptionWhmNda: '打工度假签证（适用澳大利亚居民税率）',
 
     // Medicare Exemption Certificate (shown for temporary visa holders who are tax residents)
     medicareCertLabel: "您是否持有当前有效的医疗保险税豁免证明（来自Services Australia）？",
@@ -91,13 +112,6 @@ window.zhLocale = {
     medicareCertYesDesc: "我持有有效证明，因此免缴2%的医疗保险税。",
     medicareCertNo: "否",
     medicareCertNoDesc: "我没有豁免证明，因此需要缴纳医疗保险税（根据低收入门槛可能有减免）。",
-
-    // WHM Question (shown for non-residents)
-    whmLabel: "您持有打工度假签证（417或462子类）吗？",
-    whmYes: "是",
-    whmYesDesc: "适用打工度假者税率：前$45,000收入按15%征税，之后按累进税率。无免税门槛，无需缴纳医疗保险税，无低收入抵免。",
-    whmNo: "否",
-    whmNoDesc: "适用外国居民税率：$0至$135,000按30%征税，之后按更高税率。无免税门槛，无需缴纳医疗保险税，无低收入抵免。",
 
     // Tooltip (optional)
     residentTooltipLabel: "税务居民信息",
@@ -203,7 +217,8 @@ window.zhLocale = {
     equipmentUnder300: "$300以下物品总费用（立即抵扣）",
     equipmentOver300: "$300以上物品总费用（将折旧）",
     selfEducation: "自学费用",
-    selfEducationHint: "为保持或提升当前工作技能而参加的课程、书籍、研讨会。进入新领域的第一项资格不可抵扣。",
+    selfEducationHint: '为保持或提升当前工作技能而参加的课程、书籍、研讨会可以抵扣。用于进入全新领域的第一项资格不可抵扣。费用必须与您当前的工作有足够的关联。',
+    selfEducationDeductionHint: '自学费用中的前250澳元不可抵扣。请输入您的总费用，系统将自动为您扣除250澳元。',
     otherDeductions: "其他工作相关费用",
     otherDeductionsHint: "工会费、专业会员费、工具、防护服、加班餐费（仅当雇主支付津贴时）。",
     amount: "金额（$）",
@@ -453,5 +468,7 @@ window.zhLocale = {
   hecsManualIncomeLabel: '您的预估还款收入（可选）',
   hecsManualIncomeHint: '如果您知道自己的还款收入（例如从 myGov 获取），请在此输入。否则我们将根据您的税务申报估算。',
   hecsRepaymentLabel: 'HELP / HECS 强制还款额',
+
+  rebateRate: '退税',
 
   };

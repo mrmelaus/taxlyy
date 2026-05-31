@@ -211,18 +211,20 @@ async function generateTaxReport(userData, lang = 'en', options = {}) {
     const effectiveStatus = getEffectiveTaxStatus(userData);
 
     // Determine the residency label string to display in the PDF
-    const residencyStatusForLabel = (effectiveStatus === 'australian' && userData.isTemporaryVisaHolder === true)
-        ? 'temporary'
-        : effectiveStatus;
+    const residencyStatusForLabel = (effectiveStatus === 'resident_exempt')
+    ? 'resident_exempt'
+    : effectiveStatus;
 
     const residencyLabel = {
-        australian: txt('Australian tax resident', '澳大利亚税务居民'),
-        temporary:  txt('Temporary resident', '临时居民'),
-        whm:        txt('Working Holiday Maker', '打工度假签证'),
-        foreign:    txt('Foreign resident', '外国居民')
+        australian:        txt('Australian tax resident', '澳大利亚税务居民'),
+        resident_exempt:   txt('Temporary resident (Medicare exempt)', '临时居民（医疗保险豁免）'),
+        whm:               txt('Working Holiday Maker', '打工度假签证'),
+        whm_nda_resident:  txt('Working Holiday Maker (resident rates)', '打工度假签证（居民税率）'),
+        foreign:           txt('Foreign resident', '外国居民')
     }[residencyStatusForLabel] || txt('Australian tax resident', '澳大利亚税务居民');
 
-    const foreignIncomeForPdf = (userData.isAustralianTaxResident && userData.isTemporaryVisaHolder)
+    const _pdfStatus = getEffectiveTaxStatus(userData);
+    const foreignIncomeForPdf = (_pdfStatus === 'resident_exempt' || _pdfStatus === 'whm' || _pdfStatus === 'foreign')
         ? 0
         : (userData.targetForeignIncome || 0);
 

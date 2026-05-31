@@ -51,13 +51,12 @@ function attachCardEventListeners(cardId) {
                 };
             }
 
-            if (typeof setWelcomeCardActive === 'function') {
-                setWelcomeCardActive(true);
-            }
             break;
 
         case 'personal':
-            // Name field
+
+            // ── Basic field listeners ──────────────────────────
+
             const nameEl = document.getElementById('fullName');
             const nameError = document.getElementById('fullNameError');
             if (nameEl) {
@@ -65,73 +64,87 @@ function attachCardEventListeners(cardId) {
                     let val = e.target.value.replace(/[^a-zA-Z\s]/g, '').toUpperCase();
                     e.target.value = val;
                     userData.fullName = val;
-                    //saveCurrentData();
                     if (val.trim().length >= 2) {
                         nameEl.style.borderColor = 'var(--accent)';
-                        if (nameError) nameError.style.display = 'none';
-                    } else {
-                        nameEl.style.borderColor = '';
                         if (nameError) nameError.style.display = 'none';
                     }
                 });
                 nameEl.addEventListener('blur', () => {
-                    const val = nameEl.value.trim();
-                    if (val.length < 2) {
+                    if ((userData.fullName || '').trim().length < 2) {
                         nameEl.style.borderColor = 'var(--error)';
                         if (nameError) nameError.style.display = 'block';
-                    } else {
-                        nameEl.style.borderColor = 'var(--accent)';
-                        if (nameError) nameError.style.display = 'none';
                     }
                 });
             }
 
             // TFN field
             const tfnInput = document.getElementById('tfn');
+            const tfnError = document.getElementById('tfnError');
+
             if (tfnInput) {
+                // Set initial formatted value
                 tfnInput.value = formatTfnDisplay(userData.tfn || '');
-                tfnInput.addEventListener('blur', () => {
-                    const raw = getRawTfn(tfnInput.value);
-                    tfnInput.value = formatTfnDisplay(raw);
-                    userData.tfn = raw;
-                    //saveCurrentData();
-                });
+                
+                // Focus: show raw digits for editing
                 tfnInput.addEventListener('focus', () => {
-                    const raw = getRawTfn(tfnInput.value);
-                    tfnInput.value = raw;
+                    tfnInput.value = getRawTfn(tfnInput.value);
                 });
+                
+                // Input: real-time formatting and validation
                 tfnInput.addEventListener('input', (e) => {
                     let raw = e.target.value.replace(/\D/g, '');
                     if (raw.length > 9) raw = raw.slice(0, 9);
                     userData.tfn = raw;
                     e.target.value = formatTfnDisplay(raw);
-                    //saveCurrentData();
+                    
+                    // Real-time error display
+                    if (raw.length === 9) {
+                        if (tfnError) tfnError.style.display = 'none';
+                        e.target.style.borderColor = 'var(--accent)';
+                    } else if (raw.length > 0 && raw.length < 9) {
+                        if (tfnError) tfnError.style.display = 'block';
+                        e.target.style.borderColor = 'var(--error)';
+                    } else {
+                        if (tfnError) tfnError.style.display = 'none';
+                        e.target.style.borderColor = '';
+                    }
+                });
+                
+                // Blur: final format and validation
+                tfnInput.addEventListener('blur', () => {
+                    const raw = getRawTfn(tfnInput.value);
+                    tfnInput.value = formatTfnDisplay(raw);
+                    userData.tfn = raw;
+                    
+                    if (raw.length !== 9 && raw.length > 0) {
+                        if (tfnError) tfnError.style.display = 'block';
+                        tfnInput.style.borderColor = 'var(--error)';
+                    } else if (raw.length === 9) {
+                        if (tfnError) tfnError.style.display = 'none';
+                        tfnInput.style.borderColor = 'var(--accent)';
+                    } else {
+                        if (tfnError) tfnError.style.display = 'none';
+                        tfnInput.style.borderColor = '';
+                    }
                 });
             }
 
-            // DOB field
             const dobInput = document.getElementById('dob');
             const dobError = document.getElementById('dobError');
             if (dobInput) {
-                dobInput.addEventListener('input', function(e) {
+                dobInput.addEventListener('input', (e) => {
                     let value = e.target.value.replace(/\D/g, '');
                     if (value.length > 8) value = value.slice(0, 8);
                     if (value.length >= 3) value = value.slice(0, 2) + '/' + value.slice(2);
                     if (value.length >= 6) value = value.slice(0, 5) + '/' + value.slice(5);
                     e.target.value = value;
                     userData.dob = value;
-                    //saveCurrentData();
                     if (dobError) dobError.style.display = 'none';
                     e.target.style.borderColor = '';
                 });
-                dobInput.addEventListener('blur', function(e) {
-                    const value = e.target.value;
-                    const isValid = validateDOB(value);
-                    if (!isValid) {
-                        if (dobError) {
-                            dobError.textContent = 'Please enter a valid date in DD/MM/YYYY format (e.g., 31/12/1990)';
-                            dobError.style.display = 'block';
-                        }
+                dobInput.addEventListener('blur', (e) => {
+                    if (!validateDOB(e.target.value)) {
+                        if (dobError) dobError.style.display = 'block';
                         e.target.style.borderColor = 'var(--error)';
                     } else {
                         if (dobError) dobError.style.display = 'none';
@@ -140,176 +153,194 @@ function attachCardEventListeners(cardId) {
                 });
             }
 
-            // Email field
             const emailInput = document.getElementById('email');
             const emailError = document.getElementById('emailError');
             if (emailInput) {
                 emailInput.addEventListener('input', (e) => {
-                    const email = e.target.value.trim();
-                    userData.email = email;
-                    //saveCurrentData();
-                    
-                    if (email && !validateEmail(email)) {
-                        if (emailError) emailError.style.display = 'block';
-                        emailInput.style.borderColor = 'var(--error)';
-                    } else {
-                        if (emailError) emailError.style.display = 'none';
+                    userData.email = e.target.value.trim();
+                    if (validateEmail(userData.email)) {
                         emailInput.style.borderColor = 'var(--accent)';
+                        if (emailError) emailError.style.display = 'none';
+                    } else {
+                        emailInput.style.borderColor = '';
+                        if (emailError) emailError.style.display = 'none';
                     }
                 });
-                
-                emailInput.addEventListener('blur', (e) => {
-                    const email = e.target.value.trim();
-                    if (email && !validateEmail(email)) {
-                        if (emailError) emailError.style.display = 'block';
+                emailInput.addEventListener('blur', () => {
+                    if (!validateEmail(userData.email || '')) {
                         emailInput.style.borderColor = 'var(--error)';
+                        if (emailError) emailError.style.display = 'block';
                     } else {
-                        if (emailError) emailError.style.display = 'none';
                         emailInput.style.borderColor = 'var(--accent)';
+                        if (emailError) emailError.style.display = 'none';
                     }
                 });
             }
 
-            // Tax Resident radio (Yes/No)
-            const taxResidentRadios = document.querySelectorAll('input[name="taxResident"]');
-            const tempVisaGroup = document.getElementById('tempVisaGroup');
-            const whmGroup = document.getElementById('whmGroup');
+            // ── Residency Q flow helpers ───────────────────────
 
-            // ====================================================
-            // FIX 1: updateResidencyVisibility guard on first load
-            //
-            // BEFORE:
-            //   const isResident = selected ? selected.value === 'yes' : false;
-            //   userData.isAustralianTaxResident = isResident;
-            //   — On first load with nothing checked, selected is null,
-            //     isResident evaluates to false, and the function writes
-            //     userData.isAustralianTaxResident = false, overwriting
-            //     the correct `undefined` state that tells the calculator
-            //     to skip all calculations until the user actually answers.
-            //
-            // AFTER:
-            //   Guard with `if (!selected) return` so userData is only
-            //   written when the user has actively made a selection.
-            // ====================================================
-            function updateResidencyVisibility() {
-                const selected = document.querySelector('input[name="taxResident"]:checked');
+            function clearGroupError(id) {
+                // Clear both outer wrapper and inner group
+                const outer = document.getElementById(id);
+                if (outer) {
+                    outer.style.border = '';
+                    outer.style.borderRadius = '';
+                    outer.style.padding = '';
+                    outer.style.backgroundColor = '';
+                }
+                const inner = document.querySelector(`#${id} .tax-residency-group`);
+                if (inner) {
+                    inner.style.border = '';
+                    inner.style.borderRadius = '';
+                    inner.style.padding = '';
+                    inner.style.backgroundColor = '';
+                }
+            }
 
-                // FIX 1: do not write to userData until user has answered
-                if (!selected) return;
+            function updateVisaTypeBranches() {
+                const v = userData.visaType;
 
-                const isResident = selected.value === 'yes';
-                userData.isAustralianTaxResident = isResident;
-                //saveCurrentData();
-
-                if (tempVisaGroup) tempVisaGroup.style.display = isResident ? 'block' : 'none';
-                if (whmGroup) whmGroup.style.display = isResident ? 'none' : 'block';
-
-                // If switching to non-resident, clear temporary visa and medicare flags
-                if (!isResident) {
-                    userData.isTemporaryVisaHolder = undefined;
-                    userData.hasMedicareExemptionCertificate = undefined;
-                    const tempRadios = document.querySelectorAll('input[name="tempVisa"]');
-                    tempRadios.forEach(r => r.checked = false);
-                    const certRadios = document.querySelectorAll('input[name="medicareCert"]');
-                    certRadios.forEach(r => r.checked = false);
-                    const medicareCertGroup = document.getElementById('medicareCertGroup');
-                    if (medicareCertGroup) medicareCertGroup.style.display = 'none';
-                } else {
-                    const tempSelected = document.querySelector('input[name="tempVisa"]:checked');
-                    if (tempSelected) {
-                        userData.isTemporaryVisaHolder = tempSelected.value === 'yes';
-                        updateTempVisaVisibility();
-                    }
+                // Show/hide Q2
+                const taxResidentGroup = document.getElementById('taxResidentGroup');
+                if (taxResidentGroup) {
+                    taxResidentGroup.style.display =
+                        (v === 'temp_visa' || v === 'whm') ? 'block' : 'none';
                 }
 
-                // Update card highlight
-                document.querySelectorAll('.tax-residency-card').forEach(card => {
-                    card.classList.remove('selected');
+                // If citizen/PR — clear downstream and derive immediately
+                if (v === 'citizen_pr') {
+                    userData.isTaxResident = undefined;
+                    userData.hasMedicareExemptCert = undefined;
+                    userData.isNdaCountry = undefined;
+                    const medicareCertGroup = document.getElementById('medicareCertGroup');
+                    const ndaCountryGroup = document.getElementById('ndaCountryGroup');
+                    if (medicareCertGroup) medicareCertGroup.style.display = 'none';
+                    if (ndaCountryGroup) ndaCountryGroup.style.display = 'none';
+                    userData.taxStatus = deriveTaxStatus(userData);
+                    updateEstimateAndDisplay(userData);
+                }
+
+                // Update card highlights
+                document.querySelectorAll('input[name="visaType"]').forEach(r => {
+                    const card = r.closest('.tax-residency-card');
+                    if (card) card.classList.toggle('selected', r.checked);
                 });
-                if (selected) selected.closest('.tax-residency-card').classList.add('selected');
+
+                clearGroupError('visaTypeGroup');
             }
 
-            function updateTempVisaVisibility() {
-                const selected = document.querySelector('input[name="tempVisa"]:checked');
+            function updateTaxResidentBranch() {
+                const v = userData.visaType;
+                const res = userData.isTaxResident;
 
-                // FIX 1: do not write to userData until user has answered
-                if (!selected) return;
-
-                const isTemp = selected.value === 'yes';
-                userData.isTemporaryVisaHolder = isTemp;
-                //saveCurrentData();
-
+                // Q3a: Medicare cert (temp_visa + resident)
                 const medicareCertGroup = document.getElementById('medicareCertGroup');
                 if (medicareCertGroup) {
-                    medicareCertGroup.style.display = isTemp ? 'block' : 'none';
-                }
-                if (!isTemp) {
-                    userData.hasMedicareExemptionCertificate = undefined;
-                    const certRadios = document.querySelectorAll('input[name="medicareCert"]');
-                    certRadios.forEach(r => r.checked = false);
+                    medicareCertGroup.style.display =
+                        (v === 'temp_visa' && res === true) ? 'block' : 'none';
                 }
 
-                // Highlight selected card
-                document.querySelectorAll('#tempVisaGroup .tax-residency-card').forEach(card => {
-                    card.classList.remove('selected');
+                // Q3b: NDA country (whm + resident)
+                const ndaCountryGroup = document.getElementById('ndaCountryGroup');
+                if (ndaCountryGroup) {
+                    ndaCountryGroup.style.display =
+                        (v === 'whm' && res === true) ? 'block' : 'none';
+                }
+
+                // Clear irrelevant downstream answers
+                if (!(v === 'temp_visa' && res === true)) {
+                    userData.hasMedicareExemptCert = undefined;
+                }
+                if (!(v === 'whm' && res === true)) {
+                    userData.isNdaCountry = undefined;
+                    const ndaWarnBox = document.getElementById('ndaWarnBox');
+                    if (ndaWarnBox) ndaWarnBox.style.display = 'none';
+                }
+
+                // Update card highlights
+                document.querySelectorAll('input[name="isTaxResident"]').forEach(r => {
+                    const card = r.closest('.tax-residency-card');
+                    if (card) card.classList.toggle('selected', r.checked);
                 });
-                if (selected) selected.closest('.tax-residency-card').classList.add('selected');
+
+                clearGroupError('taxResidentGroup');
+                userData.taxStatus = deriveTaxStatus(userData);
+                updateEstimateAndDisplay(userData);
             }
 
-            function updateMedicareCert() {
-                const selected = document.querySelector('input[name="medicareCert"]:checked');
-                userData.hasMedicareExemptionCertificate = selected ? selected.value === 'yes' : false;
-                //saveCurrentData();
-                document.querySelectorAll('#medicareCertGroup .tax-residency-card').forEach(card => {
-                    card.classList.remove('selected');
+            function updateMedicareCertBranch() {
+                document.querySelectorAll('input[name="medicareCert"]').forEach(r => {
+                    const card = r.closest('.tax-residency-card');
+                    if (card) card.classList.toggle('selected', r.checked);
                 });
-                if (selected) selected.closest('.tax-residency-card').classList.add('selected');
+                clearGroupError('medicareCertGroup');
+                userData.taxStatus = deriveTaxStatus(userData);
+                updateEstimateAndDisplay(userData);
             }
 
-            function updateWHM() {
-                const selected = document.querySelector('input[name="whmVisa"]:checked');
-                userData.isWHMVisaHolder = selected ? selected.value === 'yes' : false;
-                //saveCurrentData();
-                document.querySelectorAll('#whmGroup .tax-residency-card').forEach(card => {
-                    card.classList.remove('selected');
+            function updateNdaCountryBranch() {
+                const ndaWarnBox = document.getElementById('ndaWarnBox');
+                if (ndaWarnBox) {
+                    ndaWarnBox.style.display = userData.isNdaCountry === true ? 'flex' : 'none';
+                }
+                document.querySelectorAll('input[name="ndaCountry"]').forEach(r => {
+                    const card = r.closest('.tax-residency-card');
+                    if (card) card.classList.toggle('selected', r.checked);
                 });
-                if (selected) selected.closest('.tax-residency-card').classList.add('selected');
+                clearGroupError('ndaCountryGroup');
+                userData.taxStatus = deriveTaxStatus(userData);
+                updateEstimateAndDisplay(userData);
             }
 
-            if (taxResidentRadios.length) {
-                taxResidentRadios.forEach(radio => {
-                    radio.addEventListener('change', updateResidencyVisibility);
+            // ── Attach Q1 listeners ────────────────────────────
+
+            document.querySelectorAll('input[name="visaType"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    userData.visaType = radio.value;
+                    updateVisaTypeBranches();
                 });
-                // Restore visibility state on load (guard inside prevents overwriting undefined)
-                updateResidencyVisibility();
+            });
+
+            // ── Attach Q2 listeners ────────────────────────────
+
+            document.querySelectorAll('input[name="isTaxResident"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    userData.isTaxResident = radio.value === 'yes';
+                    updateTaxResidentBranch();
+                });
+            });
+
+            // ── Attach Q3a listeners ───────────────────────────
+
+            document.querySelectorAll('input[name="medicareCert"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    userData.hasMedicareExemptCert = radio.value === 'yes';
+                    updateMedicareCertBranch();
+                });
+            });
+
+            // ── Attach Q3b listeners ───────────────────────────
+
+            document.querySelectorAll('input[name="ndaCountry"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    userData.isNdaCountry = radio.value === 'yes';
+                    updateNdaCountryBranch();
+                });
+            });
+
+            // ── Restore state on re-render ─────────────────────
+            // (handles language switch and back navigation)
+            updateVisaTypeBranches();
+            if (userData.visaType === 'temp_visa' || userData.visaType === 'whm') {
+                updateTaxResidentBranch();
+            }
+            if (userData.visaType === 'temp_visa' && userData.isTaxResident === true) {
+                updateMedicareCertBranch();
+            }
+            if (userData.visaType === 'whm' && userData.isTaxResident === true) {
+                updateNdaCountryBranch();
             }
 
-            const tempVisaRadios = document.querySelectorAll('input[name="tempVisa"]');
-            if (tempVisaRadios.length) {
-                tempVisaRadios.forEach(radio => {
-                    radio.addEventListener('change', updateTempVisaVisibility);
-                });
-                // Guard inside prevents overwriting undefined on load
-                updateTempVisaVisibility();
-            }
-
-            const medicareCertRadios = document.querySelectorAll('input[name="medicareCert"]');
-            if (medicareCertRadios.length) {
-                medicareCertRadios.forEach(radio => {
-                    radio.addEventListener('change', updateMedicareCert);
-                });
-                // FIX: restore card highlight on load if answer was previously saved
-                updateMedicareCert();
-            }
-
-            const whmRadios = document.querySelectorAll('input[name="whmVisa"]');
-            if (whmRadios.length) {
-                whmRadios.forEach(radio => {
-                    radio.addEventListener('change', updateWHM);
-                });
-                // FIX: restore card highlight on load if answer was previously saved
-                updateWHM();
-            }
             break;
 
         case 'income':
@@ -423,47 +454,19 @@ function attachCardEventListeners(cardId) {
                     const file = payslipInput.files[0];
                     if (!file) return;
 
+                    payslipInput.value = '';
+
                     uploadZone.innerHTML = `
                         <div class="spinner"></div>
                         <div style="margin-top:1rem;">Processing payslip with AI...</div>
                         <small>This may take 5–10 seconds</small>
                     `;
 
+                   
                     try {
-                        const enrichedData = await processPayslip(file);
-
-                        if (enrichedData.employerName && enrichedData.employerAbn) {
-                            const result = window.addOrUpdateEmployer({
-                                employerName: enrichedData.employerName,
-                                employerAbn: enrichedData.employerAbn,
-                                grossIncome: enrichedData.grossIncomeYTD || 0,
-                                taxWithheld: enrichedData.taxWithheldYTD || 0
-                            });
-
-                            // Force re-render AFTER finally rebuilds the upload zone
-                            setTimeout(() => {
-                                if (typeof renderEmployerList === 'function') renderEmployerList();
-                                const employerList = document.getElementById('employersListContainer');
-                                if (employerList) {
-                                    employerList.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                }
-                            }, 200);
-
-                            const lookupStatus = document.getElementById('lookupStatus');
-                            if (lookupStatus) {
-                                lookupStatus.textContent = result?.action === 'updated'
-                                    ? `✓ Updated: ${enrichedData.employerName}`
-                                    : `✓ Payslip processed: ${enrichedData.employerName}`;
-                                lookupStatus.style.color = 'var(--accent)';
-                                setTimeout(() => { lookupStatus.textContent = ''; }, 5000);
-                            }
-                        } else {
-                            alert('Could not read employer details from payslip. Please enter manually.');
-                        }
-
+                        await handleUpload(file);
                     } catch (error) {
-                        console.error('OCR processing error:', error);
-                        alert('Failed to process payslip: ' + error.message);
+                        console.error('Unexpected error:', error);
                     } finally {
                         setupUploadListeners();
                     }
@@ -936,28 +939,59 @@ function attachCardEventListeners(cardId) {
                     editPrior.addEventListener('input', updateCgtNet);
                 }
 
-                // Update buttons
+               // Update buttons
                 container.querySelectorAll('.update-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
                         const catId = btn.dataset.category;
                         const cardDiv = btn.closest('.income-category-card');
 
+                        // Helper function to show inline error
+                        function showInlineError(message) {
+                            let errorDiv = cardDiv.querySelector('.amount-error');
+                            if (!errorDiv) {
+                                errorDiv = document.createElement('div');
+                                errorDiv.className = 'form-error amount-error';
+                                errorDiv.style.display = 'block';
+                                errorDiv.innerHTML = `⚠ ${message}`;
+                                const editField = cardDiv.querySelector('.edit-field');
+                                if (editField) editField.appendChild(errorDiv);
+                            }
+                            return errorDiv;
+                        }
+
+                        function removeInlineError() {
+                            const errorDiv = cardDiv.querySelector('.amount-error');
+                            if (errorDiv) errorDiv.remove();
+                        }
+
                         if (catId === 'interest') {
                             const val = parseFloat(cardDiv.querySelector('.edit-interest').value) || 0;
-                            if (val < 0) { alert(t('amountNegativeError')); return; }
+                            if (val < 0) {
+                                showInlineError(t('amountNegativeError'));
+                                return;
+                            }
+                            removeInlineError();
                             userData.otherIncome.interest = val;
 
                         } else if (catId === 'dividends') {
                             const divVal = parseFloat(cardDiv.querySelector('.edit-dividends').value) || 0;
                             const frkVal = parseFloat(cardDiv.querySelector('.edit-franking').value) || 0;
-                            if (divVal < 0 || frkVal < 0) { alert(t('amountNegativeError')); return; }
+                            if (divVal < 0 || frkVal < 0) {
+                                showInlineError(t('amountNegativeError'));
+                                return;
+                            }
+                            removeInlineError();
                             userData.otherIncome.dividends = divVal;
                             userData.frankingCredits = frkVal;
 
                         } else if (catId === 'gov') {
                             const govAmt = parseFloat(cardDiv.querySelector('.edit-gov-amount').value) || 0;
                             const govWht = parseFloat(cardDiv.querySelector('.edit-gov-withheld').value) || 0;
-                            if (govAmt < 0 || govWht < 0) { alert(t('amountNegativeError')); return; }
+                            if (govAmt < 0 || govWht < 0) {
+                                showInlineError(t('amountNegativeError'));
+                                return;
+                            }
+                            removeInlineError();
                             userData.governmentPayments = govAmt;
                             userData.govTaxWithheld = govWht;
 
@@ -965,7 +999,11 @@ function attachCardEventListeners(cardId) {
                             const abnInc = parseFloat(cardDiv.querySelector('.edit-abn-income').value) || 0;
                             const abnExp = parseFloat(cardDiv.querySelector('.edit-abn-expenses').value) || 0;
                             const abnWht = parseFloat(cardDiv.querySelector('.edit-abn-withheld').value) || 0;
-                            if (abnInc < 0 || abnExp < 0 || abnWht < 0) { alert(t('amountNegativeError')); return; }
+                            if (abnInc < 0 || abnExp < 0 || abnWht < 0) {
+                                showInlineError(t('amountNegativeError'));
+                                return;
+                            }
+                            removeInlineError();
                             userData.abnIncome = abnInc;
                             userData.abnExpenses = abnExp;
                             userData.abnTaxWithheld = abnWht;
@@ -974,7 +1012,11 @@ function attachCardEventListeners(cardId) {
                             const gains = parseFloat(cardDiv.querySelector('.edit-cgt-gains').value) || 0;
                             const losses = parseFloat(cardDiv.querySelector('.edit-cgt-losses').value) || 0;
                             const prior = parseFloat(cardDiv.querySelector('.edit-cgt-prior').value) || 0;
-                            if (gains < 0 || losses < 0 || prior < 0) { alert(t('amountNegativeError')); return; }
+                            if (gains < 0 || losses < 0 || prior < 0) {
+                                showInlineError(t('amountNegativeError'));
+                                return;
+                            }
+                            removeInlineError();
                             userData.capitalGains = gains;
                             userData.capitalLosses = losses;
                             userData.priorYearCapitalLosses = prior;
@@ -982,14 +1024,17 @@ function attachCardEventListeners(cardId) {
 
                         } else if (catId === 'other') {
                             const amt = parseFloat(cardDiv.querySelector('.edit-amount').value) || 0;
-                            if (amt < 0) { alert(t('amountNegativeError')); return; }
+                            if (amt < 0) {
+                                showInlineError(t('amountNegativeError'));
+                                return;
+                            }
+                            removeInlineError();
                             userData.otherIncome.otherAmount = amt;
                             userData.otherIncome.otherDescription = cardDiv.querySelector('.edit-description')?.value || '';
                         }
 
                         delete userData.otherIncome._editing;
                         if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
-                        //saveCurrentData();
                         renderOtherIncomeList();
                     });
                 });
@@ -1278,7 +1323,7 @@ function attachCardEventListeners(cardId) {
                             });
                         } else {
                             // New asset – calculate depreciation from original cost
-                            const daysHeld = calculateDaysHeld(purchaseDate);
+                            const daysHeld = calculateDaysHeld(purchaseDate, userData.taxYear);
                             depreciation = calculateNewAssetDepreciation(originalCost, effectiveLife, daysHeld, workPercentage);
                             assets.push({
                                 isExisting: false,
@@ -1335,7 +1380,7 @@ function attachCardEventListeners(cardId) {
                             const fullDepreciation = remainingValue * (daysHeld / 365) * dvRate;
                             totalDepreciation += fullDepreciation * (workPercentage / 100);
                         } else {
-                            const daysHeld = calculateDaysHeld(purchaseDate);
+                            const daysHeld = calculateDaysHeld(purchaseDate, userData.taxYear); 
                             totalDepreciation += calculateNewAssetDepreciation(originalCost, effectiveLife, daysHeld, workPercentage);
                         }
                     });
@@ -1344,6 +1389,23 @@ function attachCardEventListeners(cardId) {
                     const previewSpan = editForm.querySelector('#equipment-total-preview-value');
                     if (previewSpan) previewSpan.textContent = formatCurrency(total);
                 }
+                },
+                {
+                    id: 'selfEducation',
+                    labelKey: 'selfEducation',
+                    hintKey: 'selfEducationHint',
+                    renderDisplay: (data) => formatCurrency(data.selfEducation || 0),
+                    renderEdit: (data) => `
+                        <div class="edit-field">
+                            <label>${t('amount')}</label>
+                            <input type="number" class="edit-selfEducation" value="${data.selfEducation || 0}" step="any" min="0">
+                            <div class="field-hint">${t('selfEducationDeductionHint')}</div>
+                        </div>
+                    `,
+                    update: (cardDiv) => {
+                        userData.selfEducation = parseFloat(cardDiv.querySelector('.edit-selfEducation')?.value) || 0;
+                        return true;
+                    }
                 },
                 {
                     id: 'otherDeductions',
@@ -2289,22 +2351,21 @@ function attachCardEventListeners(cardId) {
                             promoMessage.className = 'promo-message';
                         }
 
-                        let discount = null;
-                        if (typeof validatePromoCode === 'function') {
-                            discount = await validatePromoCode(code);
-                        }
+                        // Use the new validatePromoCode function
+                        const result = await validatePromoCode(code, userData);
 
-                        if (discount !== null && discount > 0) {
-                            discountAmount = discount;
-                            appliedPromo = { code, discount };
+                        if (result.valid && result.discount > 0) {
+                            discountAmount = result.discount;
+                            appliedPromo = { code, discount: discountAmount };
                             userData.appliedPromo = appliedPromo;
                             userData.promoCode = code;
                             userData.discountAmount = discountAmount;
-                           const baseFee = hasAbn
-                            ? (window.pricing.abn_fee || 89.99)
-                            : employerCount > 1
-                                ? (window.pricing.multiple_jobs_fee || 79.99)
-                                : (window.pricing.standard_fee || 69.99);
+                            
+                            const baseFee = hasAbn
+                                ? (window.pricing.abn_fee || 89.99)
+                                : employerCount > 1
+                                    ? (window.pricing.multiple_jobs_fee || 79.99)
+                                    : (window.pricing.standard_fee || 69.99);
                             userData.originalTotal = baseFee;
                             userData.finalTotal = baseFee - discountAmount;
                             currentTotal = userData.finalTotal;
@@ -2313,25 +2374,28 @@ function attachCardEventListeners(cardId) {
                             if (totalSpan) totalSpan.innerText = formatCurrency(currentTotal);
                             const discountAmountSpan = document.getElementById('discountAmountSpan');
                             if (discountAmountSpan) discountAmountSpan.innerText = `- ${formatCurrency(discountAmount)}`;
+                            
                             if (promoMessage) {
                                 promoMessage.innerHTML = t('promoApplied').replace(/\{amount\}/g, formatCurrency(discountAmount));
                                 promoMessage.className = 'promo-message success';
                                 if (promoInput) promoInput.value = '';
                             }
+                            
                             updatePayButton();
                             if (typeof initStripePayment === 'function') {
                                 initStripePayment(currentTotal);
                             }
                         } else {
+                            // Display the error message from validation (or fallback)
+                            const errorMsg = result.message || t('promoInvalid');
                             if (promoMessage) {
-                                promoMessage.innerHTML = t('promoInvalid');
+                                promoMessage.innerHTML = errorMsg;
                                 promoMessage.className = 'promo-message error';
                                 if (promoInput) promoInput.value = '';
                             }
                         }
                     });
                 }
-
                 const payBtn = document.getElementById('payBtn');
                 if (payBtn) {
                     payBtn.addEventListener('click', async () => {

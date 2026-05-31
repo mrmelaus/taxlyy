@@ -30,10 +30,11 @@ let userData = {
     taxableIncome: 0,
     
     // Tax residency flags (new)
-    isAustralianTaxResident: undefined,   // true/false
-    isTemporaryVisaHolder: undefined,     // true/false, only if isAustralianTaxResident == true
-    hasMedicareExemptionCertificate: undefined, // true/false, only if isTemporaryVisaHolder == true
-    isWHMVisaHolder: undefined,           // true/false, only if isAustralianTaxResident == false
+    visaType: undefined,
+    isTaxResident: undefined,
+    hasMedicareExemptCert: undefined,
+    isNdaCountry: undefined,
+    taxStatus: undefined,
     
     // Employment & income
     employers: [],        // each: { grossIncome, taxWithheld }
@@ -64,9 +65,7 @@ let userData = {
     cgtDiscountApplies: false,
 
     // After frankingCredits: 0,
-    governmentPayments: 0,
     govTaxWithheld: 0,        // NEW — tax withheld on govt payments
-    targetForeignIncome: 0,
 
     // After capitalGains section:
     abnIncome: 0,             // NEW — gross ABN income
@@ -119,10 +118,11 @@ function resetUserData() {
         dob: '',
         email: '',
         taxableIncome: 0,
-        isAustralianTaxResident: undefined,
-        isTemporaryVisaHolder: undefined,
-        hasMedicareExemptionCertificate: undefined,
-        isWHMVisaHolder: undefined,
+        visaType: undefined,
+        isTaxResident: undefined,
+        hasMedicareExemptCert: undefined,
+        isNdaCountry: undefined,
+        taxStatus: undefined,
         employers: [],
         otherIncome: { interest: 0, dividends: 0, otherAmount: 0 },
         frankingCredits: 0,
@@ -164,6 +164,30 @@ function resetUserData() {
     localStorage.removeItem('taxlyy_userData');
 }
 
+
+function deriveTaxStatus(data) {
+    const v = data.visaType;
+
+    if (v === 'citizen_pr') {
+        return 'australian';
+    }
+
+    if (v === 'temp_visa') {
+        if (data.isTaxResident === false) return 'foreign';
+        // isTaxResident === true
+        if (data.hasMedicareExemptCert === true) return 'resident_exempt';
+        return 'australian'; // resident, pays Medicare levy
+    }
+
+    if (v === 'whm') {
+        if (data.isTaxResident === false) return 'whm';
+        // isTaxResident === true (rare)
+        if (data.isNdaCountry === true) return 'whm_nda_resident';
+        return 'whm'; // resident but non-NDA — WHM rates still apply
+    }
+
+    return undefined; // not yet answered
+}
 
 // ========================================
 // Header scroll animation & language button short forms
@@ -235,48 +259,18 @@ window.addEventListener('scroll', () => {
 // Update totals and estimate bar
 // ========================================
 function updateTotals() {
-    // Employment income
-    if (userData.employers && userData.employers.length > 0) {
-        userData.totalIncome = userData.employers.reduce((sum, emp) => sum + (emp.grossIncome || 0), 0);
-    } else {
-        userData.totalIncome = 0;
-    }
-
-    // Always use calculateTotalWithheld to include PAYG + gov + ABN withheld
-    userData.totalTaxWithheld = typeof calculateTotalWithheld === 'function'
-        ? calculateTotalWithheld(userData)
-        : (userData.employers || []).reduce((sum, emp) => sum + (emp.taxWithheld || 0), 0);
-
-    // Other income
-    if (userData.otherIncome) {
-        const otherTotal = (userData.otherIncome.interest || 0) +
-                           (userData.otherIncome.dividends || 0) +
-                           (userData.otherIncome.otherAmount || 0);
-        userData.totalIncome += otherTotal;
-    }
-
-    // Rental property (profit only)
-    if (userData.rentalIncome !== undefined && userData.rentalExpenses !== undefined) {
-        const rentalNet = (userData.rentalIncome || 0) - (userData.rentalExpenses || 0);
-        if (rentalNet > 0) {
-            userData.totalIncome += rentalNet;
-        } else if (rentalNet < 0) {
-            userData.rentalPropertyLoss = Math.abs(rentalNet);
-        }
-    }
-
-    // Deductions
-    userData.totalDeductions = (userData.homeOffice || 0) +
-                               (userData.travelExpenses || 0) +
-                               (userData.equipment || 0) +
-                               (userData.selfEducation || 0) +
-                               (userData.otherDeductions || 0);
-
-    // Update estimate display
+    // Use calculateRefund as the single source of truth
     const calculation = calculateRefund(userData);
+    
+    // Update userData with calculated values
+    userData.totalIncome = calculation.totalIncome;
+    userData.totalDeductions = calculation.totalDeductions;
+    userData.taxableIncome = calculation.taxableIncome;
+    userData.totalTaxWithheld = calculation.totalTaxWithheld;
+    userData.totalTaxLiability = calculation.totalTaxLiability;
+    
+    // Update estimate bar display
     const estimateEl = document.getElementById('estimateAmount');
-    const breakdownEl = document.getElementById('estimateBreakdown');
-
     if (estimateEl) {
         const refundAmount = calculation.refund;
         if (refundAmount >= 0) {
@@ -287,22 +281,22 @@ function updateTotals() {
             estimateEl.style.color = 'var(--error)';
         }
     }
-
+    
+    const breakdownEl = document.getElementById('estimateBreakdown');
     if (breakdownEl) {
         breakdownEl.innerHTML = `
-            <span>${formatCurrency(userData.totalIncome || 0)}</span>
+            <span>${formatCurrency(calculation.totalIncome)}</span>
             <span>↓</span>
-            <span>${formatCurrency(userData.totalDeductions || 0)}</span>
+            <span>${formatCurrency(calculation.totalDeductions)}</span>
             <span>→</span>
             <span>${formatCurrency(calculation.totalTaxLiability)}</span>
         `;
     }
-
+    
+    // Update estimate hint
     if (typeof updateEstimateAndDisplay === 'function') {
         updateEstimateAndDisplay(userData);
     }
-
-    //saveCurrentData();
 }
 
 // ========================================
@@ -340,34 +334,25 @@ function renderCard() {
         prevBtn.style.display = (currentCardIndex === 0 || currentCardIndex === 1) ? 'none' : 'flex';
     }
 
-    // Estimate bar mode
+    // Estimate bar
     const estimateBar = document.getElementById('estimateBar');
     if (estimateBar) {
-        estimateBar.classList.remove('welcome-mode', 'scroll-away');
+        estimateBar.classList.remove('scroll-away');
 
         if (card.id === 'welcome') {
-            estimateBar.classList.add('welcome-mode');
-            if (typeof refreshRunningNumberDisplay === 'function') {
-                refreshRunningNumberDisplay();
-            }
-        } else if (card.id === 'personal') {
-            estimateBar.classList.add('scroll-away');
-            const estimateLabel = document.getElementById('estimateLabel');
-            // FIX: use innerHTML not textContent — t() may return bilingual HTML spans
-            if (estimateLabel) estimateLabel.innerHTML = t('estimatedReturn');
-            if (typeof updateEstimateAndDisplay === 'function') {
-                updateEstimateAndDisplay(userData);
-            }
+            estimateBar.style.display = 'none';
         } else {
+            estimateBar.style.display = '';
+
+            if (card.id === 'personal') {
+                estimateBar.classList.add('scroll-away');
+            }
+
             const estimateLabel = document.getElementById('estimateLabel');
-            // FIX: use innerHTML not textContent
             if (estimateLabel) estimateLabel.innerHTML = t('estimatedReturn');
-            if (typeof updateEstimateBarOnScroll === 'function') {
-                updateEstimateBarOnScroll();
-            }
-            if (typeof updateEstimateAndDisplay === 'function') {
-                updateEstimateAndDisplay(userData);
-            }
+
+            if (typeof updateEstimateBarOnScroll === 'function') updateEstimateBarOnScroll();
+            if (typeof updateEstimateAndDisplay === 'function') updateEstimateAndDisplay(userData);
         }
     }
 
@@ -381,7 +366,6 @@ function renderCard() {
         }
     }
 }
-
 // ========================================
 // Navigation
 // ========================================
@@ -402,24 +386,19 @@ function nextCard() {
     if (cards[currentCardIndex].id === 'welcome') {
         const consentCb = document.getElementById('consentCheckbox');
         if (!consentCb || !consentCb.checked) return;
-        if (typeof setWelcomeCardActive === 'function') setWelcomeCardActive(false);
-    }
+        }
 
-    // Personal card validation
+    // ========================================
+    // PERSONAL CARD VALIDATION
+    // ========================================
     if (cards[currentCardIndex].id === 'personal') {
-        const name = (userData.fullName || '').trim();
-        const tfn = (userData.tfn || '').replace(/\D/g, '');
-        const dob = (userData.dob || '');
-        const dobParts = dob.split('/');
-        const dobDigits = dob.replace(/\D/g, '');
-        const dobValid = dobDigits.length === 8
-            && parseInt(dobParts[0]) >= 1 && parseInt(dobParts[0]) <= 31
-            && parseInt(dobParts[1]) >= 1 && parseInt(dobParts[1]) <= 12
-            && parseInt(dobParts[2]) >= 1900 && parseInt(dobParts[2]) <= new Date().getFullYear();
+        const cardErrorEl = document.getElementById('personalCardError');
+        if (cardErrorEl) cardErrorEl.style.display = 'none';
 
         let hasError = false;
 
-        // Name validation
+        // Name
+        const name = (userData.fullName || '').trim();
         const nameEl = document.getElementById('fullName');
         const nameError = document.getElementById('fullNameError');
         if (name.length < 2) {
@@ -431,7 +410,8 @@ function nextCard() {
             if (nameError) nameError.style.display = 'none';
         }
 
-        // TFN validation
+        // TFN
+        const tfn = (userData.tfn || '').replace(/\D/g, '');
         const tfnEl = document.getElementById('tfn');
         const tfnError = document.getElementById('tfnError');
         if (tfn.length !== 9) {
@@ -443,7 +423,14 @@ function nextCard() {
             if (tfnError) tfnError.style.display = 'none';
         }
 
-        // DOB validation
+        // DOB
+        const dob = (userData.dob || '');
+        const dobParts = dob.split('/');
+        const dobDigits = dob.replace(/\D/g, '');
+        const dobValid = dobDigits.length === 8
+            && parseInt(dobParts[0]) >= 1 && parseInt(dobParts[0]) <= 31
+            && parseInt(dobParts[1]) >= 1 && parseInt(dobParts[1]) <= 12
+            && parseInt(dobParts[2]) >= 1900 && parseInt(dobParts[2]) <= new Date().getFullYear();
         const dobEl = document.getElementById('dob');
         const dobError = document.getElementById('dobError');
         if (!dobValid) {
@@ -454,11 +441,11 @@ function nextCard() {
             if (dobEl) dobEl.style.borderColor = 'var(--accent)';
             if (dobError) dobError.style.display = 'none';
         }
-        // Email validation
+
+        // Email
         const email = (userData.email || '').trim();
         const emailEl = document.getElementById('email');
         const emailError = document.getElementById('emailError');
-
         if (!email || !validateEmail(email)) {
             if (emailEl) emailEl.style.borderColor = 'var(--error)';
             if (emailError) emailError.style.display = 'block';
@@ -468,62 +455,115 @@ function nextCard() {
             if (emailError) emailError.style.display = 'none';
         }
 
+        // Q1 — visa type must be selected
+        if (userData.visaType === undefined) {
+            hasError = true;
+            const visaGroup = document.getElementById('visaTypeGroup');
+            if (visaGroup) {
+                visaGroup.style.border = '1px solid var(--error)';
+                visaGroup.style.borderRadius = 'var(--radius-md)';
+                visaGroup.style.padding = 'var(--space-3)';
+                visaGroup.style.backgroundColor = 'rgba(255, 77, 109, 0.05)';
+            }
+        }
+
+        // Q2 — tax residency must be answered for temp_visa and whm
+        if (userData.visaType === 'temp_visa' || userData.visaType === 'whm') {
+            if (userData.isTaxResident === undefined) {
+                hasError = true;
+                const resGroup = document.querySelector('#taxResidentGroup .tax-residency-group');
+                if (resGroup) {
+                    resGroup.style.border = '1px solid var(--error)';
+                    resGroup.style.borderRadius = 'var(--radius-md)';
+                    resGroup.style.padding = 'var(--space-3)';
+                    resGroup.style.backgroundColor = 'rgba(255, 77, 109, 0.05)';
+                }
+                const resGroupEl = document.getElementById('taxResidentGroup');
+                
+              }
+        }
+
+        // Q3a — Medicare cert must be answered for temp_visa + tax resident
+        if (userData.visaType === 'temp_visa' && userData.isTaxResident === true) {
+            if (userData.hasMedicareExemptCert === undefined) {
+                hasError = true;
+                const medGroup = document.querySelector('#medicareCertGroup .tax-residency-group');
+                if (medGroup) {
+                    medGroup.style.border = '1px solid var(--error)';
+                    medGroup.style.borderRadius = 'var(--radius-md)';
+                    medGroup.style.padding = 'var(--space-3)';
+                    medGroup.style.backgroundColor = 'rgba(255, 77, 109, 0.05)';
+                }
+                const medGroupEl = document.getElementById('medicareCertGroup');
+                
+              }
+        }
+
+        // Q3b — NDA country must be answered for whm + tax resident
+        if (userData.visaType === 'whm' && userData.isTaxResident === true) {
+            if (userData.isNdaCountry === undefined) {
+                hasError = true;
+                const ndaGroup = document.querySelector('#ndaCountryGroup .tax-residency-group');
+                if (ndaGroup) {
+                    ndaGroup.style.border = '1px solid var(--error)';
+                    ndaGroup.style.borderRadius = 'var(--radius-md)';
+                    ndaGroup.style.padding = 'var(--space-3)';
+                    ndaGroup.style.backgroundColor = 'rgba(255, 77, 109, 0.05)';
+                }
+                const ndaGroupEl = document.getElementById('ndaCountryGroup');
+                
+              }
+        }
+
         if (hasError) {
-            document.querySelector('.form-error[style*="block"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return;
-        }
-        
-
-        // NEW: Tax residency questions validation
-        if (userData.isAustralianTaxResident === undefined) {
-            alert('Please select whether you are an Australian tax resident.');
+            if (cardErrorEl) {
+                cardErrorEl.textContent = '⚠️ Please complete all required fields before continuing.';
+                cardErrorEl.style.display = 'flex';
+                cardErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return;
         }
 
-        if (userData.isAustralianTaxResident === true) {
-            // Must answer temporary visa question
-            if (userData.isTemporaryVisaHolder === undefined) {
-                alert('Please indicate whether you hold a temporary visa.');
-                return;
-            }
-            // If temporary visa holder, must answer Medicare certificate question
-            if (userData.isTemporaryVisaHolder === true && userData.hasMedicareExemptionCertificate === undefined) {
-                alert('Please indicate whether you have a current Medicare levy exemption certificate.');
-                return;
-            }
-        } else {
-            // Not a tax resident – must answer WHM visa question
-            if (userData.isWHMVisaHolder === undefined) {
-                alert('Please indicate whether you hold a Working Holiday Maker visa.');
-                return;
-            }
+        // All questions answered — derive and store taxStatus
+        userData.taxStatus = deriveTaxStatus(userData);
+
+        if (typeof logEvent === 'function') {
+            logEvent('residency_determined', {
+                visaType: userData.visaType,
+                isTaxResident: userData.isTaxResident,
+                taxStatus: userData.taxStatus
+            });
         }
     }
 
-    // Income card validation
+    // ========================================
+    // INCOME CARD VALIDATION
+    // ========================================
     if (cards[currentCardIndex].id === 'income') {
         if (!userData.employers || userData.employers.length === 0) {
-            alert('Please add at least one employer before continuing.');
+            toastError('Please add at least one employer before continuing.');
             return;
         }
         const invalidEmployer = userData.employers.find(emp => (emp.grossIncome || 0) <= 0);
         if (invalidEmployer) {
-            alert(`Employer "${invalidEmployer.employerName || 'Unknown'}" has invalid or zero gross income. Please enter a valid gross income amount.`);
+            toastError(`Employer "${invalidEmployer.employerName || 'Unknown'}" has invalid or zero gross income. Please enter a valid gross income amount.`);
             return;
         }
     }
 
-    if (cards[currentCardIndex].id === 'review') {
-        sessionStorage.removeItem('returnToReview');
-    }
-    // Adjustments card validation (HELP/HECS loan question)
+    // ========================================
+    // ADJUSTMENTS CARD VALIDATION (HELP/HECS)
+    // ========================================
     if (cards[currentCardIndex].id === 'adjustments') {
         if (userData.hasHecsLoan === undefined) {
-            alert('Please indicate whether you have a HELP/HECS student loan.');
+            toastWarning('Please indicate whether you have a HELP/HECS student loan.');
             return;
         }
     }
-    // Health card validation
+
+    // ========================================
+    // HEALTH CARD VALIDATION
+    // ========================================
     if (cards[currentCardIndex].id === 'health') {
         const missing = [];
         if (userData.hasPrivateHospitalCover === undefined) missing.push(stripHtml(t('hospitalCover')));
@@ -532,26 +572,28 @@ function nextCard() {
         if (userData.lhcLoading === undefined) missing.push(stripHtml(t('lhcLoading')));
 
         if (missing.length > 0) {
-            alert(`Please complete all health sections before continuing:\n- ${missing.join('\n- ')}`);
+            toastError(`Please complete all health sections before continuing:\n${missing.join('\n')}`);
             return;
         }
     }
 
-    // Declaration card validation
+    // ========================================
+    // DECLARATION CARD VALIDATION
+    // ========================================
     if (cards[currentCardIndex].id === 'declaration') {
         const cb = document.getElementById('declarationCheckbox');
         if (!cb || !cb.checked) {
-            alert('Please accept the declaration to continue.');
+            toastError('Please accept the declaration to continue.');
             return;
         }
         if (!userData.deliveryMethod) {
-            alert(t('deliveryRequired'));
+            toastError(t('deliveryRequired'));
             return;
         }
         if (userData.deliveryMethod === 'email') {
             const email = document.getElementById('userEmail')?.value;
             if (!email || !email.includes('@')) {
-                alert('Please enter a valid email address.');
+                toastError('Please enter a valid email address.');
                 return;
             }
             userData.email = email;
@@ -560,7 +602,10 @@ function nextCard() {
         if (bilingualCheckbox) {
             userData.bilingualReport = bilingualCheckbox.checked;
         }
-        //saveCurrentData();
+    }
+
+    if (cards[currentCardIndex].id === 'review') {
+        sessionStorage.removeItem('returnToReview');
     }
 
     // Navigation
@@ -659,6 +704,7 @@ function setupUploadListeners() {
 }
 
 async function handleUpload(file) {
+    
     const uploadZone = document.getElementById('uploadZone');
     if (!uploadZone) return;
 
@@ -672,67 +718,100 @@ async function handleUpload(file) {
 
     try {
         const extracted = await processPayslip(file);
+
+        window.lastOcrData = extracted;
         const validation = validatePayslipData(extracted);
+        
         if (!validation.isValid) {
-            alert(`OCR could not read all data:\n${validation.errors.join('\n')}\n\nPlease enter employer details manually.`);
+            toastError(`OCR could not read all data: ${validation.errors.join(', ')}. Please enter employer details manually.`);
             resetUploadZone();
             return;
         }
 
+        const warnings = [];
+        
+        // 1. Check duplicate employer
+        const existingEmployer = findEmployerByAbn(extracted.employerAbn);
+        let isUpdateMode = false;
+        let existingEmployerData = null;
+        
+        if (existingEmployer) {
+            isUpdateMode = true;
+            existingEmployerData = existingEmployer;
+            warnings.push(`An employer with ABN ${extracted.employerAbn} (${existingEmployer.employerName}) already exists.`);
+        }
+        
+        // 2. Check name mismatch
+        const userFullName = (userData.fullName || '').trim().toUpperCase();
+        const extractedEmployeeName = (extracted.employeeName || '').trim().toUpperCase();
+
+        if (userFullName && !extractedEmployeeName) {
+            warnings.push(`Name could not be read from this payslip. Please confirm it belongs to ${userData.fullName}.`);
+        } else if (userFullName && extractedEmployeeName && userFullName !== extractedEmployeeName) {
+            warnings.push(`Name mismatch: payslip shows "${extracted.employeeName}", but your name is "${userData.fullName}".`);
+        }
+        
+        // 3. Check final payslip
         const payPeriodEnd = extracted.payPeriod?.end;
         const isFinal = payPeriodEnd ? isFinalPayslip(payPeriodEnd) : false;
 
         if (!isFinal && payPeriodEnd) {
-            const userConfirmed = confirm(
-                `The payslip period ends on ${payPeriodEnd}.\n\n` +
-                `For accurate YTD totals, you should upload the final payslip covering 30 June.\n\n` +
-                `Do you want to continue with this payslip? (You can edit amounts later)`
-            );
-            if (!userConfirmed) { resetUploadZone(); return; }
+            warnings.push(`The payslip period ends ${payPeriodEnd}, which is not in June. Please upload your final payslip for the financial year (pay period ending in June).`);
         } else if (!payPeriodEnd) {
-            const userConfirmed = confirm(
-                `The payslip's pay period could not be read automatically.\n\n` +
-                `Please confirm that this is your final payslip covering up to 30 June.\n\n` +
-                `Do you want to continue?`
-            );
-            if (!userConfirmed) { resetUploadZone(); return; }
+            warnings.push(`Pay period could not be read. Please verify this is your final payslip with a period ending in June.`);
         }
-
-        const userFullName = (userData.fullName || '').trim().toUpperCase();
-        const extractedEmployeeName = (extracted.employeeName || '').trim().toUpperCase();
-        if (userFullName && extractedEmployeeName && userFullName !== extractedEmployeeName) {
-            const userConfirmed = confirm(
-                `⚠️ Name mismatch\n\n` +
-                `Payslip shows employee name: ${(extracted.employeeName || '').toUpperCase()}\n` +
-                `Your entered name: ${userData.fullName || ''}\n\n` +
-                `Please verify this payslip belongs to you.\n` +
-                `If the name on the personal card is incorrect, click the "Back" button at the bottom of this page to return to the Personal Information card and correct it.\n\n` +
-                `Do you want to continue with this payslip anyway? (You can edit amounts later)`
-            );
-            if (!userConfirmed) { resetUploadZone(); return; }
+        
+        // Show confirm dialog if any warnings
+        if (warnings.length > 0) {
+            const userConfirmed = await new Promise((resolve) => {
+                showConfirmDialog(warnings, () => resolve(true), () => resolve(false));
+            });
+            
+            if (!userConfirmed) {
+                resetUploadZone();
+                return;
+            }
         }
-
-        if (!userData.employers) userData.employers = [];
-        userData.employers.push({
-            employerName: extracted.employerName || 'Unknown Employer',
-            employerAbn: extracted.employerAbn || '',
-            grossIncome: extracted.grossIncomeYTD || 0,
-            taxWithheld: extracted.taxWithheldYTD || 0,
-            payPeriod: extracted.payPeriod
-        });
+        
+        // Proceed with adding or updating employer
+        if (isUpdateMode) {
+            existingEmployerData.grossIncome = extracted.grossIncomeYTD || 0;
+            existingEmployerData.taxWithheld = extracted.taxWithheldYTD || 0;
+            if (extracted.employerName) existingEmployerData.employerName = extracted.employerName;
+            existingEmployerData._editing = true;
+            if (typeof renderEmployerList === 'function') renderEmployerList();
+            toastSuccess(`Updated: ${extracted.employerName}`);
+        } else {
+            if (!userData.employers) userData.employers = [];
+            userData.employers.push({
+                employerName: extracted.employerName || 'Unknown Employer',
+                employerAbn: extracted.employerAbn || '',
+                grossIncome: extracted.grossIncomeYTD || 0,
+                taxWithheld: extracted.taxWithheldYTD || 0,
+                payPeriod: extracted.payPeriod,
+                _editing: true
+            });
+            if (typeof renderEmployerList === 'function') renderEmployerList();
+            toastSuccess(`Added: ${extracted.employerName || 'Employer'}`);
+        }
 
         updateTotals();
         renderCard();
 
         uploadZone.innerHTML = `
             <div style="color: var(--accent);">✓ Payslip processed successfully!</div>
-            <small>${extracted.employerName || 'Employer'} added.</small>
+            <small>${extracted.employerName || 'Employer'} ${isUpdateMode ? 'updated' : 'added'}.</small>
         `;
         setTimeout(resetUploadZone, 2000);
 
     } catch (error) {
         console.error('Upload error:', error);
-        alert(`Error processing payslip: ${error.message}\n\nPlease try manual entry.`);
+        
+        if (error.message === 'FILE_TOO_MANY_PAGES') {
+            toastError('The payslip has too many pages. Please upload a single-page payslip or a PDF with 3 pages or less.');
+        } else {
+            toastError(`Error processing payslip: ${error.message}. Please try manual entry.`);
+        }
         resetUploadZone();
     }
 }
@@ -758,14 +837,13 @@ function isFinalPayslip(dateStr) {
     if (!dateStr) return false;
     const parts = dateStr.split(/[\/\-]/);
     if (parts.length !== 3) return false;
-    let day = parseInt(parts[0], 10);
+    let day   = parseInt(parts[0], 10);
     let month = parseInt(parts[1], 10);
-    let year = parseInt(parts[2], 10);
+    let year  = parseInt(parts[2], 10);
     if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
     if (year < 100) year += 2000;
-    if (month > 6) return true;
-    if (month === 6 && day >= 30) return true;
-    return false;
+
+    return month === 6;  // ✅ any period ending in June is the final payslip
 }
 
 function addEmployerManually() {
@@ -869,10 +947,7 @@ function setLanguage(lang) {
         }, 50);
     }
 
-    if (cards[currentCardIndex]?.id === 'welcome' && typeof refreshRunningNumberDisplay === 'function') {
-        refreshRunningNumberDisplay();
-    }
-
+   
     if (typeof updateEstimateAndDisplay === 'function') {
         updateEstimateAndDisplay(userData);
     }
@@ -890,7 +965,8 @@ window.renderCard = renderCard;
 window.nextCard = nextCard;
 window.prevCard = prevCard;
 window.updateTotals = updateTotals;
-//window.saveCurrentData = saveCurrentData;
+window.deriveTaxStatus = deriveTaxStatus;
+
 window.setLanguage = setLanguage;
 window.processPayment = processPayment;
 window.updateHeaderOnScroll = updateHeaderOnScroll;
