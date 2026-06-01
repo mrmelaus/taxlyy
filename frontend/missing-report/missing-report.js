@@ -92,9 +92,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(error.message);
             }
             
-            if (!data.success) {
-                showStatus('error', data.message || 'No payment found with that email address.');
-                return;
+            if (data.success && !data.multiple) {
+                // Single report found - send email automatically
+                statusMessage.innerHTML = 'Sending report to your email...';
+                statusMessage.className = 'status-message info';
+                
+                try {
+                    const { data: emailResult, error: emailError } = await window.supabaseClient.functions.invoke('send-report-email', {
+                        body: {
+                            to: email,
+                            pdfUrl: data.report.pdf_url,
+                            customerName: 'Valued Customer',
+                            declarationId: data.report.id
+                        }
+                    });
+                    
+                    if (emailError) throw emailError;
+                    
+                    statusMessage.innerHTML = '✅ Report sent to your email! Please check your inbox (and spam folder).';
+                    statusMessage.className = 'status-message success';
+                    
+                    // Optionally show download link as backup
+                    statusMessage.innerHTML += `<br><small><a href="${data.report.pdf_url}" target="_blank">Click here to download directly if email doesn't arrive</a></small>`;
+                    
+                } catch (err) {
+                    console.error('Email send failed:', err);
+                    statusMessage.innerHTML = `⚠️ Could not send email. <a href="${data.report.pdf_url}" target="_blank">Click here to download your report</a>`;
+                    statusMessage.className = 'status-message error';
+                }
             }
             
             // Success - email sent

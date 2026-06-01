@@ -2424,12 +2424,40 @@ function attachCardEventListeners(cardId) {
                 const rightFallbackBtn = document.getElementById('fallbackRightBtn');
 
                 if (leftFallbackBtn) {
-                    leftFallbackBtn.addEventListener('click', () => {
+                    leftFallbackBtn.addEventListener('click', async () => {
                         const userLang = window.currentLang === 'zh' ? 'zh' : 'en';
                         if ((userData.deliveryMethod || 'download') === 'download') {
+                            // Download again
                             if (typeof generateTaxReport === 'function') generateTaxReport(userData, userLang);
                         } else {
-                            alert(t('emailResendPending') || 'Email resend coming soon.');
+                            // RESEND EMAIL
+                            if (!window.lastUploadedPdfPath) {
+                                alert('PDF path not found. Please download instead.');
+                                return;
+                            }
+                            
+                            leftFallbackBtn.disabled = true;
+                            leftFallbackBtn.innerText = 'Sending...';
+                            
+                            try {
+                                const { data, error } = await window.supabase.functions.invoke('send-report-email', {
+                                    body: {
+                                        to: userData.email,
+                                        pdfUrl: window.lastUploadedPdfPath,
+                                        customerName: userData.fullName || 'Valued Customer',
+                                        declarationId: window.latestPaymentIntentId
+                                    }
+                                });
+                                
+                                if (error) throw error;
+                                alert('Report resent successfully! Please check your email (including spam folder).');
+                            } catch (err) {
+                                console.error('Resend failed:', err);
+                                alert('Failed to resend email. Please download your report below.');
+                            } finally {
+                                leftFallbackBtn.disabled = false;
+                                leftFallbackBtn.innerText = stripHtml(t('resendReport'));
+                            }
                         }
                     });
                 }

@@ -412,6 +412,7 @@ async function handleSuccessfulPayment(reportData, paymentMethod = 'card') {
             console.error('Edge Function upload failed:', uploadError);
         } else {
             console.log('PDF uploaded and transaction updated via Edge Function:', uploadResult);
+            window.lastUploadedPdfPath = filePath; 
         }
     } else {
         console.warn('Skipping upload – missing pdfBlob, supabase, or valid paymentIntentId');
@@ -442,17 +443,66 @@ async function handleSuccessfulPayment(reportData, paymentMethod = 'card') {
         if (typeof logEvent === 'function') {
             await logEvent('report_delivered', { delivery_method: 'download' });
         }
-    } else {
-        if (successMessage) successMessage.innerHTML = t('paymentSuccessEmail').replace('{email}', userEmail);
+
+        } else {
+        // EMAIL DELIVERY — Send email via Resend
+        let emailSent = false;
+        let emailErrorMsg = null;
+        
+        try {
+            // filePath should be available from upload step (need to store it)
+            const pdfPathForEmail = window.lastUploadedPdfPath || filePath;
+            
+            const { data: emailResult, error: emailError } = await window.supabase.functions.invoke('send-report-email', {
+                body: {
+                    to: userEmail,
+                    pdfUrl: pdfPathForEmail,
+                    customerName: reportData.fullName || 'Valued Customer',
+                    declarationId: window.latestPaymentIntentId
+                }
+            });
+            
+            if (emailError) {
+                console.error('Email send error:', emailError);
+                emailErrorMsg = emailError.message;
+                emailSent = false;
+            } else {
+                console.log('Email sent successfully:', emailResult);
+                emailSent = true;
+            }
+        } catch (err) {
+            console.error('Email invocation failed:', err);
+            emailErrorMsg = err.message;
+            emailSent = false;
+        }
+        
+        // Update success message based on email result
+        if (successMessage) {
+            if (emailSent) {
+                successMessage.innerHTML = t('paymentSuccessEmail').replace('{email}', userEmail);
+            } else {
+                successMessage.innerHTML = `✅ Payment successful! However, email delivery failed (${emailErrorMsg || 'unknown error'}). Please use the download button below.`;
+            }
+        }
+        
         if (fallbackOptions) fallbackOptions.style.display = 'flex';
         if (leftFallbackBtn) leftFallbackBtn.innerText = stripHtml(t('resendReport'));
         if (rightFallbackBtn) rightFallbackBtn.innerText = stripHtml(t('downloadReport'));
         if (hintEl) {
-            hintEl.innerHTML = t('checkSpam');
+            if (emailSent) {
+                hintEl.innerHTML = t('checkSpam');
+            } else {
+                hintEl.innerHTML = 'Email failed. Please download your report instead.';
+            }
             hintEl.style.display = 'block';
         }
         if (typeof logEvent === 'function') {
-            await logEvent('report_delivery_attempted', { delivery_method: 'email', email: userEmail });
+            await logEvent('report_delivery_attempted', { 
+                delivery_method: 'email', 
+                email: userEmail,
+                email_success: emailSent,
+                email_error: emailErrorMsg
+            });
         }
     }
 
