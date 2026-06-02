@@ -469,6 +469,7 @@ window.zhLocale = {
   hecsManualIncomeHint: '如果您知道自己的还款收入（例如从 myGov 获取），请在此输入。否则我们将根据您的税务申报估算。',
   hecsRepaymentLabel: 'HELP / HECS 强制还款额',
 
+  checkSpam: '如5分钟内未收到，请检查垃圾邮件文件夹',
   rebateRate: '退税',
 
   };

@@ -411,7 +411,7 @@ async function handleSuccessfulPayment(reportData, paymentMethod = 'card') {
         if (uploadError) {
             console.error('Edge Function upload failed:', uploadError);
         } else {
-            console.log('PDF uploaded and transaction updated via Edge Function:', uploadResult);
+            
             window.lastUploadedPdfPath = filePath; 
         }
     } else {
@@ -463,15 +463,15 @@ async function handleSuccessfulPayment(reportData, paymentMethod = 'card') {
             });
             
             if (emailError) {
-                console.error('Email send error:', emailError);
+                
                 emailErrorMsg = emailError.message;
                 emailSent = false;
             } else {
-                console.log('Email sent successfully:', emailResult);
+                
                 emailSent = true;
             }
         } catch (err) {
-            console.error('Email invocation failed:', err);
+            
             emailErrorMsg = err.message;
             emailSent = false;
         }

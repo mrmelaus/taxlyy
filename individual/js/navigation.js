@@ -590,14 +590,7 @@ function nextCard() {
             toastError(t('deliveryRequired'));
             return;
         }
-        if (userData.deliveryMethod === 'email') {
-            const email = document.getElementById('userEmail')?.value;
-            if (!email || !email.includes('@')) {
-                toastError('Please enter a valid email address.');
-                return;
-            }
-            userData.email = email;
-        }
+        // Email validation removed — already on personal card
         const bilingualCheckbox = document.getElementById('bilingualReportCheckbox');
         if (bilingualCheckbox) {
             userData.bilingualReport = bilingualCheckbox.checked;

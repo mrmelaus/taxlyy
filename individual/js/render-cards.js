@@ -756,18 +756,29 @@ function getCardHtml(cardId) {
                     <!-- Success modal -->
                     <div id="paymentSuccessModal" class="payment-modal" style="display: none;">
                         <div class="payment-modal-content">
-                            <div class="payment-modal-icon">✅</div>
-                            <div class="payment-modal-title">${t('paymentSuccess')}</div>
-                            <div class="payment-modal-message" id="successMessage"></div>
-                            <div id="fallbackOptions" class="payment-modal-fallback" style="display: none;">
-                                <div class="fallback-divider"></div>
-                                <div class="fallback-buttons">
-                                    <button id="fallbackLeftBtn" class="nav-btn secondary"></button>
-                                    <button id="fallbackRightBtn" class="nav-btn secondary"></button>
+                            <div class="success-animation">
+                                <div class="success-checkmark">
+                                    <div class="check-icon">✓</div>
                                 </div>
-                                <div id="fallbackHint" class="fallback-note"></div>
                             </div>
-                            <button id="closeSuccessModal" class="nav-btn primary close-modal-btn">${stripHtml(t('startNewReturn'))}</button>
+                            
+                            <div class="payment-modal-title">${t('paymentSuccess')}</div>
+                            
+                            <div class="payment-modal-message">
+                                ${t('paymentSuccessEmail')}<br>
+                                <strong id="deliveryEmailDisplay"></strong>
+                            </div>
+                            
+                            <div class="spam-hint-subtle">
+                                📧 ${t('checkSpam')}
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button id="fallbackLeftBtn" class="action-btn secondary">${t('resendReport')}</button>
+                                <button id="fallbackRightBtn" class="action-btn primary">${t('downloadReport')}</button>
+                            </div>
+                            
+                            <button id="closeSuccessModal" class="close-btn">${t('startNewReturn')} →</button>
                         </div>
                     </div>
                 </div>

@@ -469,5 +469,7 @@ window.enLocale = {
     hecsManualIncomeHint: 'If you know your repayment income (e.g., from myGov), enter it here. Otherwise we will estimate it from your tax return.',
     hecsRepaymentLabel: 'HELP / HECS compulsory repayment',
 
+    checkSpam: 'Check spam folder if not received within 5 minutes',
+
     rebateRate: 'rebate',
       };
