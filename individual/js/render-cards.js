@@ -761,23 +761,18 @@ function getCardHtml(cardId) {
                                     <div class="check-icon">✓</div>
                                 </div>
                             </div>
-                            
-                            <div class="payment-modal-title">${t('paymentSuccess')}</div>
-                            
-                            <div class="payment-modal-message">
-                                ${t('paymentSuccessEmail')}<br>
-                                <strong id="deliveryEmailDisplay"></strong>
+
+                            <div class="payment-modal-title" id="successTitle">${t('paymentSuccess')}</div>
+
+                            <div class="payment-modal-message" id="successMessage"></div>
+
+                            <div class="spam-hint-subtle" id="fallbackHint" style="display:none;"></div>
+
+                            <div class="action-buttons" id="fallbackOptions">
+                                <button id="fallbackLeftBtn" class="action-btn secondary"></button>
+                                <button id="fallbackRightBtn" class="action-btn primary"></button>
                             </div>
-                            
-                            <div class="spam-hint-subtle">
-                                📧 ${t('checkSpam')}
-                            </div>
-                            
-                            <div class="action-buttons">
-                                <button id="fallbackLeftBtn" class="action-btn secondary">${t('resendReport')}</button>
-                                <button id="fallbackRightBtn" class="action-btn primary">${t('downloadReport')}</button>
-                            </div>
-                            
+
                             <button id="closeSuccessModal" class="close-btn">${t('startNewReturn')} →</button>
                         </div>
                     </div>

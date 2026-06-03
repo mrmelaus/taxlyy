@@ -471,5 +471,9 @@ window.enLocale = {
 
     checkSpam: 'Check spam folder if not received within 5 minutes',
 
+    paymentSuccessDownload: 'Your tax report is ready and downloading now.',
+    downloadHint: 'Your file should download automatically. Save it somewhere safe.',
+  
+
     rebateRate: 'rebate',
       };

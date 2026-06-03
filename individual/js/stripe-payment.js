@@ -431,9 +431,12 @@ async function handleSuccessfulPayment(reportData, paymentMethod = 'card') {
     if (deliveryMethod === 'download') {
         if (successMessage) successMessage.innerHTML = t('paymentSuccessDownload');
         if (fallbackOptions) fallbackOptions.style.display = 'flex';
-        if (leftFallbackBtn) leftFallbackBtn.innerText = stripHtml(t('downloadAgain'));
-        if (rightFallbackBtn) rightFallbackBtn.innerText = stripHtml(t('sendEmailInstead'));
-        if (hintEl) hintEl.style.display = 'none';
+        if (leftFallbackBtn) leftFallbackBtn.innerHTML = t('downloadAgain');
+        if (rightFallbackBtn) rightFallbackBtn.innerHTML = t('sendEmailInstead');
+        if (hintEl) {
+        hintEl.innerHTML = `💾 ${t('downloadHint')}`;  // add this
+        hintEl.style.display = 'block';                 // add this
+        }
 
         try {
             await generateTaxReport(reportData, lang, { transaction });
@@ -479,15 +482,15 @@ async function handleSuccessfulPayment(reportData, paymentMethod = 'card') {
         // Update success message based on email result
         if (successMessage) {
             if (emailSent) {
-                successMessage.innerHTML = t('paymentSuccessEmail').replace('{email}', userEmail);
+                successMessage.innerHTML = t('paymentSuccessEmail').replace(/\{email\}/g, userEmail);
             } else {
                 successMessage.innerHTML = `✅ Payment successful! However, email delivery failed (${emailErrorMsg || 'unknown error'}). Please use the download button below.`;
             }
         }
         
         if (fallbackOptions) fallbackOptions.style.display = 'flex';
-        if (leftFallbackBtn) leftFallbackBtn.innerText = stripHtml(t('resendReport'));
-        if (rightFallbackBtn) rightFallbackBtn.innerText = stripHtml(t('downloadReport'));
+        if (leftFallbackBtn) leftFallbackBtn.innerHTML = t('resendReport');
+        if (rightFallbackBtn) rightFallbackBtn.innerHTML = t('downloadReport');
         if (hintEl) {
             if (emailSent) {
                 hintEl.innerHTML = t('checkSpam');

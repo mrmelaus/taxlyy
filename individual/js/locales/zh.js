@@ -472,4 +472,7 @@ window.zhLocale = {
   checkSpam: '如5分钟内未收到，请检查垃圾邮件文件夹',
   rebateRate: '退税',
 
+  paymentSuccessDownload: '您的税务报告已准备好并正在下载。', 
+  downloadHint: '您的文件应自动下载，请妥善保存。',
+
   };

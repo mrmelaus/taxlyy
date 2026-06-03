@@ -2463,14 +2463,42 @@ function attachCardEventListeners(cardId) {
                 }
 
                 if (rightFallbackBtn) {
-                    rightFallbackBtn.addEventListener('click', () => {
+                    rightFallbackBtn.addEventListener('click', async () => {
                         const userLang = window.currentLang === 'zh' ? 'zh' : 'en';
                         if ((userData.deliveryMethod || 'download') === 'download') {
-                            const email = prompt(stripHtml(t('emailPrompt')) || 'Please enter your email address:');
-                            if (email && email.includes('@')) {
-                                userData.email = email;
-                                //saveCurrentData();
-                                alert(`${stripHtml(t('reportSentTo') || 'Report will be sent to')} ${email}`);
+                            const email = userData.email;
+                            if (!email || !email.includes('@')) {
+                                alert('No email address found. Please download instead.');
+                                return;
+                            }
+                            if (!window.lastUploadedPdfPath) {
+                                alert('PDF not ready. Please download instead.');
+                                return;
+                            }
+                            rightFallbackBtn.disabled = true;
+                            rightFallbackBtn.innerText = 'Sending...';
+                            try {
+                                const { data, error } = await window.supabase.functions.invoke('send-report-email', {
+                                    body: {
+                                        to: email,
+                                        pdfUrl: window.lastUploadedPdfPath,
+                                        customerName: userData.fullName || '',
+                                        declarationId: window.latestPaymentIntentId
+                                    }
+                                });
+                                if (error) throw error;
+                                rightFallbackBtn.innerText = `✓ Sent to ${email}`;
+                                rightFallbackBtn.disabled = true;
+                                const hintEl = document.getElementById('fallbackHint');
+                                if (hintEl) {
+                                    hintEl.innerHTML = `📧 Report sent to <strong>${email}</strong>. Check your inbox and spam folder.`;
+                                    hintEl.style.display = 'block';
+                                }
+                            } catch (err) {
+                                console.error('Email send failed:', err);
+                                rightFallbackBtn.disabled = false;
+                                rightFallbackBtn.innerText = stripHtml(t('sendEmailInstead'));
+                                alert('Failed to send email. Please download instead.');
                             }
                         } else {
                             if (typeof generateTaxReport === 'function') generateTaxReport(userData, userLang);
