@@ -274,10 +274,11 @@ function getAssetEffectiveLife(assetType) {
 }
 
 function getTaxYearStartDate(taxYear) {
-    const startYear = parseInt(taxYear.split('-')[0]);
+    const resolvedYear = taxYear || window.activeTaxYearString;
+    if (!resolvedYear) return null;
+    const startYear = parseInt(resolvedYear.split('-')[0]);
     return `${startYear}-07-01`;
 }
-
 function calculateDaysHeld(purchaseDate, taxYear) {
     if (!purchaseDate) return 365;
     
