@@ -324,7 +324,7 @@ window.enLocale = {
     paymentSuccessEmail: "Your tax report has been sent to {email}.",
     downloadAgain: "Click here to download again",
     sendEmailInstead: "Send to email instead",
-    downloadReport: "Download report",
+    downloadReport: "Download instead",
     startNewReturn: "Start new return",
     resendReport: "Resend report",
     checkSpam: "Check your spam/junk folder",

@@ -326,7 +326,7 @@ window.zhLocale = {
     paymentSuccessEmail: "您的税务报告已发送至 {email}。",
     downloadAgain: "点击此处重新下载",
     sendEmailInstead: "改为发送到邮箱",
-    downloadReport: "下载报告",
+    downloadReport: "直接下载备份",
     startNewReturn: "开始新的申报",
     resendReport: "重新发送报告",
     checkSpam: "请检查您的垃圾邮件文件夹",
