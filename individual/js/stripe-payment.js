@@ -3,7 +3,7 @@
 // Sandbox / Test mode
 // ========================================
 
-const stripePublicKey = 'pk_test_51TK9u9Dy5tDIcbsfSwlYNipimjQsJevho3q5xOJdJr3SuVNYJHl8O0JjRpN4yYUNv4qHo2JooOiwzyAai11c5vIa006Tzw26lh';
+const stripePublicKey = 'pk_live_51TK9txDnQm3tpp2pGA0qWBdhMtcdrkYdEP1G6EkbFm9wzdPh6Q6bLyFKfNWZwSsuwW7VysnQ1uMGH8fUpBTrd9YH00mFd4QhHA';
 let stripe = null;
 let cardElement = null;
 let paymentRequest = null;
