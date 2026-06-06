@@ -1380,7 +1380,7 @@ function attachCardEventListeners(cardId) {
                             const fullDepreciation = remainingValue * (daysHeld / 365) * dvRate;
                             totalDepreciation += fullDepreciation * (workPercentage / 100);
                         } else {
-                            const daysHeld = calculateDaysHeld(purchaseDate, userData.taxYear); 
+                            const daysHeld = calculateDaysHeld(purchaseDate, userData.taxYear || window.activeTaxYearString);
                             totalDepreciation += calculateNewAssetDepreciation(originalCost, effectiveLife, daysHeld, workPercentage);
                         }
                     });

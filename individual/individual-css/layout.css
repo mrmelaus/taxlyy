@@ -203,6 +203,8 @@
     padding: var(--space-4) var(--space-6);
     margin-bottom: var(--space-5);
     transition: padding 0.35s ease, border-radius 0.35s ease, box-shadow 0.35s ease, top 0.35s ease, gap 0.35s ease;
+    will-change: transform;
+    transform: translateZ(0);
 }
 
 /* Welcome card: estimate bar scrolls away (already has welcome-mode) */
