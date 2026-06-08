@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Contact Taxlyy — get help with technical issues or ask us anything about your Australian tax return.">
+  <title>Contact Us | Taxlyy</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/frontend/variables.css">
+  <link rel="stylesheet" href="/frontend/styles.css">
+  <link rel="stylesheet" href="/frontend/contact/contact.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="/index.html" class="nav-logo">Tax<span>lyy</span></a>
+  <div class="nav-links">
+    <a href="/index.html#features">What's included</a>
+    <a href="/index.html#how">How it works</a>
+    <a href="/index.html#pricing">Pricing</a>
+    <a href="/frontend/missing-report/missing-report.html">Missing your report?</a>
+    <a href="/individual/index.html" class="nav-cta">Get my tax report →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="contact-hero">
+  <div class="contact-hero-glow"></div>
+  <div class="container">
+    <div class="contact-hero-inner reveal">
+      <div class="section-label">Support</div>
+      <h1 class="contact-hero-title">How can we help?</h1>
+      <p class="contact-hero-sub">Technical issues, general questions, or feedback — we're here.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<section class="contact-section">
+  <div class="container">
+    <div class="contact-grid">
+
+      <!-- LEFT: FORM -->
+      <div class="contact-form-wrap reveal">
+        <form id="contactForm" class="contact-form" novalidate>
+
+          <!-- Category -->
+          <div class="cf-group">
+            <label class="cf-label" for="category">What can we help you with?</label>
+            <div class="cf-select-wrap">
+              <select id="category" name="category" class="cf-select" required>
+                <option value="" disabled selected>Select a category</option>
+                <option value="tech">Technical Issue</option>
+                <option value="enquiry">General Enquiry</option>
+                <option value="feedback">Feedback & Suggestions</option>
+              </select>
+              <span class="cf-select-arrow">↓</span>
+            </div>
+          </div>
+
+          <!-- Tech-specific: which step -->
+          <div class="cf-group cf-conditional" id="group-step" style="display:none;">
+            <label class="cf-label" for="step">Where did the issue occur?</label>
+            <div class="cf-select-wrap">
+              <select id="step" name="step" class="cf-select">
+                <option value="" disabled selected>Select a step</option>
+                <option value="personal">Personal Information</option>
+                <option value="income">Income</option>
+                <option value="deductions">Deductions</option>
+                <option value="health">Health Insurance</option>
+                <option value="payment">Payment / Checkout</option>
+                <option value="report">Report Download / Delivery</option>
+                <option value="other">Other / Not sure</option>
+              </select>
+              <span class="cf-select-arrow">↓</span>
+            </div>
+          </div>
+
+          <!-- Email — always shown, required for tech -->
+          <div class="cf-group">
+            <label class="cf-label" for="email">
+              Email address
+              <span class="cf-required-badge" id="emailBadge" style="display:none;">Required</span>
+              <span class="cf-optional-badge" id="emailOptional">Optional</span>
+            </label>
+            <input type="email" id="email" name="email"
+                   class="cf-input" placeholder="your@email.com"
+                   autocomplete="email">
+            <div class="cf-hint" id="emailHint">So we can follow up with you.</div>
+          </div>
+
+          <!-- Subject -->
+          <div class="cf-group">
+            <label class="cf-label" for="subject">Subject <span class="cf-required-star">*</span></label>
+            <input type="text" id="subject" name="subject"
+                   class="cf-input" placeholder="Brief summary"
+                   required autocomplete="off">
+          </div>
+
+          <!-- Message -->
+          <div class="cf-group">
+            <label class="cf-label" for="message">Message <span class="cf-required-star">*</span></label>
+            <textarea id="message" name="message"
+                      class="cf-textarea" rows="6"
+                      placeholder="Tell us what happened or what you'd like to know..."
+                      required></textarea>
+            <div class="cf-char-count"><span id="charCount">0</span> / 1000</div>
+          </div>
+
+          <!-- Status -->
+          <div class="cf-status" id="formStatus" style="display:none;" role="alert"></div>
+
+          <!-- Honeypot -->
+          <div style="position:absolute; left:-9999px; opacity:0; pointer-events:none;" aria-hidden="true">
+            <input type="text" name="website" tabindex="-1" autocomplete="off">
+          </div>
+          <input type="hidden" id="formTimestamp" name="timestamp">
+
+          <!-- Submit -->
+          <button type="submit" class="btn-primary cf-submit" id="submitBtn">
+            <span class="cf-submit-text">Send message</span>
+            <span class="cf-submit-icon">→</span>
+          </button>
+
+          <p class="cf-privacy-note">🔒 Your information is never stored or shared.</p>
+        </form>
+      </div>
+
+      <!-- RIGHT: INFO CARDS -->
+      <div class="contact-info-col">
+
+        <!-- Missing report callout -->
+        <div class="info-callout reveal reveal-delay-1">
+          <div class="info-callout-icon">📄</div>
+          <div>
+            <div class="info-callout-title">Paid but didn't get your report?</div>
+            <p class="info-callout-body">Use our dedicated missing report page — enter your email and we'll resend instantly.</p>
+            <a href="/frontend/missing-report/missing-report.html" class="info-callout-link">Go to missing report →</a>
+          </div>
+        </div>
+
+        <!-- Response time -->
+        <div class="info-card reveal reveal-delay-2">
+          <div class="info-card-icon">⏱</div>
+          <div>
+            <div class="info-card-title">Response time</div>
+            <p class="info-card-body">We aim to respond within <strong>1–2 business days</strong>. Technical issues are prioritised.</p>
+          </div>
+        </div>
+
+        <!-- What Taxlyy is -->
+        <div class="info-card reveal reveal-delay-3">
+          <div class="info-card-icon">ℹ️</div>
+          <div>
+            <div class="info-card-title">About Taxlyy</div>
+            <p class="info-card-body">Taxlyy is a <strong>session-only</strong> tool. We don't store your tax data. For tax advice, consult a registered tax agent.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="/index.html" class="footer-logo">Tax<span>lyy</span></a>
+        <p>Hepta Care Pty Ltd<br>ABN 73 666 661 338</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Products</h4>
+          <a href="/individual/index.html">Taxlyy Individual</a>
+          <a href="/business/business.html">Taxlyy Business</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="/frontend/legal/privacy.html">Privacy policy</a>
+          <a href="/frontend/legal/terms.html">Terms & conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="/frontend/missing-report/missing-report.html">Missing your report?</a>
+          <a href="/frontend/contact/contact.html">Contact us</a>
+          
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Hepta Care Pty Ltd. All rights reserved.</p>
+      <p>Taxlyy is not a registered tax agent under the Tax Agent Services Act 2009. Calculations are estimates only and do not constitute tax advice.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/frontend/main.js"></script>
+<script>
+// ========================================
+// CONTACT FORM — inline script
+// ========================================
+(function () {
+  'use strict';
+
+  const form        = document.getElementById('contactForm');
+  const category    = document.getElementById('category');
+  const groupStep   = document.getElementById('group-step');
+  const emailInput  = document.getElementById('email');
+  const emailBadge  = document.getElementById('emailBadge');
+  const emailOpt    = document.getElementById('emailOptional');
+  const emailHint   = document.getElementById('emailHint');
+  const msgInput    = document.getElementById('message');
+  const charCount   = document.getElementById('charCount');
+  const statusEl    = document.getElementById('formStatus');
+  const submitBtn   = document.getElementById('submitBtn');
+
+  // Set timestamp
+  document.getElementById('formTimestamp').value = Date.now();
+
+  // ── Category change ──────────────────────────
+  category.addEventListener('change', function () {
+    const isTech = this.value === 'tech';
+
+    // Show/hide step dropdown
+    groupStep.style.display = isTech ? 'block' : 'none';
+
+    // Email required only for tech
+    emailInput.required = isTech;
+    emailBadge.style.display = isTech ? 'inline-flex' : 'none';
+    emailOpt.style.display   = isTech ? 'none' : 'inline';
+    emailHint.textContent    = isTech
+      ? 'Required so we can investigate and follow up with you.'
+      : 'So we can follow up with you.';
+  });
+
+  // ── Character counter ────────────────────────
+  msgInput.addEventListener('input', function () {
+    const len = this.value.length;
+    charCount.textContent = len;
+    charCount.style.color = len > 900 ? 'var(--accent)' : 'var(--text-muted)';
+    if (len > 1000) this.value = this.value.slice(0, 1000);
+  });
+
+  // ── Show status ──────────────────────────────
+  function showStatus(type, msg) {
+    statusEl.textContent  = msg;
+    statusEl.className    = 'cf-status cf-status--' + type;
+    statusEl.style.display = 'block';
+    statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (type === 'success') {
+      setTimeout(() => { statusEl.style.display = 'none'; }, 8000);
+    }
+  }
+
+  // ── Validate ────────────────────────────────
+  function validate() {
+    const errors = [];
+    const honey  = form.querySelector('input[name="website"]');
+    if (honey && honey.value) return ['Submission blocked.'];
+
+    // Rate limit: 5 min
+    const last = localStorage.getItem('txly_contact_ts');
+    if (last && Date.now() - parseInt(last) < 300000) {
+      errors.push('Please wait a few minutes before sending another message.');
+    }
+    if (!category.value)           errors.push('Please select a category.');
+    if (!document.getElementById('subject').value.trim()) errors.push('Please enter a subject.');
+    if (!msgInput.value.trim())    errors.push('Please enter a message.');
+    if (category.value === 'tech' && !emailInput.value.trim()) {
+      errors.push('Email is required for technical support.');
+    }
+    return errors;
+  }
+
+  // ── Submit ───────────────────────────────────
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    statusEl.style.display = 'none';
+
+    const errors = validate();
+    if (errors.length) {
+      showStatus('error', errors[0]);
+      return;
+    }
+
+    // Loading state
+    submitBtn.disabled = true;
+    submitBtn.querySelector('.cf-submit-text').textContent = 'Sending…';
+    submitBtn.querySelector('.cf-submit-icon').textContent  = '⟳';
+
+    try {
+      const res = await fetch('https://formspree.io/f/mkoargov', {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!res.ok) throw new Error('Failed');
+
+      showStatus('success', '✓ Message sent. We\'ll be in touch within 1–2 business days.');
+      form.reset();
+      groupStep.style.display = 'none';
+      charCount.textContent   = '0';
+      localStorage.setItem('txly_contact_ts', Date.now().toString());
+
+    } catch {
+      showStatus('error', 'Something went wrong. Please try again or email support@taxlyy.com.au directly.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.querySelector('.cf-submit-text').textContent = 'Send message';
+      submitBtn.querySelector('.cf-submit-icon').textContent  = '→';
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
