@@ -903,7 +903,7 @@ function setLanguage(lang) {
     document.getElementById('lang-zh')?.classList.toggle('active', lang === 'zh');
 
     const logoZh = document.getElementById('logoZh');
-    if (logoZh) logoZh.textContent = lang === 'zh' ? '税易(个人版)' : '';
+    if (logoZh) logoZh.textContent = lang === 'zh' ? '税易' : '';
 
     const label = document.getElementById('estimateLabel');
     if (label) label.innerHTML = t('estimatedReturn');
